@@ -357,18 +357,25 @@ async function startCameraScanner() {
       html5QrScanner = new Html5Qrcode("qr-reader");
     }
 
-    // فحص شامل عبر كامل الإطار (بدون حصر أو تقييد لسرعة الالتقاط الفوري)
-    const config = {
-      fps: 25,
+    // إعدادات الكاميرا بدقة عالية 1080p أو 720p لضمان حدة الباركود وسرعة القراءة الخارقة
+    const cameraConfig = {
+      facingMode: "environment",
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    };
+
+    const scanConfig = {
+      fps: 30,
       aspectRatio: 1.0,
+      disableFlip: false,
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: true
       }
     };
 
     await html5QrScanner.start(
-      { facingMode: "environment" },
-      config,
+      cameraConfig,
+      scanConfig,
       async (decodedText) => {
         // تم التقاط باركود بنجاح
         laserEl?.classList.add('hidden');

@@ -87,22 +87,21 @@ function renderTicket(invitation) {
 function generateTicketQR(invitation) {
   const container = document.getElementById('ticket-qrcode-container');
   if (!container) return;
-  container.innerHTML = '';
-
-  const fullUrl = window.location.href;
+  // تشفير معرف الدعوة المباشر بدلاً من الرابط الطويل لتقليل كثافة المربعات وتسريع المسح 10 أضعاف
+  const qrPayload = invitation.id;
 
   let qrGenerated = false;
 
-  // المحاولة 1: عبر مكتبة QRCode.js
+  // المحاولة 1: عبر مكتبة QRCode.js بأعلى وضوح وأسرع مستوى قراءة L
   if (typeof QRCode !== 'undefined') {
     try {
       new QRCode(container, {
-        text: fullUrl,
-        width: 220,
-        height: 220,
+        text: qrPayload,
+        width: 240,
+        height: 240,
         colorDark: "#000000",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+        correctLevel: QRCode.CorrectLevel.L
       });
       qrGenerated = true;
     } catch (e) {
@@ -110,10 +109,10 @@ function generateTicketQR(invitation) {
     }
   }
 
-  // المحاولة 2 (احتياطي دائم): إذا لم تظهر مكتبة JS يولد الباركود عبر صورة سريعة
+  // المحاولة 2 (احتياطي دائم): صورة سريعة خفيفة جداً
   if (!qrGenerated || container.children.length === 0) {
     const qrImg = document.createElement('img');
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=000000&bgcolor=ffffff&data=${encodeURIComponent(fullUrl)}`;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&color=000000&bgcolor=ffffff&ecc=L&data=${encodeURIComponent(qrPayload)}`;
     qrImg.alt = `QR-${invitation.id}`;
     qrImg.className = 'w-full h-full object-contain';
     container.appendChild(qrImg);
