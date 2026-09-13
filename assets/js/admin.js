@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   initStore();
+  setupAdminLogout();
   setupSupabaseConfig();
   renderUsersTable();
   renderAdminInvitationsTable();
@@ -619,4 +620,18 @@ window.resetTicketToValid = async function(id) {
     await verifyTicketCode(id);
   }
 };
+
+// تسجيل خروج المشرف
+function setupAdminLogout() {
+  const logoutBtn = document.getElementById('btn-admin-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      logoutUser();
+      showToast.info('تم تسجيل الخروج بنجاح. نراك قريباً!', 'تسجيل الخروج');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 350);
+    });
+  }
+}
 
