@@ -471,7 +471,7 @@ function setupEditForm() {
     const type = document.getElementById('edit-field-type').value;
     const notes = document.getElementById('edit-field-notes').value.trim();
 
-    await updateInvitation(id, {
+    const res = await updateInvitation(id, {
       guestName,
       phone,
       graduateName: gradName,
@@ -479,6 +479,11 @@ function setupEditForm() {
       type,
       notes
     });
+
+    if (res && res.success === false) {
+      showToast.error(res.message, 'تعذر تعديل الدعوة');
+      return;
+    }
 
     showToast.success('تم حفظ تعديلات بيانات الدعوة بنجاح!', 'تم التحديث');
     window.switchTab('invitations');

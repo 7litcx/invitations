@@ -550,6 +550,31 @@ async function fetchInvitationById(id) {
   return null;
 }
 
+// دوال توحيد النصوص والأرقام للتحقق من عدم تكرار الدعوات لنفس الضيف
+function normalizeArabicText(text) {
+  if (!text) return '';
+  return String(text)
+    .trim()
+    .replace(/[\u064B-\u065F\u0670]/g, '') // إزالة التشكيل
+    .replace(/[إأآا]/g, 'ا') // توحيد الألف
+    .replace(/ة/g, 'ه')      // توحيد التاء المربوطة
+    .replace(/[يى]/g, 'ي')   // توحيد الياء والألف المقصورة
+    .replace(/\s+/g, ' ')    // إزالة المسافات الزائدة
+    .toLowerCase();
+}
+
+function normalizePhoneNumber(phone) {
+  if (!phone) return '';
+  let clean = String(phone).trim().replace(/[\s\-\(\)\.]/g, '');
+  // تحويل الأرقام المكتوبة بالصيغة العربية-الهندية إلى صيغة رقمية موحدة
+  clean = clean.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  // إزالة مفاتيح الاتصال الدولي الشائعة والأصفار البادئة لضمان التطابق الدقيق
+  clean = clean.replace(/^(\+?967|00967)/, '');
+  clean = clean.replace(/^(\+?966|00966)/, '');
+  clean = clean.replace(/^0+/, '');
+  return clean;
+}
+
 async function createInvitation(userId, data) {
   const user = getUser(userId);
   if (!user) return { success: false, message: 'المستخدم غير مسجل.' };
@@ -565,14 +590,65 @@ async function createInvitation(userId, data) {
     return { success: false, message: 'عذراً، لا تملك رصيد دعوات VIP كافٍ.' };
   }
 
+  const cleanGuestName = data.guestName ? data.guestName.trim() : '';
+  const cleanPhone = data.phone ? data.phone.trim() : '';
+
+  if (!cleanGuestName || !cleanPhone) {
+    return { success: false, message: 'يرجى إدخال اسم المدعو ورقم الهاتف بشكل كامل.' };
+  }
+
+  // منع تكرار الدعوة لنفس الاسم ورقم الهاتف
+  const normName = normalizeArabicText(cleanGuestName);
+  const normPhone = normalizePhoneNumber(cleanPhone);
+
+  // 1. الفحص السحابي الشامل في Supabase
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      const { data: dbInvs, error: checkErr } = await sb
+        .from('invitations')
+        .select('id, guest_name, phone, graduate_name');
+
+      if (!checkErr && dbInvs && dbInvs.length > 0) {
+        const duplicate = dbInvs.find(inv => 
+          normalizeArabicText(inv.guest_name) === normName &&
+          normalizePhoneNumber(inv.phone) === normPhone
+        );
+
+        if (duplicate) {
+          return {
+            success: false,
+            message: `ممنوع تكرار الدعوة: توجد دعوة مسجلة مسبقاً بنفس الاسم (${duplicate.guest_name}) ونفس رقم الهاتف (${duplicate.phone}) للخريج (${duplicate.graduate_name || 'خريج آخر'}).`
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase duplicate check warning:', e);
+    }
+  }
+
+  // 2. الفحص المحلي في المتصفح
+  const localList = getInvitations();
+  const localDuplicate = localList.find(inv => 
+    normalizeArabicText(inv.guestName) === normName &&
+    normalizePhoneNumber(inv.phone) === normPhone
+  );
+
+  if (localDuplicate) {
+    return {
+      success: false,
+      message: `ممنوع تكرار الدعوة: توجد دعوة مسجلة مسبقاً بنفس الاسم (${localDuplicate.guestName}) ونفس رقم الهاتف (${localDuplicate.phone}).`
+    };
+  }
+
   // توليد معرّف فريد عالمياً لا يتكرر ولا يتصادم بين المستخدمين إطلاقاً
   const uniqueId = await generateUniqueInvitationId();
 
   const newInv = {
     id: uniqueId,
     userId: user.id,
-    guestName: data.guestName.trim(),
-    phone: data.phone.trim(),
+    guestName: cleanGuestName,
+    phone: cleanPhone,
     graduateName: data.graduateName || user.name,
     major: data.major || user.major || 'لغة إنجليزية',
     event: data.event || DEFAULT_EVENTS[0].name,
@@ -584,7 +660,6 @@ async function createInvitation(userId, data) {
   };
 
   // الحفظ في Supabase
-  const sb = getSupabase();
   if (sb) {
     try {
       const { error } = await sb.from('invitations').insert([{
@@ -619,29 +694,78 @@ async function createInvitation(userId, data) {
 async function updateInvitation(id, updatedData) {
   const all = getInvitations();
   const idx = all.findIndex(i => i.id === id);
-  if (idx !== -1) {
-    all[idx] = { ...all[idx], ...updatedData };
-    localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
+  if (idx === -1) {
+    return { success: false, message: 'الدعوة غير موجودة' };
+  }
+
+  const currentInv = all[idx];
+  const newGuestName = updatedData.guestName !== undefined ? updatedData.guestName.trim() : currentInv.guestName;
+  const newPhone = updatedData.phone !== undefined ? updatedData.phone.trim() : currentInv.phone;
+
+  // التحقق من عدم التكرار عند تعديل الاسم أو الهاتف
+  if (newGuestName && newPhone) {
+    const normName = normalizeArabicText(newGuestName);
+    const normPhone = normalizePhoneNumber(newPhone);
 
     const sb = getSupabase();
     if (sb) {
       try {
-        await sb.from('invitations').update({
-          guest_name: all[idx].guestName,
-          phone: all[idx].phone,
-          graduate_name: all[idx].graduateName,
-          people_count: all[idx].peopleCount,
-          type: all[idx].type,
-          status: all[idx].status,
-          notes: all[idx].notes
-        }).eq('id', id);
+        const { data: dbInvs, error: checkErr } = await sb
+          .from('invitations')
+          .select('id, guest_name, phone, graduate_name')
+          .neq('id', id);
+
+        if (!checkErr && dbInvs) {
+          const dup = dbInvs.find(inv => 
+            normalizeArabicText(inv.guest_name) === normName &&
+            normalizePhoneNumber(inv.phone) === normPhone
+          );
+          if (dup) {
+            return {
+              success: false,
+              message: `ممنوع تكرار الدعوة: توجد دعوة أخرى مسجلة بنفس الاسم (${dup.guest_name}) ورقم الهاتف (${dup.phone}).`
+            };
+          }
+        }
       } catch (e) {
-        console.warn('Supabase update invitation error:', e);
+        console.warn('Supabase duplicate check in update warning:', e);
       }
     }
-    return true;
+
+    const localDup = all.find(inv => 
+      inv.id !== id &&
+      normalizeArabicText(inv.guestName) === normName &&
+      normalizePhoneNumber(inv.phone) === normPhone
+    );
+    if (localDup) {
+      return {
+        success: false,
+        message: `ممنوع تكرار الدعوة: توجد دعوة أخرى مسجلة بنفس الاسم (${localDup.guestName}) ورقم الهاتف (${localDup.phone}).`
+      };
+    }
   }
-  return false;
+
+  all[idx] = { ...all[idx], ...updatedData };
+  localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
+
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      const updatePayload = {};
+      if (updatedData.guestName !== undefined) updatePayload.guest_name = all[idx].guestName;
+      if (updatedData.phone !== undefined) updatePayload.phone = all[idx].phone;
+      if (updatedData.graduateName !== undefined) updatePayload.graduate_name = all[idx].graduateName;
+      if (updatedData.peopleCount !== undefined) updatePayload.people_count = all[idx].peopleCount;
+      if (updatedData.type !== undefined) updatePayload.type = all[idx].type;
+      if (updatedData.status !== undefined) updatePayload.status = all[idx].status;
+      if (updatedData.notes !== undefined) updatePayload.notes = all[idx].notes;
+
+      await sb.from('invitations').update(updatePayload).eq('id', id);
+    } catch (e) {
+      console.warn('Supabase update invitation error:', e);
+    }
+  }
+  return { success: true };
 }
 
 async function deleteInvitation(id) {
