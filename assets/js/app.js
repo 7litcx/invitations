@@ -84,8 +84,17 @@ function setupAuth() {
 
       if (res.success) {
         loginForm.reset();
-        setupAuth();
         showToast.success(`مرحباً بك مجدداً، ${res.user.name}`, 'تم تسجيل الدخول');
+        
+        // إذا كان المستخدم أدمن، توجيهه فوراً وبشكل تلقائي إلى لوحة التحكم
+        if (res.user.role === 'admin') {
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 400);
+          return;
+        }
+
+        setupAuth();
       } else {
         if (errorAlert) {
           errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';

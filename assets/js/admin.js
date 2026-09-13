@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCreateUserForm();
   setupQuotaModal();
   setupCsvExport();
+  setupBarcodeScanner();
 
   // جلب كافة المستخدمين والدعوات من Supabase وتحديث الجداول
   await Promise.all([
@@ -219,7 +220,7 @@ function renderAdminInvitationsTable() {
         <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 dir-ltr text-right">${escapeHtml(inv.phone)}</td>
         <td class="py-3 px-4 text-slate-700 dark:text-slate-300">${escapeHtml(inv.graduateName)}</td>
         <td class="py-3 px-4">${inv.type === 'VIP' ? '<span class="badge-vip text-[10px]">VIP</span>' : '<span class="text-xs text-slate-500">عادية</span>'}</td>
-        <td class="py-3 px-4"><span class="badge-status-valid text-xs">صالحة</span></td>
+        <td class="py-3 px-4">${inv.status === 'صالحة' ? '<span class="badge-status-valid text-xs">صالحة</span>' : '<span class="badge-status-used text-xs">مستخدمة</span>'}</td>
         <td class="py-3 px-4 text-xs text-slate-400">${new Date(inv.createdAt).toLocaleDateString('ar-SA')}</td>
         <td class="py-3 px-4 text-center">
           <a href="${ticketUrl}" target="_blank" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -265,3 +266,285 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// ----------------------------------------------------------------
+// 6. نظام فحص وقراءة الباركود والتحقق من التذاكر
+// ----------------------------------------------------------------
+
+let html5QrScanner = null;
+let isScannerRunning = false;
+
+function setupBarcodeScanner() {
+  const modal = document.getElementById('scanner-modal');
+  const openBtn = document.getElementById('btn-open-scanner');
+  const closeBtn = document.getElementById('close-scanner-modal');
+  const cameraBtn = document.getElementById('btn-start-camera');
+  const cameraBtnText = document.getElementById('btn-camera-text');
+  const manualForm = document.getElementById('manual-verify-form');
+  const laserEl = document.getElementById('scanner-laser');
+
+  if (!modal || !openBtn) return;
+
+  const openModal = () => {
+    modal.classList.remove('hidden');
+    clearScanResult();
+  };
+
+  const closeModal = async () => {
+    await stopCameraScanner();
+    modal.classList.add('hidden');
+    clearScanResult();
+  };
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+
+  // تشغيل / إيقاف الكاميرا
+  cameraBtn?.addEventListener('click', async () => {
+    if (isScannerRunning) {
+      await stopCameraScanner();
+    } else {
+      await startCameraScanner();
+    }
+  });
+
+  // التحقق اليدوي برقم الدعوة
+  manualForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('manual-ticket-id');
+    const rawVal = input ? input.value.trim() : '';
+    if (!rawVal) return;
+
+    await verifyTicketCode(rawVal);
+    if (input) input.value = '';
+  });
+}
+
+// استخراج معرف الدعوة من رابط URL أو كود خام
+function extractTicketId(scannedText) {
+  if (!scannedText) return '';
+  const trimmed = scannedText.trim();
+  
+  // إذا كان الرابط كاملاً مثلاً https://site.com/ticket.html?id=INV-000001
+  if (trimmed.includes('id=')) {
+    try {
+      const parsedUrl = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+      const id = parsedUrl.searchParams.get('id');
+      if (id) return id.trim();
+    } catch {
+      // استخراج regex إذا كان الرابط غير قياسي
+      const match = trimmed.match(/[?&]id=([A-Za-z0-9_-]+)/);
+      if (match && match[1]) return match[1];
+    }
+  }
+
+  // كود التذكرة المباشر مثلاً INV-000001
+  return trimmed;
+}
+
+// بدء مسح الكاميرا
+async function startCameraScanner() {
+  const laserEl = document.getElementById('scanner-laser');
+  const cameraBtnText = document.getElementById('btn-camera-text');
+
+  if (typeof Html5Qrcode === 'undefined') {
+    showToast.error('تعذر تحميل مكتبة فحص الباركود، يمكنك استخدام التحقق اليدوي بكتابة رقم الدعوة.', 'خطأ في الكاميرا');
+    return;
+  }
+
+  try {
+    if (!html5QrScanner) {
+      html5QrScanner = new Html5Qrcode("qr-reader");
+    }
+
+    const config = {
+      fps: 15,
+      qrbox: { width: 220, height: 220 },
+      aspectRatio: 1.0
+    };
+
+    await html5QrScanner.start(
+      { facingMode: "environment" },
+      config,
+      async (decodedText) => {
+        // تم التقاط باركود بنجاح
+        laserEl?.classList.add('hidden');
+        await stopCameraScanner();
+        await verifyTicketCode(decodedText);
+      },
+      (errorMessage) => {
+        // خطأ قراءة فريم فردي (طبيعي أثناء البحث عن الكود)
+      }
+    );
+
+    isScannerRunning = true;
+    laserEl?.classList.remove('hidden');
+    if (cameraBtnText) cameraBtnText.textContent = 'إيقاف تشغيل الكاميرا';
+  } catch (err) {
+    console.error('Camera start error:', err);
+    showToast.error('يرجى السماح بصلاحية الكاميرا في المتصفح للتمكن من مسح التذاكر.', 'إذن الكاميرا');
+    laserEl?.classList.add('hidden');
+    if (cameraBtnText) cameraBtnText.textContent = 'تشغيل الكاميرا للمسح';
+  }
+}
+
+// إيقاف مسح الكاميرا
+async function stopCameraScanner() {
+  const laserEl = document.getElementById('scanner-laser');
+  const cameraBtnText = document.getElementById('btn-camera-text');
+
+  if (html5QrScanner && isScannerRunning) {
+    try {
+      await html5QrScanner.stop();
+    } catch (e) {
+      console.warn('Error stopping scanner:', e);
+    }
+    isScannerRunning = false;
+  }
+  laserEl?.classList.add('hidden');
+  if (cameraBtnText) cameraBtnText.textContent = 'تشغيل الكاميرا للمسح';
+}
+
+function clearScanResult() {
+  const resultCard = document.getElementById('scan-result-card');
+  if (resultCard) {
+    resultCard.classList.add('hidden');
+    resultCard.innerHTML = '';
+  }
+}
+
+// التحقق من الدعوة وتأكيد دخول الضيف
+async function verifyTicketCode(rawCode) {
+  const ticketId = extractTicketId(rawCode);
+  const resultCard = document.getElementById('scan-result-card');
+  if (!resultCard) return;
+
+  resultCard.classList.remove('hidden');
+  resultCard.className = 'rounded-2xl p-4 border bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-center space-y-2';
+  resultCard.innerHTML = `
+    <div class="py-4 text-center">
+      <i class="fa-solid fa-spinner fa-spin text-2xl text-indigo-600 dark:text-indigo-400"></i>
+      <p class="text-xs text-slate-500 mt-2">جارٍ التحقق من كود الدعوة في قاعدة البيانات...</p>
+    </div>
+  `;
+
+  // جلب الدعوة من المتجر أو Supabase
+  const invitation = await fetchInvitationById(ticketId);
+
+  if (!invitation) {
+    resultCard.className = 'rounded-2xl p-4 border bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 space-y-3';
+    resultCard.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300 flex items-center justify-center text-xl flex-shrink-0">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <div>
+          <h5 class="text-sm font-black text-rose-700 dark:text-rose-300">دعوة غير صالحة أو غير موجودة!</h5>
+          <p class="text-xs text-rose-600/90 dark:text-rose-400">الكود الممسوح (${escapeHtml(ticketId)}) غير مسجل بالنظام.</p>
+        </div>
+      </div>
+    `;
+    showToast.error(`الكود (${ticketId}) غير مسجل في النظام!`, 'دعوة غير صالحة');
+    return;
+  }
+
+  const isVip = invitation.type === 'VIP';
+  const isValid = invitation.status === 'صالحة';
+
+  if (isValid) {
+    resultCard.className = 'rounded-2xl p-4 border bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 space-y-3.5';
+    resultCard.innerHTML = `
+      <div class="flex items-start justify-between gap-2 border-b border-emerald-100 dark:border-emerald-900/60 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md shadow-emerald-500/30 flex-shrink-0">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white mb-1">
+              تذكرة صالحة ومؤكدة &check;
+            </span>
+            <h5 class="text-base font-black text-slate-900 dark:text-white">${escapeHtml(invitation.guestName)}</h5>
+          </div>
+        </div>
+        <div>
+          ${isVip 
+            ? '<span class="px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-crown text-[10px]"></i> VIP</span>' 
+            : '<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">عادية</span>'}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+          <span class="text-slate-400 block text-[10px]">رقم الدعوة:</span>
+          <strong class="font-mono text-indigo-600 dark:text-indigo-400">${invitation.id}</strong>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+          <span class="text-slate-400 block text-[10px]">الخريج الداعي:</span>
+          <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(invitation.graduateName)}</strong>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+          <span class="text-slate-400 block text-[10px]">رقم الهاتف:</span>
+          <strong class="font-mono dir-ltr inline-block text-slate-700 dark:text-slate-300">${escapeHtml(invitation.phone || '-')}</strong>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+          <span class="text-slate-400 block text-[10px]">الفعالية:</span>
+          <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(invitation.event || 'حفل التخرج')}</strong>
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button onclick="markTicketAsUsed('${invitation.id}')" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/25 transition">
+          <i class="fa-solid fa-check-double"></i>
+          <span>تسجيل دخول الضيف وتعيين التذكرة كمستخدمة</span>
+        </button>
+      </div>
+    `;
+    showToast.success(`التذكرة صالحة للدخول! الضيف: ${invitation.guestName}`, 'تأكيد الصلاحية');
+  } else {
+    // التذكرة مستخدمة مسبقاً
+    resultCard.className = 'rounded-2xl p-4 border bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 space-y-3';
+    resultCard.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md shadow-amber-500/30 flex-shrink-0">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white mb-1">
+            تم استخدام هذه التذكرة مسبقاً!
+          </span>
+          <h5 class="text-sm font-black text-slate-900 dark:text-white">${escapeHtml(invitation.guestName)}</h5>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">رقم الدعوة: <span class="font-mono font-bold">${invitation.id}</span> | الخريج: ${escapeHtml(invitation.graduateName)}</p>
+        </div>
+      </div>
+      <div class="pt-1 flex justify-end">
+        <button onclick="resetTicketToValid('${invitation.id}')" class="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+          إعادة تعيين التذكرة كصالحة مجدداً
+        </button>
+      </div>
+    `;
+    showToast.warning(`تنبيه: تم استخدام هذه التذكرة مسبقاً (${invitation.guestName})!`, 'تذكرة مستخدمة');
+  }
+}
+
+// تسجيل دخول الضيف وتغيير حالة الدعوة إلى مستخدمة
+window.markTicketAsUsed = async function(id) {
+  const success = await updateInvitation(id, { status: 'مستخدمة' });
+  if (success) {
+    showToast.success('تم تأكيد دخول الضيف وتحديث حالة التذكرة إلى مستخدمة بنجاح!', 'تم تسجيل الدخول');
+    renderAdminInvitationsTable();
+    await verifyTicketCode(id);
+  } else {
+    showToast.error('تعذر تحديث حالة التذكرة.', 'خطأ');
+  }
+};
+
+// إعادة تعيين التذكرة إلى صالحة (في حال الخطأ)
+window.resetTicketToValid = async function(id) {
+  const success = await updateInvitation(id, { status: 'صالحة' });
+  if (success) {
+    showToast.info('تمت إعادة تعيين التذكرة كصالحة للدخول بنجاح.', 'تم التحديث');
+    renderAdminInvitationsTable();
+    await verifyTicketCode(id);
+  }
+};
+

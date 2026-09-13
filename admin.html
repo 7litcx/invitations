@@ -21,6 +21,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- مكتبة عميل Supabase الرسمية -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- مكتبة فحص وقراءة الباركود بالكاميرا (Html5-QRCode) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <!-- التنسيقات العصرية والوضع الليلي -->
   <link rel="stylesheet" href="assets/css/system.css">
@@ -41,7 +43,12 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap sm:flex-nowrap">
+        <button id="btn-open-scanner" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black flex items-center justify-center gap-2 transition shadow-md shadow-emerald-500/20 w-full sm:w-auto">
+          <i class="fa-solid fa-qrcode text-sm"></i>
+          <span>مسح الباركود والتحقق من الضيوف</span>
+        </button>
+
         <a href="index.html" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition w-full sm:w-auto">
           <i class="fa-solid fa-arrow-left"></i>
           <span>العودة لبوابة الدعوات</span>
@@ -255,6 +262,61 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- مودال فحص الباركود والتحقق من التذاكر -->
+  <div id="scanner-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md hidden">
+    <div class="bg-white dark:bg-slate-900 max-w-lg w-full rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      
+      <!-- ترويسة المودال -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm">قارئ الباركود والتحقق من الضيوف</h4>
+            <p class="text-[11px] text-slate-400">امسح كود التذكرة بكاميرا الجوال أو أدخل الكود يدوياً</p>
+          </div>
+        </div>
+        <button id="close-scanner-modal" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- إطار الكاميرا التفاعلي -->
+      <div class="space-y-2">
+        <div class="scanner-viewport-wrapper relative">
+          <div id="qr-reader" class="w-full h-full"></div>
+          <div id="scanner-laser" class="scanner-laser-line hidden"></div>
+          <div class="scanner-target-corners"></div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button id="btn-start-camera" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-camera"></i>
+            <span id="btn-camera-text">تشغيل الكاميرا للمسح</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- إدخال رقم الدعوة يدوياً (كخيار بديل وسريع) -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <form id="manual-verify-form" class="flex gap-2">
+          <input type="text" id="manual-ticket-id" placeholder="أو أدخل رقم الدعوة يدوياً (مثال: INV-000001)" class="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono dir-ltr text-right focus:bg-white focus:outline-none focus:border-indigo-500">
+          <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>تحقق</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- نتيجة الفحص والتحقق -->
+      <div id="scan-result-card" class="hidden rounded-xl p-4 border transition-all space-y-3">
+        <!-- يتم ملء التفاصيل ديناميكياً بواسطة admin.js -->
+      </div>
+
     </div>
   </div>
 

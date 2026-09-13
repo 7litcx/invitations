@@ -780,3 +780,61 @@ html.dark .toast-close-btn:hover {
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
 }
+
+/* ===================================================
+   نافذة مسح الباركود للكاميرا والتحقق السريع (QR Scanner)
+   =================================================== */
+.scanner-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  background-color: #050811;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.scanner-viewport-wrapper video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.scanner-laser-line {
+  position: absolute;
+  top: 0;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #22c55e, #4ade80, transparent);
+  box-shadow: 0 0 14px 4px rgba(74, 222, 128, 0.75);
+  z-index: 10;
+  animation: scanLaser 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes scanLaser {
+  0% {
+    top: 6%;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 92%;
+    opacity: 0.4;
+  }
+}
+
+.scanner-target-corners {
+  position: absolute;
+  inset: 12%;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 1rem;
+  pointer-events: none;
+  z-index: 5;
+}
+
