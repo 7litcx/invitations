@@ -335,37 +335,28 @@ async function syncUsersFromSupabase() {
         vipQuota: d.quota_vip !== undefined && d.quota_vip !== null ? d.quota_vip : 3
       }));
 
-      // دمج المستخدمين محلياً
-      const localUsers = getUsers();
-      const userMap = new Map();
-      localUsers.forEach(u => userMap.set(u.id, u));
-      mappedUsers.forEach(u => {
-        const existing = userMap.get(u.id);
-        if (existing) {
-          userMap.set(u.id, { ...existing, ...u });
-        } else {
-          userMap.set(u.id, u);
-        }
-      });
+      // الحفاظ على المشرف الافتراضي
+      if (!mappedUsers.find(u => u.username === 'admin')) {
+        mappedUsers.unshift(INITIAL_ADMIN);
+      }
 
-      const mergedUsers = Array.from(userMap.values());
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(mergedUsers));
+      // اعتماد المستخدمين من Supabase كمرجع نهائي موحد لجميع الأجهزة
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(mappedUsers));
 
       // تحديث كوتا المستخدم الحالي إن كان مسجلاً
       const curUser = getCurrentUser();
       if (curUser) {
-        const fresh = mergedUsers.find(u => u.id === curUser.id || u.username === curUser.username);
+        const fresh = mappedUsers.find(u => u.id === curUser.id || u.username === curUser.username);
         if (fresh) {
           setCurrentUser(fresh);
         }
       }
 
-      return mergedUsers;
+      return mappedUsers;
     }
   } catch (e) {
     console.warn('Sync users error:', e);
   }
-  return getUsers();
 }
 
 // ----------------------------------------------------------------
@@ -438,15 +429,21 @@ async function syncUserInvitations(userId) {
         createdAt: d.created_at
       }));
 
-      // دمج وحفظ محلي
-      const local = getInvitations();
-      const mergedMap = new Map();
-      local.forEach(item => mergedMap.set(item.id, item));
-      mapped.forEach(item => mergedMap.set(item.id, item));
+      // ترتيب الدعوات دائماً بحسب تاريخ الإنشاء (الأحدث أولاً)
+      mapped.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      const mergedList = Array.from(mergedMap.values());
-      localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(mergedList));
-      return userId ? mergedList.filter(i => i.userId === userId) : mergedList;
+      if (userId) {
+        // لمستخدم معين: تحديث دعواته من السحابة مع الحفاظ على دعوات الآخرين إن وجدت
+        const local = getInvitations();
+        const otherUsersInvs = local.filter(i => i.userId !== userId);
+        const updatedList = [...mapped, ...otherUsersInvs];
+        localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(updatedList));
+        return mapped;
+      } else {
+        // للمشرف (Admin): استبدال القائمة بالكامل بالقائمة الرسمية المعتمدة من Supabase لضمان تطابق الجوال واللابتوب
+        localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(mapped));
+        return mapped;
+      }
     }
   } catch (e) {
     console.warn('Sync invitations error:', e);
