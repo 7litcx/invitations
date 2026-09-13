@@ -597,17 +597,18 @@ async function createInvitation(userId, data) {
     return { success: false, message: 'يرجى إدخال اسم المدعو ورقم الهاتف بشكل كامل.' };
   }
 
-  // منع تكرار الدعوة لنفس الاسم ورقم الهاتف
+  // منع تكرار الدعوة لنفس الاسم ورقم الهاتف لنفس الخريج الداعي
   const normName = normalizeArabicText(cleanGuestName);
   const normPhone = normalizePhoneNumber(cleanPhone);
 
-  // 1. الفحص السحابي الشامل في Supabase
+  // 1. الفحص السحابي في Supabase لدعوات نفس الخريج الحالي
   const sb = getSupabase();
   if (sb) {
     try {
       const { data: dbInvs, error: checkErr } = await sb
         .from('invitations')
-        .select('id, guest_name, phone, graduate_name');
+        .select('id, user_id, guest_name, phone')
+        .eq('user_id', user.id);
 
       if (!checkErr && dbInvs && dbInvs.length > 0) {
         const duplicate = dbInvs.find(inv => 
@@ -618,7 +619,7 @@ async function createInvitation(userId, data) {
         if (duplicate) {
           return {
             success: false,
-            message: `ممنوع تكرار الدعوة: توجد دعوة مسجلة مسبقاً بنفس الاسم (${duplicate.guest_name}) ونفس رقم الهاتف (${duplicate.phone}) للخريج (${duplicate.graduate_name || 'خريج آخر'}).`
+            message: `ممنوع تكرار الدعوة: لقد قمت مسبقاً بإنشاء دعوة لهذا الضيف بنفس الاسم (${duplicate.guest_name}) ونفس رقم الهاتف (${duplicate.phone}).`
           };
         }
       }
@@ -627,8 +628,8 @@ async function createInvitation(userId, data) {
     }
   }
 
-  // 2. الفحص المحلي في المتصفح
-  const localList = getInvitations();
+  // 2. الفحص المحلي في المتصفح لدعوات نفس الخريج الحالي
+  const localList = getInvitations({ userId: user.id });
   const localDuplicate = localList.find(inv => 
     normalizeArabicText(inv.guestName) === normName &&
     normalizePhoneNumber(inv.phone) === normPhone
@@ -637,7 +638,7 @@ async function createInvitation(userId, data) {
   if (localDuplicate) {
     return {
       success: false,
-      message: `ممنوع تكرار الدعوة: توجد دعوة مسجلة مسبقاً بنفس الاسم (${localDuplicate.guestName}) ونفس رقم الهاتف (${localDuplicate.phone}).`
+      message: `ممنوع تكرار الدعوة: لقد قمت مسبقاً بإنشاء دعوة لهذا الضيف بنفس الاسم (${localDuplicate.guestName}) ونفس رقم الهاتف (${localDuplicate.phone}).`
     };
   }
 
@@ -702,17 +703,19 @@ async function updateInvitation(id, updatedData) {
   const newGuestName = updatedData.guestName !== undefined ? updatedData.guestName.trim() : currentInv.guestName;
   const newPhone = updatedData.phone !== undefined ? updatedData.phone.trim() : currentInv.phone;
 
-  // التحقق من عدم التكرار عند تعديل الاسم أو الهاتف
+  // التحقق من عدم التكرار عند تعديل الاسم أو الهاتف لنفس الخريج الداعي
   if (newGuestName && newPhone) {
     const normName = normalizeArabicText(newGuestName);
     const normPhone = normalizePhoneNumber(newPhone);
+    const invUserId = currentInv.userId;
 
     const sb = getSupabase();
-    if (sb) {
+    if (sb && invUserId) {
       try {
         const { data: dbInvs, error: checkErr } = await sb
           .from('invitations')
-          .select('id, guest_name, phone, graduate_name')
+          .select('id, user_id, guest_name, phone')
+          .eq('user_id', invUserId)
           .neq('id', id);
 
         if (!checkErr && dbInvs) {
@@ -723,7 +726,7 @@ async function updateInvitation(id, updatedData) {
           if (dup) {
             return {
               success: false,
-              message: `ممنوع تكرار الدعوة: توجد دعوة أخرى مسجلة بنفس الاسم (${dup.guest_name}) ورقم الهاتف (${dup.phone}).`
+              message: `ممنوع تكرار الدعوة: لديك دعوة أخرى مسجلة مسبقاً لهذا الضيف بنفس الاسم (${dup.guest_name}) ونفس رقم الهاتف (${dup.phone}).`
             };
           }
         }
@@ -733,6 +736,7 @@ async function updateInvitation(id, updatedData) {
     }
 
     const localDup = all.find(inv => 
+      inv.userId === invUserId &&
       inv.id !== id &&
       normalizeArabicText(inv.guestName) === normName &&
       normalizePhoneNumber(inv.phone) === normPhone
@@ -740,7 +744,7 @@ async function updateInvitation(id, updatedData) {
     if (localDup) {
       return {
         success: false,
-        message: `ممنوع تكرار الدعوة: توجد دعوة أخرى مسجلة بنفس الاسم (${localDup.guestName}) ورقم الهاتف (${localDup.phone}).`
+        message: `ممنوع تكرار الدعوة: لديك دعوة أخرى مسجلة مسبقاً لهذا الضيف بنفس الاسم (${localDup.guestName}) ونفس رقم الهاتف (${localDup.phone}).`
       };
     }
   }
