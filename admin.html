@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة تحكم المشرف | نظام الدعوات الإلكترونية | Soul Media</title>
   
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  
   <!-- خط عربي رسمي -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +16,34 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class'
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            indigo: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            },
+            soul: {
+              purple: '#a070bb',
+              bright: '#b377d6',
+              light: '#f3e8ff',
+              dark: '#08060d',
+              card: '#110d1d',
+              border: '#241d3b'
+            }
+          }
+        }
+      }
     }
   </script>
   <!-- أيقونات FontAwesome -->
@@ -27,24 +56,27 @@
   <!-- التنسيقات العصرية والوضع الليلي -->
   <link rel="stylesheet" href="assets/css/system.css">
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-800 dark:text-slate-100">
+<body class="bg-slate-50 dark:bg-[#08060d] min-h-screen text-slate-800 dark:text-slate-100">
 
   <!-- الترويسة العلوية -->
-  <header class="bg-indigo-950 text-white shadow-md sticky top-0 z-30">
+  <header class="bg-black border-b border-purple-900/40 text-white shadow-xl sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg text-indigo-300 flex-shrink-0">
-          <i class="fa-solid fa-user-shield"></i>
+        <div class="w-11 h-11 rounded-2xl bg-neutral-900 border border-purple-500/30 flex items-center justify-center p-1.5 flex-shrink-0 shadow-md">
+          <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-full h-full object-contain">
         </div>
         <div>
-          <h1 class="text-sm sm:text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
-          <p class="text-[11px] sm:text-xs text-indigo-200">إدارة حسابات الخريجين وتخصيص كوتا الدعوات العادية و VIP</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600/30 text-purple-300 border border-purple-500/30">Soul Media</span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-purple-200/80">إدارة حسابات الخريجين وتخصيص كوتا الدعوات العادية و VIP</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap sm:flex-nowrap">
-        <button id="btn-sync-cloud" class="px-3.5 py-2 rounded-xl bg-indigo-800/90 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm border border-indigo-700/60 w-full sm:w-auto cursor-pointer" title="تحديث ومزامنة كافة البيانات السحابية الحقيقية وتوحيدها عبر الأجهزة">
+        <button id="btn-sync-cloud" class="px-3.5 py-2 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm border border-purple-700/60 w-full sm:w-auto cursor-pointer" title="تحديث ومزامنة كافة البيانات السحابية الحقيقية وتوحيدها عبر الأجهزة">
           <i class="fa-solid fa-arrows-rotate"></i>
           <span>مزامنة وتحديث السحابة</span>
         </button>
@@ -394,8 +426,12 @@
   </div>
 
   <!-- فوتر -->
-  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400">
-    لوحة تحكم المشرف | ملكية : <strong class="text-amber-500 dark:text-amber-400 font-bold">Soul Media</strong>
+  <footer class="bg-white dark:bg-[#110d1d] border-t border-slate-200 dark:border-[#241d3b] py-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+    <span>لوحة تحكم المشرف | ملكية وتطوير :</span>
+    <strong class="text-indigo-600 dark:text-indigo-400 font-bold inline-flex items-center gap-1.5">
+      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 inline-block">
+      Soul Media
+    </strong>
   </footer>
 
   <!-- ملفات الجافاسكربت -->

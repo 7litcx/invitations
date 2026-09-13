@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نظام الدعوات الإلكترونية | Soul Media</title>
   
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  
   <!-- خط عربي رسمي وحديث -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +16,34 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class'
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            indigo: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            },
+            soul: {
+              purple: '#a070bb',
+              bright: '#b377d6',
+              light: '#f3e8ff',
+              dark: '#08060d',
+              card: '#110d1d',
+              border: '#241d3b'
+            }
+          }
+        }
+      }
     }
   </script>
 
@@ -28,21 +57,23 @@
   <!-- التنسيقات المطورة والألوان العصرية -->
   <link rel="stylesheet" href="assets/css/system.css">
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-[#08060d] min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
 
   <!-- ===================================================
        واجهة تسجيل الدخول (Login Screen - اسم المستخدم وكلمة المرور فقط)
        =================================================== -->
-  <div id="login-container" class="min-h-screen flex items-center justify-center p-3 sm:p-4 bg-slate-50 dark:bg-slate-950">
-    <div class="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
+  <div id="login-container" class="min-h-screen flex items-center justify-center p-3 sm:p-4 bg-slate-50 dark:bg-[#08060d]">
+    <div class="max-w-md w-full bg-white dark:bg-[#110d1d] border border-slate-200 dark:border-[#241d3b] rounded-2xl p-5 sm:p-8 shadow-xl shadow-purple-950/10 space-y-6">
       
       <!-- الشعار والترويسة -->
-      <div class="text-center space-y-2">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-700 to-indigo-500 text-white flex items-center justify-center text-2xl mx-auto shadow-md shadow-indigo-500/25">
-          <i class="fa-solid fa-address-card"></i>
+      <div class="text-center space-y-3">
+        <div class="inline-flex items-center justify-center p-3.5 sm:p-4 rounded-2xl bg-black border border-purple-500/30 shadow-xl shadow-purple-950/40 mx-auto">
+          <img src="assets/images/logo.png" alt="سول ميديا - Soul Media" class="h-20 sm:h-24 w-auto object-contain">
         </div>
-        <h2 class="text-xl font-black text-slate-900 dark:text-white">نظام الدعوات الإلكترونية</h2>
-        <p class="text-xs text-slate-400 font-medium">حفل تخرج تخصص لغة إنجليزية 2026</p>
+        <div>
+          <h2 class="text-xl font-black text-slate-900 dark:text-white">نظام الدعوات الإلكترونية</h2>
+          <p class="text-xs text-slate-400 font-medium mt-1">حفل تخرج تخصص لغة إنجليزية 2026</p>
+        </div>
       </div>
 
       <!-- نموذج تسجيل الدخول -->
@@ -82,8 +113,12 @@
       </form>
 
       <!-- حقوق الملكية -->
-      <div class="text-center text-[11px] text-slate-400 dark:text-slate-500 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-        ملكية : <strong class="text-amber-500 dark:text-amber-400 font-bold">Soul Media</strong>
+      <div class="text-center text-[11px] text-slate-400 dark:text-slate-500 pt-3 border-t border-slate-100 dark:border-[#241d3b] flex items-center justify-center gap-1.5">
+        <span>ملكية وتطوير :</span>
+        <strong class="text-indigo-600 dark:text-indigo-400 font-bold inline-flex items-center gap-1">
+          <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
+          Soul Media
+        </strong>
       </div>
 
     </div>
@@ -95,17 +130,20 @@
   <div id="main-app-container" class="hidden min-h-screen flex">
     
     <!-- 1. القائمة الجانبية اليمنى (Right Sidebar) -->
-    <aside id="app-sidebar" class="sidebar-container dark:bg-slate-900 dark:border-slate-800">
+    <aside id="app-sidebar" class="sidebar-container dark:bg-[#110d1d] dark:border-[#241d3b]">
       
       <div>
-        <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+        <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-[#241d3b] flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-indigo-500 text-white flex items-center justify-center text-xl flex-shrink-0 shadow-md shadow-indigo-500/25">
-              <i class="fa-solid fa-address-card"></i>
+            <div class="w-10 h-10 rounded-xl bg-black border border-purple-500/30 text-white flex items-center justify-center p-1.5 flex-shrink-0 shadow-md shadow-purple-950/30">
+              <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-full h-full object-contain">
             </div>
             <div>
-              <h1 class="font-black text-indigo-600 dark:text-indigo-400 text-sm leading-tight">نظام الدعوات الإلكترونية</h1>
-              <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">حفل تخرج تخصص لغة إنجليزية 2026</p>
+              <div class="flex items-center gap-1.5">
+                <h1 class="font-black text-indigo-600 dark:text-indigo-400 text-sm leading-tight">Soul Media</h1>
+                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800/40">دعوات</span>
+              </div>
+              <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">حفل تخرج لغة إنجليزية 2026</p>
             </div>
           </div>
           
@@ -115,8 +153,8 @@
         </div>
 
         <!-- بطاقة المستخدم الحالية -->
-        <div class="p-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50">
-          <div id="user-avatar-circle" class="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-500 text-white flex items-center justify-center font-bold text-base shadow-sm">
+        <div class="p-4 border-b border-slate-100 dark:border-[#241d3b] flex items-center gap-3 bg-slate-50/50 dark:bg-[#191428]">
+          <div id="user-avatar-circle" class="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-700 to-purple-500 text-white flex items-center justify-center font-bold text-base shadow-sm border border-purple-400/20">
             خر
           </div>
           <div>
@@ -147,14 +185,18 @@
       </div>
 
       <!-- أسفل القائمة -->
-      <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+      <div class="p-4 border-t border-slate-100 dark:border-[#241d3b] space-y-3">
         <button id="btn-logout-sidebar" class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 text-xs font-bold transition w-full py-1.5">
           <i class="fa-solid fa-arrow-right-from-bracket rotate-180"></i>
           <span>تسجيل الخروج</span>
         </button>
 
-        <div class="text-[10px] text-slate-400 dark:text-slate-500 text-center pt-2 border-t border-slate-50 dark:border-slate-800/60">
-          ملكية : <strong class="text-slate-600 dark:text-slate-300 font-bold">Soul Media</strong>
+        <div class="text-[10px] text-slate-400 dark:text-slate-500 text-center pt-2 border-t border-slate-50 dark:border-[#241d3b] flex items-center justify-center gap-1.5">
+          <span>ملكية وتطوير :</span>
+          <strong class="text-indigo-600 dark:text-indigo-400 font-bold inline-flex items-center gap-1">
+            <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
+            Soul Media
+          </strong>
         </div>
       </div>
 

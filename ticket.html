@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>بطاقة الدعوة الرسمية | نظام الدعوات الإلكترونية | Soul Media</title>
   
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  
   <!-- خطوط عربية -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +14,38 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            indigo: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            },
+            soul: {
+              purple: '#a070bb',
+              bright: '#b377d6',
+              light: '#f3e8ff',
+              dark: '#08060d',
+              card: '#110d1d',
+              border: '#241d3b'
+            }
+          }
+        }
+      }
+    }
+  </script>
   <!-- أيقونات FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- مكتبة عميل Supabase الرسمية -->
@@ -154,8 +188,8 @@
     
     <!-- شريط الأزرار العلوي (يختفي عند الطباعة) -->
     <div class="flex items-center justify-between mb-4 no-print">
-      <a href="index.html" class="text-xs font-bold text-slate-200 hover:text-white flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 px-3.5 py-2.5 rounded-xl border border-slate-700 shadow-sm transition">
-        <i class="fa-solid fa-arrow-right"></i>
+      <a href="index.html" class="text-xs font-bold text-slate-200 hover:text-white flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 px-3.5 py-2.5 rounded-xl border border-purple-900/40 shadow-sm transition">
+        <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 object-contain">
         <span>بوابة الدعوات</span>
       </a>
 
@@ -164,7 +198,7 @@
           <i class="fa-regular fa-copy"></i>
           <span>نسخ الرابط</span>
         </button>
-        <button id="btn-ticket-save-image" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold shadow-md shadow-amber-600/25 flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+        <button id="btn-ticket-save-image" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-700/25 flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
           <i class="fa-solid fa-image"></i>
           <span>حفظ كصورة</span>
         </button>
@@ -222,15 +256,23 @@
     </div>
 
     <!-- تذييل التذكرة وحقوق الملكية -->
-    <div class="mt-4 text-center text-xs text-slate-400 no-print">
-      ملكية : <strong class="text-amber-400 font-bold">Soul Media</strong>
+    <div class="mt-4 text-center text-xs text-slate-400 no-print flex items-center justify-center gap-1.5">
+      <span>ملكية وتطوير :</span>
+      <strong class="text-indigo-400 font-bold inline-flex items-center gap-1">
+        <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
+        Soul Media
+      </strong>
     </div>
 
   </main>
 
   <!-- فوتر خارجي -->
-  <footer class="text-center text-[11px] text-slate-500 py-3 no-print">
-    نظام الدعوات الإلكترونية المعتمد - حفل التخرج 2026 | ملكية : <strong class="text-amber-400 font-bold">Soul Media</strong>
+  <footer class="text-center text-[11px] text-slate-400 py-3 no-print flex items-center justify-center gap-1.5">
+    <span>نظام الدعوات الإلكترونية المعتمد - حفل التخرج 2026 | تطوير :</span>
+    <strong class="text-indigo-400 font-bold inline-flex items-center gap-1">
+      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
+      Soul Media
+    </strong>
   </footer>
 
   <!-- ملفات السكربت -->
