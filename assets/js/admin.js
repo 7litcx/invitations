@@ -279,15 +279,17 @@ function setupBarcodeScanner() {
   const openBtn = document.getElementById('btn-open-scanner');
   const closeBtn = document.getElementById('close-scanner-modal');
   const cameraBtn = document.getElementById('btn-start-camera');
-  const cameraBtnText = document.getElementById('btn-camera-text');
   const manualForm = document.getElementById('manual-verify-form');
-  const laserEl = document.getElementById('scanner-laser');
 
   if (!modal || !openBtn) return;
 
-  const openModal = () => {
+  const openModal = async () => {
     modal.classList.remove('hidden');
     clearScanResult();
+    // تشغيل الكاميرا تلقائياً بمجرد فتح النافذة لتوفير جهد الضغط
+    setTimeout(() => {
+      startCameraScanner();
+    }, 250);
   };
 
   const closeModal = async () => {
@@ -299,8 +301,9 @@ function setupBarcodeScanner() {
   openBtn.addEventListener('click', openModal);
   closeBtn?.addEventListener('click', closeModal);
 
-  // تشغيل / إيقاف الكاميرا
-  cameraBtn?.addEventListener('click', async () => {
+  // تشغيل / إيقاف الكاميرا يدوياً
+  cameraBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
     if (isScannerRunning) {
       await stopCameraScanner();
     } else {
@@ -332,7 +335,6 @@ function extractTicketId(scannedText) {
       const id = parsedUrl.searchParams.get('id');
       if (id) return id.trim();
     } catch {
-      // استخراج regex إذا كان الرابط غير قياسي
       const match = trimmed.match(/[?&]id=([A-Za-z0-9_-]+)/);
       if (match && match[1]) return match[1];
     }
@@ -342,59 +344,69 @@ function extractTicketId(scannedText) {
   return trimmed;
 }
 
-// بدء مسح الكاميرا
+// بدء مسح الكاميرا بمرونة ودعم لجميع أنواع الكاميرات والمتصفحات
 async function startCameraScanner() {
   const laserEl = document.getElementById('scanner-laser');
   const cameraBtnText = document.getElementById('btn-camera-text');
 
   if (typeof Html5Qrcode === 'undefined') {
-    showToast.error('تعذر تحميل مكتبة فحص الباركود، يمكنك استخدام التحقق اليدوي بكتابة رقم الدعوة.', 'خطأ في الكاميرا');
+    showToast.error('تعذر تحميل مكتبة فحص الباركود، يرجى إعادة تحديث الصفحة أو إدخال رقم الدعوة يدوياً.', 'خطأ في الكاميرا');
     return;
   }
 
+  if (isScannerRunning) {
+    return;
+  }
+
+  if (cameraBtnText) cameraBtnText.textContent = 'جارٍ فتح الكاميرا...';
+
   try {
     if (!html5QrScanner) {
-      html5QrScanner = new Html5Qrcode("qr-reader");
+      html5QrScanner = new Html5Qrcode("qr-reader", { verbose: false });
     }
 
-    // إعدادات الكاميرا بدقة عالية 1080p أو 720p لضمان حدة الباركود وسرعة القراءة الخارقة
-    const cameraConfig = {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    };
-
     const scanConfig = {
-      fps: 30,
+      fps: 20,
       aspectRatio: 1.0,
-      disableFlip: false,
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: true
       }
     };
 
-    await html5QrScanner.start(
-      cameraConfig,
-      scanConfig,
-      async (decodedText) => {
-        // تم التقاط باركود بنجاح
-        laserEl?.classList.add('hidden');
-        await stopCameraScanner();
-        await verifyTicketCode(decodedText);
-      },
-      (errorMessage) => {
-        // فحص مستمر
+    const onSuccess = async (decodedText) => {
+      laserEl?.classList.add('hidden');
+      await stopCameraScanner();
+      await verifyTicketCode(decodedText);
+    };
+
+    const onError = () => {
+      // فحص مستمر للفريمات
+    };
+
+    // المحاولة 1: الكاميرا الخلفية القياسية (environment)
+    try {
+      await html5QrScanner.start({ facingMode: "environment" }, scanConfig, onSuccess, onError);
+    } catch (envErr) {
+      console.warn('Environment camera failed, trying available cameras list:', envErr);
+      // المحاولة 2: جلب قائمة الكاميرات واختيار الكاميرا المتاحة
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        const selectedCam = devices[devices.length - 1].id; // الكاميرا الخلفية غالباً تكون الأخيرة
+        await html5QrScanner.start(selectedCam, scanConfig, onSuccess, onError);
+      } else {
+        throw new Error('لا توجد أي كاميرا متوفرة في هذا الجهاز.');
       }
-    );
+    }
 
     isScannerRunning = true;
     laserEl?.classList.remove('hidden');
     if (cameraBtnText) cameraBtnText.textContent = 'إيقاف تشغيل الكاميرا';
   } catch (err) {
     console.error('Camera start error:', err);
-    showToast.error('يرجى التأكد من منح صلاحية الكاميرا للمتصفح للتمكن من مسح التذاكر.', 'إذن الكاميرا');
+    isScannerRunning = false;
     laserEl?.classList.add('hidden');
     if (cameraBtnText) cameraBtnText.textContent = 'تشغيل الكاميرا للمسح';
+    showToast.error('تعذر تشغيل الكاميرا. يرجى التأكد من السماح بصلاحية الكاميرا للمتصفح، أو التحقق بإدخال رقم الدعوة.', 'إذن الكاميرا');
   }
 }
 
