@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderUsersTable();
   renderAdminInvitationsTable();
   setupCreateUserForm();
+  setupQuotaModal();
   setupCsvExport();
 
   // جلب كافة المستخدمين والدعوات من Supabase وتحديث الجداول
@@ -93,7 +94,7 @@ function setupCreateUserForm() {
     });
 
     if (!res.success) {
-      alert(res.message);
+      showToast.error(res.message, 'تعذر إنشاء الحساب');
       return;
     }
 
@@ -101,7 +102,7 @@ function setupCreateUserForm() {
     document.getElementById('new-quota-regular').value = 30;
     document.getElementById('new-quota-vip').value = 0;
     renderUsersTable();
-    alert(`تم إنشاء حساب الخريج (${name}) بنجاح!\nاسم الدخول: ${username}\nكلمة المرور: ${password}\nالكوتا: ${regularQuota} عادية | ${vipQuota} VIP.`);
+    showToast.success(`تم إنشاء حساب الخريج (${name}) بنجاح!\nاسم الدخول: ${username}`, 'تم إنشاء الحساب');
   });
 }
 
@@ -146,7 +147,7 @@ function renderUsersTable() {
         </td>
         <td class="py-3 px-4 font-semibold font-mono text-slate-700 dark:text-slate-200">${totalUsed} دعوة</td>
         <td class="py-3 px-4 text-center">
-          <button onclick="promptEditUserQuota('${user.id}', '${escapeHtml(user.name)}', ${regQuota}, ${vipQuota})" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2 py-1 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg">
+          <button onclick="promptEditUserQuota('${user.id}', '${escapeHtml(user.name)}', ${regQuota}, ${vipQuota})" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg transition hover:bg-indigo-100">
             تعديل الكوتا
           </button>
         </td>
@@ -155,25 +156,48 @@ function renderUsersTable() {
   }).join('');
 }
 
-window.promptEditUserQuota = async function(userId, userName, currentReg, currentVip) {
-  const regInput = prompt(`أدخل عدد الدعوات العادية الجديد للخريج (${userName}):`, currentReg);
-  if (regInput === null) return;
+// نافذة تعديل الكوتا الحديثة
+window.promptEditUserQuota = function(userId, userName, currentReg, currentVip) {
+  const modal = document.getElementById('quota-modal');
+  if (!modal) return;
 
-  const vipInput = prompt(`أدخل عدد دعوات VIP الجديد للخريج (${userName}):`, currentVip);
-  if (vipInput === null) return;
+  document.getElementById('quota-modal-userid').value = userId;
+  document.getElementById('quota-modal-username').textContent = userName;
+  document.getElementById('quota-modal-reg').value = currentReg;
+  document.getElementById('quota-modal-vip').value = currentVip;
 
-  const newReg = parseInt(regInput, 10);
-  const newVip = parseInt(vipInput, 10);
-
-  if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
-    alert('يرجى إدخال أرقام صحيحة للدعوات.');
-    return;
-  }
-
-  await updateUserQuota(userId, newReg, newVip);
-  renderUsersTable();
-  alert(`تم تعديل كوتا (${userName}) بنجاح:\n- عادية: ${newReg}\n- VIP: ${newVip}`);
+  modal.classList.remove('hidden');
 };
+
+function setupQuotaModal() {
+  const modal = document.getElementById('quota-modal');
+  const form = document.getElementById('quota-modal-form');
+  const closeBtn = document.getElementById('close-quota-modal');
+  const cancelBtn = document.getElementById('cancel-quota-modal');
+
+  const closeModal = () => modal?.classList.add('hidden');
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userId = document.getElementById('quota-modal-userid').value;
+    const userName = document.getElementById('quota-modal-username').textContent;
+    const newReg = parseInt(document.getElementById('quota-modal-reg').value, 10);
+    const newVip = parseInt(document.getElementById('quota-modal-vip').value, 10);
+
+    if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
+      showToast.warning('يرجى إدخال أرقام صحيحة أكبر من أو تساوي الصفر.', 'تنبيه');
+      return;
+    }
+
+    await updateUserQuota(userId, newReg, newVip);
+    renderUsersTable();
+    closeModal();
+    showToast.success(`تم تعديل كوتا (${userName}) بنجاح:\n- عادية: ${newReg} | VIP: ${newVip}`, 'تم تعديل الكوتا');
+  });
+}
 
 // 4. عرض جميع الدعوات الصادرة
 function renderAdminInvitationsTable() {
@@ -212,7 +236,7 @@ function setupCsvExport() {
   document.getElementById('btn-export-admin-csv')?.addEventListener('click', () => {
     const invitations = getInvitations();
     if (invitations.length === 0) {
-      alert('لا توجد دعوات لتصديرها.');
+      showToast.info('لا توجد دعوات لتصديرها حالياً.', 'سجل فارغ');
       return;
     }
 
@@ -228,6 +252,7 @@ function setupCsvExport() {
     a.download = `سجل_دعوات_حفل_التخرج_${new Date().toISOString().substring(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast.success('تم تصدير سجل الدعوات إلى ملف Excel / CSV بنجاح!', 'تم التصدير');
   });
 }
 

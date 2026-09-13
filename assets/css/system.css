@@ -574,7 +574,7 @@ html.dark input::placeholder, html.dark textarea::placeholder {
 
 /* طباعة */
 @media print {
-  .no-print, .sidebar-container, header {
+  .no-print, .sidebar-container, header, #toast-container {
     display: none !important;
   }
   .main-content-wrapper {
@@ -584,4 +584,199 @@ html.dark input::placeholder, html.dark textarea::placeholder {
     background: white !important;
     color: black !important;
   }
+}
+
+/* ===================================================
+   نظام الإشعارات الحديث الفاخر (Modern Toast Notifications)
+   =================================================== */
+#toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+  max-width: 420px;
+  width: calc(100% - 2.5rem);
+}
+
+@media (max-width: 640px) {
+  #toast-container {
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+.toast-card {
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 1.15rem;
+  padding: 0.9rem 1.15rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  box-shadow: 0 14px 35px -5px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  transform-origin: top center;
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.25s ease;
+  direction: rtl;
+}
+
+html.dark .toast-card {
+  background: rgba(19, 27, 46, 0.95);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px -5px rgba(0, 0, 0, 0.5), 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.toast-card.toast-hiding {
+  animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+}
+
+.toast-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+/* الأنماط المتنوعة للإشعارات */
+.toast-success .toast-icon-wrap {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+.toast-success {
+  border-right: 4px solid #10b981 !important;
+}
+
+.toast-error .toast-icon-wrap {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+}
+.toast-error {
+  border-right: 4px solid #f43f5e !important;
+}
+
+.toast-warning .toast-icon-wrap {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+.toast-warning {
+  border-right: 4px solid #f59e0b !important;
+}
+
+.toast-info .toast-icon-wrap {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+.toast-info {
+  border-right: 4px solid #6366f1 !important;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+  color: var(--text-main);
+}
+
+.toast-msg {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+html.dark .toast-msg {
+  color: #cbd5e1;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.toast-close-btn:hover {
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html.dark .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* شريط التقدم الزمني للإشعار */
+.toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(99, 102, 241, 0.15);
+  overflow: hidden;
+}
+
+.toast-progress-fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: right;
+  animation: toastProgress linear forwards;
+}
+
+.toast-success .toast-progress-fill { background: #10b981; }
+.toast-error .toast-progress-fill { background: #f43f5e; }
+.toast-warning .toast-progress-fill { background: #f59e0b; }
+.toast-info .toast-progress-fill { background: #6366f1; }
+
+@keyframes toastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }

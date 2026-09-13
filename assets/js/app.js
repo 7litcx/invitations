@@ -85,11 +85,13 @@ function setupAuth() {
       if (res.success) {
         loginForm.reset();
         setupAuth();
+        showToast.success(`مرحباً بك مجدداً، ${res.user.name}`, 'تم تسجيل الدخول');
       } else {
         if (errorAlert) {
           errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';
           errorAlert.classList.remove('hidden');
         }
+        showToast.error(res.message || 'خطأ في اسم المستخدم أو كلمة المرور', 'فشل تسجيل الدخول');
       }
     });
   }
@@ -99,6 +101,7 @@ function setupAuth() {
     logoutBtn.addEventListener('click', () => {
       logoutUser();
       setupAuth();
+      showToast.info('تم تسجيل الخروج بنجاح. نراك قريباً!', 'تسجيل الخروج');
     });
   }
 }
@@ -435,7 +438,7 @@ function setupEditForm() {
       notes
     });
 
-    alert('تم حفظ التغييرات بنجاح!');
+    showToast.success('تم حفظ تعديلات بيانات الدعوة بنجاح!', 'تم التحديث');
     window.switchTab('invitations');
   });
 }
@@ -467,13 +470,13 @@ function setupCreateForm() {
     });
 
     if (!result.success) {
-      alert(result.message);
+      showToast.error(result.message, 'تعذر إنشاء الدعوة');
       return;
     }
 
     form.reset();
     document.getElementById('field-create-grad-name').value = user.name;
-    alert(`تم إنشاء الدعوة بنجاح للضيف (${guestName}) برقم: ${result.invitation.id}`);
+    showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName}) برقم: ${result.invitation.id}`, 'تم إصدار الدعوة');
 
     window.switchTab('invitations');
   });
@@ -551,13 +554,13 @@ function setupTransferSection() {
       const notes = document.getElementById('transfer-notes')?.value;
 
       if (!recipientId) {
-        alert('يرجى اختيار الخريج المستقبل للتحويل.');
+        showToast.warning('يرجى اختيار الخريج المستقبل للتحويل.', 'حقل مطلوب');
         return;
       }
 
       const countNum = parseInt(count, 10);
       if (isNaN(countNum) || countNum <= 0) {
-        alert('يرجى تحديد عدد صحيح موجب من الدعوات.');
+        showToast.warning('يرجى تحديد عدد صحيح موجب من الدعوات (1 فأكثر).', 'تنبيه');
         return;
       }
 
@@ -568,18 +571,18 @@ function setupTransferSection() {
       try {
         const res = await transferInvitations(user.id, recipientId, countNum, type, eventName, notes);
         if (!res.success) {
-          alert(res.message);
+          showToast.error(res.message, 'تعذر التحويل');
           return;
         }
 
-        alert(res.message);
+        showToast.success(res.message, 'تم التحويل بنجاح');
         document.getElementById('transfer-notes').value = '';
         renderTransferStats();
         renderTransfersLog();
         renderEventStatistics();
         updateTransferCountLimits();
       } catch (err) {
-        alert('حدث خطأ أثناء إجراء التحويل.');
+        showToast.error('حدث خطأ أثناء إجراء التحويل، يرجى إعادة المحاولة.', 'خطأ في العملية');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = origHtml;
@@ -657,7 +660,7 @@ function setupShareModal() {
     const input = document.getElementById('share-url-field');
     input.select();
     navigator.clipboard.writeText(input.value).then(() => {
-      alert('تم نسخ رابط الدعوة بنجاح!');
+      showToast.success('تم نسخ رابط الدعوة إلى الحافظة بنجاح!', 'تم النسخ');
     });
   });
 }

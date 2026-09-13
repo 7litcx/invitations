@@ -131,7 +131,7 @@ function setupTicketActions(invitation) {
   // زر نسخ الرابط
   document.getElementById('btn-ticket-copy')?.addEventListener('click', () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
-      alert('تم نسخ رابط بطاقة الدعوة بنجاح!');
+      showToast.success('تم نسخ رابط بطاقة الدعوة إلى الحافظة بنجاح!', 'تم النسخ');
     });
   });
 
