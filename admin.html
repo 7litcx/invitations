@@ -223,42 +223,81 @@
 
   </main>
 
-  <!-- مودال تعديل الكوتا الفاخر -->
+  <!-- مودال تعديل حساب وبيانات الخريج والكوتا -->
   <div id="quota-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
-    <div class="bg-white dark:bg-slate-900 max-w-md w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+    <div class="bg-white dark:bg-slate-900 max-w-lg w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm">
-            <i class="fa-solid fa-sliders"></i>
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-user-pen"></i>
           </div>
-          <h4 class="font-bold text-slate-800 dark:text-white text-sm">تعديل كوتا الخريج</h4>
+          <div>
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm">تعديل حساب وبيانات الخريج</h4>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">تعديل بيانات الدخول (اليوزر وكلمة المرور) والاسم والكوتا</p>
+          </div>
         </div>
-        <button id="close-quota-modal" class="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition">
-          <i class="fa-solid fa-xmark"></i>
+        <button id="close-quota-modal" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-600 dark:text-slate-300">
-        تعديل الرصيد المتاح للخريج: <strong id="quota-modal-username" class="text-indigo-600 dark:text-indigo-400"></strong>
-      </p>
-
-      <form id="quota-modal-form" class="space-y-3">
+      <form id="quota-modal-form" class="space-y-4">
         <input type="hidden" id="quota-modal-userid">
 
+        <!-- الاسم الكامل للخريج -->
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-            <i class="fa-solid fa-ticket text-indigo-500 ml-1"></i>
-            عدد الدعوات العادية
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <i class="fa-solid fa-user text-indigo-500 ml-1"></i>
+            الاسم الكامل للخريج *
           </label>
-          <input type="number" id="quota-modal-reg" min="0" max="500" required class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono font-bold">
+          <input type="text" id="quota-modal-fullname" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-bold">
         </div>
 
+        <!-- اسم المستخدم وكلمة المرور -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <i class="fa-solid fa-at text-indigo-500 ml-1"></i>
+              اسم المستخدم (Username) *
+            </label>
+            <input type="text" id="quota-modal-username-val" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono font-bold dir-ltr text-right">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <i class="fa-solid fa-lock text-indigo-500 ml-1"></i>
+              كلمة المرور (Password) *
+            </label>
+            <input type="text" id="quota-modal-password" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono font-bold dir-ltr text-right">
+          </div>
+        </div>
+
+        <!-- التخصص -->
         <div>
-          <label class="block text-xs font-bold text-amber-900 dark:text-amber-300 mb-1">
-            <i class="fa-solid fa-crown text-amber-500 ml-1"></i>
-            عدد دعوات VIP
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <i class="fa-solid fa-graduation-cap text-indigo-500 ml-1"></i>
+            التخصص *
           </label>
-          <input type="number" id="quota-modal-vip" min="0" max="500" required class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono font-bold">
+          <input type="text" id="quota-modal-major" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
+        </div>
+
+        <!-- الحصص / الكوتا -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+              <i class="fa-solid fa-ticket text-indigo-500 ml-1"></i>
+              الدعوات العادية *
+            </label>
+            <input type="number" id="quota-modal-reg" min="0" max="500" required class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono font-bold">
+          </div>
+
+          <div class="bg-amber-50/60 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-200/80 dark:border-amber-800/50">
+            <label class="block text-xs font-bold text-amber-900 dark:text-amber-300 mb-1">
+              <i class="fa-solid fa-crown text-amber-500 ml-1"></i>
+              دعوات VIP *
+            </label>
+            <input type="number" id="quota-modal-vip" min="0" max="500" required class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 text-xs text-slate-800 dark:text-white font-mono font-bold">
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">

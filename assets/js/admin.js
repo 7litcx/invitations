@@ -150,8 +150,9 @@ function renderUsersTable() {
         </td>
         <td class="py-3 px-4 font-semibold font-mono text-slate-700 dark:text-slate-200">${totalUsed} دعوة</td>
         <td class="py-3 px-4 text-center">
-          <button onclick="promptEditUserQuota('${user.id}', '${escapeHtml(user.name)}', ${regQuota}, ${vipQuota})" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg transition hover:bg-indigo-100">
-            تعديل الكوتا
+          <button onclick="promptEditUser('${user.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-lg transition hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>تعديل</span>
           </button>
         </td>
       </tr>
@@ -159,17 +160,35 @@ function renderUsersTable() {
   }).join('');
 }
 
-// نافذة تعديل الكوتا الحديثة
-window.promptEditUserQuota = function(userId, userName, currentReg, currentVip) {
+// نافذة تعديل بيانات وحساب الخريج والكوتا
+window.promptEditUser = function(userId) {
   const modal = document.getElementById('quota-modal');
   if (!modal) return;
 
-  document.getElementById('quota-modal-userid').value = userId;
-  document.getElementById('quota-modal-username').textContent = userName;
-  document.getElementById('quota-modal-reg').value = currentReg;
-  document.getElementById('quota-modal-vip').value = currentVip;
+  const users = getUsers();
+  const user = users.find(u => u.id === userId);
+  if (!user) {
+    showToast.error('لم يتم العثور على بيانات المستخدم', 'خطأ');
+    return;
+  }
+
+  const regQuota = user.regularQuota !== undefined ? user.regularQuota : 30;
+  const vipQuota = user.vipQuota !== undefined ? user.vipQuota : 0;
+
+  document.getElementById('quota-modal-userid').value = user.id;
+  document.getElementById('quota-modal-fullname').value = user.name || '';
+  document.getElementById('quota-modal-username-val').value = user.username || '';
+  document.getElementById('quota-modal-password').value = user.password || '';
+  document.getElementById('quota-modal-major').value = user.major || '';
+  document.getElementById('quota-modal-reg').value = regQuota;
+  document.getElementById('quota-modal-vip').value = vipQuota;
 
   modal.classList.remove('hidden');
+};
+
+// للتوافق مع أي استدعاءات سابقة
+window.promptEditUserQuota = function(userId) {
+  window.promptEditUser(userId);
 };
 
 function setupQuotaModal() {
@@ -186,19 +205,40 @@ function setupQuotaModal() {
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const userId = document.getElementById('quota-modal-userid').value;
-    const userName = document.getElementById('quota-modal-username').textContent;
+    const name = document.getElementById('quota-modal-fullname').value.trim();
+    const username = document.getElementById('quota-modal-username-val').value.trim();
+    const password = document.getElementById('quota-modal-password').value.trim();
+    const major = document.getElementById('quota-modal-major').value.trim();
     const newReg = parseInt(document.getElementById('quota-modal-reg').value, 10);
     const newVip = parseInt(document.getElementById('quota-modal-vip').value, 10);
 
-    if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
-      showToast.warning('يرجى إدخال أرقام صحيحة أكبر من أو تساوي الصفر.', 'تنبيه');
+    if (!name || !username || !password) {
+      showToast.warning('يرجى ملء جميع الحقول الإلزامية (الاسم، اسم المستخدم، كلمة المرور).', 'تنبيه');
       return;
     }
 
-    await updateUserQuota(userId, newReg, newVip);
+    if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
+      showToast.warning('يرجى إدخال أرقام صحيحة أكبر من أو تساوي الصفر للكوتا.', 'تنبيه');
+      return;
+    }
+
+    const res = await updateUserByAdmin(userId, {
+      name,
+      username,
+      password,
+      major,
+      regularQuota: newReg,
+      vipQuota: newVip
+    });
+
+    if (!res.success) {
+      showToast.error(res.message, 'تعذر تعديل الحساب');
+      return;
+    }
+
     renderUsersTable();
     closeModal();
-    showToast.success(`تم تعديل كوتا (${userName}) بنجاح:\n- عادية: ${newReg} | VIP: ${newVip}`, 'تم تعديل الكوتا');
+    showToast.success(`تم تحديث بيانات وحساب (${name}) بنجاح!\nاسم المستخدم: ${username}`, 'تم التعديل بنجاح');
   });
 }
 

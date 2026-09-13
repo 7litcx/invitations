@@ -231,32 +231,88 @@ async function createUserByAdmin({ username, password, name, major, regularQuota
   return { success: true, user: newUser };
 }
 
-async function updateUserQuota(userId, newRegular, newVip) {
+async function updateUserByAdmin(userId, updates = {}) {
   const users = getUsers();
   const user = users.find(u => u.id === userId);
-  if (user) {
-    if (newRegular !== undefined && newRegular !== null) {
-      user.regularQuota = parseInt(newRegular, 10) || 0;
-    }
-    if (newVip !== undefined && newVip !== null) {
-      user.vipQuota = parseInt(newVip, 10) || 0;
-    }
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-
-    const sb = getSupabase();
-    if (sb) {
-      try {
-        await sb.from('users').update({ 
-          quota_regular: user.regularQuota,
-          quota_vip: user.vipQuota
-        }).eq('id', userId);
-      } catch (e) {
-        console.warn('Supabase update quota error:', e);
-      }
-    }
-    return true;
+  if (!user) {
+    return { success: false, message: 'المستخدم غير موجود' };
   }
-  return false;
+
+  const cleanUsername = updates.username ? updates.username.trim() : user.username;
+  const cleanPassword = updates.password ? updates.password.trim() : user.password;
+  const cleanName = updates.name ? updates.name.trim() : user.name;
+  const cleanMajor = updates.major !== undefined ? updates.major.trim() : (user.major || '');
+  const regNum = updates.regularQuota !== undefined && updates.regularQuota !== null ? (parseInt(updates.regularQuota, 10) || 0) : (user.regularQuota !== undefined ? user.regularQuota : 30);
+  const vipNum = updates.vipQuota !== undefined && updates.vipQuota !== null ? (parseInt(updates.vipQuota, 10) || 0) : (user.vipQuota !== undefined ? user.vipQuota : 0);
+
+  // التحقق من عدم تكرار اسم المستخدم إذا تم تعديله
+  if (cleanUsername.toLowerCase() !== user.username.toLowerCase()) {
+    const isTaken = users.some(u => u.id !== userId && u.username.toLowerCase() === cleanUsername.toLowerCase());
+    if (isTaken) {
+      return { success: false, message: 'اسم المستخدم هذا مسجل مسبقاً لمستخدم آخر، يرجى اختيار اسم مستخدم مختلف.' };
+    }
+  }
+
+  const oldName = user.name;
+  user.username = cleanUsername;
+  user.password = cleanPassword;
+  user.name = cleanName;
+  user.initials = cleanName.length >= 2 ? cleanName.substring(0, 2) : 'خر';
+  user.major = cleanMajor;
+  user.regularQuota = regNum;
+  user.vipQuota = vipNum;
+
+  // الحفظ المحلي
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+  // تحديث بيانات الجلسة إذا كان المستخدم مسجلاً دخوله حالياً
+  const curUser = getCurrentUser();
+  if (curUser && curUser.id === userId) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+  }
+
+  // تحديث اسم الخريج في الدعوات إذا تغير الاسم
+  if (oldName && oldName !== cleanName) {
+    let allInvs = getInvitations();
+    let updatedInvs = false;
+    allInvs.forEach(inv => {
+      if (inv.userId === userId) {
+        inv.graduateName = cleanName;
+        updatedInvs = true;
+      }
+    });
+    if (updatedInvs) {
+      localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(allInvs));
+    }
+  }
+
+  // التحديث في Supabase
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      await sb.from('users').update({ 
+        username: cleanUsername,
+        password: cleanPassword,
+        name: cleanName,
+        major: cleanMajor,
+        quota_regular: regNum,
+        quota_vip: vipNum
+      }).eq('id', userId);
+
+      if (oldName && oldName !== cleanName) {
+        await sb.from('invitations').update({ graduate_name: cleanName }).eq('user_id', userId);
+      }
+    } catch (e) {
+      console.warn('Supabase update user error:', e);
+    }
+  }
+
+  return { success: true, user };
+}
+
+async function updateUserQuota(userId, newRegular, newVip) {
+  const res = await updateUserByAdmin(userId, { regularQuota: newRegular, vipQuota: newVip });
+  return res.success;
 }
 
 // مزامنة كافة المستخدمين من Supabase وحفظهم محلياً
@@ -403,13 +459,51 @@ function getInvitation(id) {
   return list.find(i => i.id === id);
 }
 
+// دالة توليد معرّف فريد عالمياً للدعوة (يمنع أي تضارب بين المستخدمين والأجهزة)
+async function generateUniqueInvitationId() {
+  const sb = getSupabase();
+  const localList = getInvitations();
+
+  for (let attempt = 0; attempt < 15; attempt++) {
+    // كود عشوائي فريد مكون من 6 أرقام مميزة (مثال: INV-682194)
+    const randomCode = Math.floor(100000 + Math.random() * 900000);
+    const candidateId = `INV-${randomCode}`;
+
+    // التحقق من عدم وجوده محلياً
+    if (localList.some(inv => inv.id === candidateId)) {
+      continue;
+    }
+
+    // التحقق من عدم وجوده في Supabase
+    if (sb) {
+      try {
+        const { data, error } = await sb
+          .from('invitations')
+          .select('id')
+          .eq('id', candidateId)
+          .maybeSingle();
+
+        if (!error && data) {
+          // المعرّف مستخدم مسبقاً، محاولة أخرى
+          continue;
+        }
+      } catch (e) {
+        // تجاوز الفحص السحابي في حال تعذر الاتصال
+      }
+    }
+
+    return candidateId;
+  }
+
+  // كاحتياطي أخير غير قابل للتكرار
+  return `INV-${Date.now().toString().slice(-6)}`;
+}
+
 // دالة جلب الدعوة السحابية والمحلية لصفحة التذكرة
 async function fetchInvitationById(id) {
-  // 1. فحص محلي أولاً
-  let inv = getInvitation(id);
-  if (inv) return inv;
+  if (!id) return null;
 
-  // 2. فحص سحابي في Supabase
+  // 1. فحص سحابي في Supabase أولاً لجلب أدق وأحدث بيانات
   const sb = getSupabase();
   if (sb) {
     try {
@@ -417,10 +511,10 @@ async function fetchInvitationById(id) {
         .from('invitations')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
-        inv = {
+        const inv = {
           id: data.id,
           userId: data.user_id,
           guestName: data.guest_name,
@@ -433,18 +527,26 @@ async function fetchInvitationById(id) {
           notes: data.notes || '',
           createdAt: data.created_at
         };
-        // حفظ محلي لسرعة الوصول لاحقاً
+        // حفظ وتحديث محلي لسرعة الوصول
         const all = getInvitations();
-        if (!all.find(i => i.id === inv.id)) {
+        const existingIdx = all.findIndex(i => i.id === inv.id);
+        if (existingIdx !== -1) {
+          all[existingIdx] = inv;
+        } else {
           all.push(inv);
-          localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
         }
+        localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
         return inv;
       }
     } catch (e) {
       console.warn('Error fetching invitation from Supabase:', e);
     }
   }
+
+  // 2. فحص محلي كاحتياطي في حال عدم توفر اتصال بالإنترنت
+  let inv = getInvitation(id);
+  if (inv) return inv;
+
   return null;
 }
 
@@ -455,7 +557,7 @@ async function createInvitation(userId, data) {
   const stats = getUserStats(userId);
   const type = data.type || 'عادية';
 
-  // فرض كوتا الـ 30 دعوة الصارمة
+  // فرض كوتا الدعوات الصارمة
   if (type === 'عادية' && stats.regularRemaining <= 0) {
     return { success: false, message: `عذراً، لقد استنفذت كامل كوتا الدعوات المسموحة لك (${stats.regularAllowed} دعوة). تواصل مع الإدارة لزيادة الكوتا.` };
   }
@@ -463,10 +565,11 @@ async function createInvitation(userId, data) {
     return { success: false, message: 'عذراً، لا تملك رصيد دعوات VIP كافٍ.' };
   }
 
-  const all = getInvitations();
-  const nextNum = String(all.length + 1).padStart(6, '0');
+  // توليد معرّف فريد عالمياً لا يتكرر ولا يتصادم بين المستخدمين إطلاقاً
+  const uniqueId = await generateUniqueInvitationId();
+
   const newInv = {
-    id: `INV-${nextNum}`,
+    id: uniqueId,
     userId: user.id,
     guestName: data.guestName.trim(),
     phone: data.phone.trim(),
@@ -484,7 +587,7 @@ async function createInvitation(userId, data) {
   const sb = getSupabase();
   if (sb) {
     try {
-      await sb.from('invitations').insert([{
+      const { error } = await sb.from('invitations').insert([{
         id: newInv.id,
         user_id: newInv.userId,
         guest_name: newInv.guestName,
@@ -496,11 +599,17 @@ async function createInvitation(userId, data) {
         status: newInv.status,
         notes: newInv.notes
       }]);
+
+      if (error) {
+        console.error('Supabase insert invitation error:', error);
+        return { success: false, message: 'تعذر حفظ الدعوة في قاعدة البيانات: ' + (error.message || 'يرجى المحاولة مرة أخرى') };
+      }
     } catch (e) {
-      console.warn('Supabase insert invitation error:', e);
+      console.warn('Supabase insert invitation exception:', e);
     }
   }
 
+  const all = getInvitations();
   all.unshift(newInv);
   localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
 
