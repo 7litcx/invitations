@@ -16,11 +16,11 @@ const STORAGE_KEYS = {
 const DEFAULT_EVENTS = [
   {
     id: 'EVT-01',
-    name: 'حفل تخرج الدفعة السادسة تقنية معلومات',
+    name: 'حفل تخرج تخصص لغة إنجليزية 2026',
     date: '2026-09-06',
-    dateDisplay: '06-09-2026',
+    dateDisplay: '2026-09-06',
     timeDisplay: '00:00:00',
-    venue: 'قاعة الاحتفالات الكبرى - كلية الحاسبات',
+    venue: 'قاعة الاحتفالات الكبرى',
     city: 'المكلا'
   }
 ];
@@ -568,8 +568,8 @@ async function syncTransfersFromSupabase(userId) {
         type: d.type || 'عادية',
         event: d.event,
         notes: d.notes || '',
-        dateDisplay: d.created_at ? new Date(d.created_at).toLocaleDateString('ar-SA') : 'الآن',
-        timeDisplay: d.created_at ? new Date(d.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''
+        dateDisplay: d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : 'الآن',
+        timeDisplay: d.created_at ? new Date(d.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : ''
       }));
 
       // دمج وحفظ محلي
@@ -662,10 +662,10 @@ async function transferInvitations(fromUserId, toUserId, count, type, eventName,
     direction: 'sent',
     count: countNum,
     type,
-    event: eventName || (DEFAULT_EVENTS[0]?.name || 'حفل تخرج الدفعة السادسة تقنية معلومات'),
+    event: eventName || (DEFAULT_EVENTS[0]?.name || 'حفل تخرج تخصص لغة إنجليزية 2026'),
     notes: notes || '',
-    dateDisplay: 'الآن',
-    timeDisplay: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+    dateDisplay: new Date().toISOString().split('T')[0],
+    timeDisplay: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
   };
 
   const transfers = getTransfers();

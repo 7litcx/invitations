@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCreateUserForm();
   setupQuotaModal();
   setupCsvExport();
+  setupAdminFilterTabs();
   setupBarcodeScanner();
 
   // جلب كافة المستخدمين والدعوات من Supabase وتحديث الجداول
@@ -200,19 +201,50 @@ function setupQuotaModal() {
   });
 }
 
-// 4. عرض جميع الدعوات الصادرة
+// 4. عرض جميع الدعوات مع التصفية وسجل الدعوات المستخدمة
+let currentAdminFilter = 'all'; // 'all' | 'valid' | 'used'
+
 function renderAdminInvitationsTable() {
   const tbody = document.getElementById('admin-invitations-table-body');
   if (!tbody) return;
 
-  const invitations = getInvitations();
-  if (invitations.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">لا توجد أي دعوات صادرة حتى الآن (قاعدة البيانات نظيفة)</td></tr>`;
+  const allInvitations = getInvitations();
+  
+  // تحديث عدادات التبويبات
+  const validCount = allInvitations.filter(i => i.status === 'صالحة').length;
+  const usedCount = allInvitations.filter(i => i.status === 'مستخدمة').length;
+
+  const countAllEl = document.getElementById('count-inv-all');
+  const countValidEl = document.getElementById('count-inv-valid');
+  const countUsedEl = document.getElementById('count-inv-used');
+
+  if (countAllEl) countAllEl.textContent = allInvitations.length;
+  if (countValidEl) countValidEl.textContent = validCount;
+  if (countUsedEl) countUsedEl.textContent = usedCount;
+
+  // تصفية الدعوات بناءً على التبويب النشط
+  let filtered = allInvitations;
+  if (currentAdminFilter === 'valid') {
+    filtered = allInvitations.filter(i => i.status === 'صالحة');
+  } else if (currentAdminFilter === 'used') {
+    filtered = allInvitations.filter(i => i.status === 'مستخدمة');
+  }
+
+  if (filtered.length === 0) {
+    const emptyMsg = currentAdminFilter === 'used' 
+      ? 'لا توجد أي دعوات مستخدمة حتى الآن.'
+      : (currentAdminFilter === 'valid' ? 'لا توجد دعوات صالحة حالياً.' : 'لا توجد أي دعوات صادرة حتى الآن.');
+    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">${emptyMsg}</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = invitations.map(inv => {
+  tbody.innerHTML = filtered.map(inv => {
     const ticketUrl = `ticket.html?id=${inv.id}`;
+    // تنسيق التاريخ الميلادي بصيغة واضحة YYYY-MM-DD
+    const gregDate = inv.createdAt 
+      ? new Date(inv.createdAt).toISOString().split('T')[0] 
+      : '-';
+
     return `
       <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
         <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-700 dark:text-indigo-400">${inv.id}</td>
@@ -221,7 +253,7 @@ function renderAdminInvitationsTable() {
         <td class="py-3 px-4 text-slate-700 dark:text-slate-300">${escapeHtml(inv.graduateName)}</td>
         <td class="py-3 px-4">${inv.type === 'VIP' ? '<span class="badge-vip text-[10px]">VIP</span>' : '<span class="text-xs text-slate-500">عادية</span>'}</td>
         <td class="py-3 px-4">${inv.status === 'صالحة' ? '<span class="badge-status-valid text-xs">صالحة</span>' : '<span class="badge-status-used text-xs">مستخدمة</span>'}</td>
-        <td class="py-3 px-4 text-xs text-slate-400">${new Date(inv.createdAt).toLocaleDateString('ar-SA')}</td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400 dir-ltr text-right">${gregDate}</td>
         <td class="py-3 px-4 text-center">
           <a href="${ticketUrl}" target="_blank" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
             معاينة &larr;
@@ -230,6 +262,23 @@ function renderAdminInvitationsTable() {
       </tr>
     `;
   }).join('');
+}
+
+function setupAdminFilterTabs() {
+  const btnAll = document.getElementById('admin-tab-all');
+  const btnValid = document.getElementById('admin-tab-valid');
+  const btnUsed = document.getElementById('admin-tab-used');
+
+  const setFilter = (filter, btn) => {
+    currentAdminFilter = filter;
+    document.querySelectorAll('.admin-inv-filter-btn').forEach(b => b.classList.remove('active', 'text-white'));
+    btn.classList.add('active', 'text-white');
+    renderAdminInvitationsTable();
+  };
+
+  btnAll?.addEventListener('click', () => setFilter('all', btnAll));
+  btnValid?.addEventListener('click', () => setFilter('valid', btnValid));
+  btnUsed?.addEventListener('click', () => setFilter('used', btnUsed));
 }
 
 // 5. تصدير CSV
@@ -241,16 +290,17 @@ function setupCsvExport() {
       return;
     }
 
-    let csv = "\uFEFFرقم الدعوة,اسم المدعو,رقم الهاتف,الخريج الداعي,النوع,الحالة,تاريخ الإنشاء\n";
+    let csv = "\uFEFFرقم الدعوة,اسم المدعو,رقم الهاتف,الخريج الداعي,النوع,الحالة,تاريخ الإنشاء (ميلادي)\n";
     invitations.forEach(i => {
-      csv += `"${i.id}","${i.guestName}","${i.phone}","${i.graduateName}","${i.type}","${i.status}","${i.createdAt}"\n`;
+      const gDate = i.createdAt ? new Date(i.createdAt).toISOString().split('T')[0] : '';
+      csv += `"${i.id}","${i.guestName}","${i.phone}","${i.graduateName}","${i.type}","${i.status}","${gDate}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `سجل_دعوات_حفل_التخرج_${new Date().toISOString().substring(0,10)}.csv`;
+    a.download = `سجل_دعوات_حفل_تخرج_لغة_إنجليزية_${new Date().toISOString().substring(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     showToast.success('تم تصدير سجل الدعوات إلى ملف Excel / CSV بنجاح!', 'تم التصدير');

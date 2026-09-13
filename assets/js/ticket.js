@@ -43,7 +43,7 @@ function renderTicket(invitation) {
   // البيانات في الكرت والتفاصيل
   document.getElementById('ticket-code').textContent = invitation.id;
   document.getElementById('ticket-guest-name').textContent = invitation.guestName;
-  document.getElementById('ticket-event-name').textContent = invitation.event || 'حفل التخرج';
+  document.getElementById('ticket-event-name').textContent = invitation.event || 'حفل تخرج تخصص لغة إنجليزية 2026';
   document.getElementById('ticket-grad-name').textContent = invitation.graduateName;
 
   const phoneEl = document.getElementById('ticket-detail-phone');
@@ -122,7 +122,7 @@ function generateTicketQR(invitation) {
 function setupTicketActions(invitation) {
   // زر واتساب
   document.getElementById('btn-ticket-whatsapp')?.addEventListener('click', () => {
-    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${invitation.guestName}*\nبدعوة من: *${invitation.graduateName}*\nنوع الدعوة: *${invitation.type}*\nرقم التذكرة: *${invitation.id}*\n\nيرجى فتح الرابط لإبراز بطاقة الدعوة والباركود المخصص عند بوابة الدخول:\n${window.location.href}`;
+    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل تخرج تخصص لغة إنجليزية 2026*\n\nالمكرم/ة: *${invitation.guestName}*\nبدعوة من: *${invitation.graduateName}*\nنوع الدعوة: *${invitation.type}*\nرقم التذكرة: *${invitation.id}*\n\nيرجى فتح الرابط لإبراز بطاقة الدعوة والباركود المخصص عند بوابة الدخول:\n${window.location.href}`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   });
