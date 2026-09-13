@@ -1,5 +1,5 @@
 /**
- * app.js - نظام الدعوات الإلكترونية (كلية الحاسبات وتقنية المعلومات)
+ * app.js - نظام الدعوات الإلكترونية (حفل تخرج تخصص لغة إنجليزية 2026)
  * يدعم تسجيل الدخول باسم المستخدم وكلمة المرور فقط، وحذف كافة البيانات الوهمية
  */
 
@@ -724,7 +724,7 @@ window.openShareModal = function(invId, guestName, relUrl) {
   if (waBtn) {
     const user = getCurrentUser();
     const gradName = user ? user.name : 'الخريج';
-    const text = `🎓 *دعوة لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*\n(كلية الحاسبات وتقنية المعلومات)\n\nتفضلوا بالاطلاع على بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
+    const text = `🎓 *دعوة لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*\n(حفل تخرج تخصص لغة إنجليزية 2026)\n\nتفضلوا بالاطلاع على بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
     waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   }
 
