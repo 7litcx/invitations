@@ -768,33 +768,51 @@ function setupAdminLogout() {
 
 // حذف الدعوة من قبل المشرف
 window.handleAdminDeleteInvitation = async function(invId, guestName) {
-  const displayName = guestName ? `الضيف (${guestName})` : `الدعوة (${invId})`;
-  if (!confirm(`هل أنت متأكد من رغبتك في حذف دعوة ${displayName} نهائياً؟`)) return;
+  const nameDisplay = guestName ? `دعوة <strong>"${escapeHtml(guestName)}"</strong>` : `الدعوة (<strong>${invId}</strong>)`;
+
+  const confirmed = await showConfirmModal({
+    title: 'حذف الدعوة نهائياً',
+    message: `هل أنت متأكد من رغبتك في حذف ${nameDisplay} نهائياً؟<br><span class="text-[11px] text-rose-500/80 block mt-1.5">سيتم مسح بيانات التذكرة بالكامل من السحابة ولا يمكن التراجع.</span>`,
+    confirmText: 'تأكيد الحذف',
+    cancelText: 'إلغاء',
+    type: 'danger',
+    icon: 'fa-solid fa-trash-can'
+  });
+
+  if (!confirmed) return;
 
   const success = await deleteInvitation(invId);
   if (success) {
-    showToast.success(`تم حذف دعوة ${displayName} بنجاح!`, 'تم الحذف');
+    const successMsg = guestName ? `تم حذف دعوة (${guestName}) نهائياً بنجاح.` : 'تم حذف الدعوة نهائياً بنجاح.';
+    showToast.success(successMsg, 'تم الحذف');
     renderAdminInvitationsTable();
   } else {
-    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة.', 'خطأ');
+    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة لاحقاً.', 'خطأ في الحذف');
   }
 };
 
 // حذف حساب الخريج بواسطة المشرف
 window.handleAdminDeleteUser = async function(userId, userName) {
-  const displayName = userName ? `حساب الخريج (${userName})` : 'هذا الحساب';
-  const confirmed = confirm(
-    `هل أنت متأكد من رغبتك في حذف ${displayName} وجميع الدعوات الصادرة منه نهائياً؟\nلا يمكن التراجع عن هذه الخطوة.`
-  );
+  const displayName = userName ? `حساب الخريج <strong>"${escapeHtml(userName)}"</strong>` : 'هذا الحساب';
+
+  const confirmed = await showConfirmModal({
+    title: 'حذف حساب الخريج',
+    message: `هل أنت متأكد من رغبتك في حذف ${displayName} وجميع الدعوات الصادرة منه نهائياً؟<br><span class="text-[11px] text-rose-500/80 block mt-1.5">لا يمكن التراجع عن هذه الخطوة إطلاقاً.</span>`,
+    confirmText: 'تأكيد حذف الحساب',
+    cancelText: 'إلغاء',
+    type: 'danger',
+    icon: 'fa-solid fa-user-xmark'
+  });
+
   if (!confirmed) return;
 
   const result = await deleteUserByAdmin(userId);
   if (result.success) {
-    showToast.success(`تم حذف ${displayName} بنجاح!`, 'تم الحذف');
+    showToast.success(`تم حذف حساب (${userName || 'الخريج'}) وكافة دعواته بنجاح!`, 'تم الحذف');
     renderUsersTable();
     renderAdminInvitationsTable();
   } else {
-    showToast.error(result.message || 'تعذر حذف الحساب.', 'خطأ');
+    showToast.error(result.message || 'تعذر حذف الحساب.', 'خطأ في الحذف');
   }
 };
 
@@ -806,13 +824,18 @@ function setupDeleteAllInvitations() {
   btn.addEventListener('click', async () => {
     const invs = getInvitations();
     if (!invs || invs.length === 0) {
-      showToast.info('سجل الدعوات فارغ بالفعل، لا توجد أي دعوات لحذفها.', 'تنبيه');
+      showToast.info('سجل الدعوات فارغ بالفعل، لا توجد أي دعوات لحذفها.', 'سجل فارغ');
       return;
     }
 
-    const confirmed = confirm(
-      `⚠️ تحذير أمني هام:\n\nهل أنت متأكد تماماً من رغبتك في حذف جميع الدعوات (${invs.length} دعوة) نهائياً؟\n\nسيتم مسح كافة الدعوات وتذاكر الحضور من السحابة والنظام ولا يمكن التراجع عن هذه العملية إطلاقاً!`
-    );
+    const confirmed = await showConfirmModal({
+      title: 'حذف كافة الدعوات',
+      message: `⚠️ <strong>تحذير أمني هام:</strong><br>هل أنت متأكد من رغبتك في مسح وحذف جميع الدعوات (<strong>${invs.length} دعوة</strong>) نهائياً؟<br><span class="text-[11px] text-rose-500 font-bold block mt-1.5">سيتم مسح كافة التذاكر من السحابة والنظام ولا يمكن استرجاعها!</span>`,
+      confirmText: 'نعم، احذف كافة الدعوات',
+      cancelText: 'تراجع وإلغاء',
+      type: 'danger',
+      icon: 'fa-solid fa-triangle-exclamation'
+    });
 
     if (!confirmed) return;
 
@@ -823,7 +846,7 @@ function setupDeleteAllInvitations() {
     try {
       const success = await deleteAllInvitations();
       if (success) {
-        showToast.success('تم حذف كافة سجلات وتذاكر الدعوات بنجاح من النظام وقاعدة البيانات!', 'تم الحذف الشامل');
+        showToast.success('تم مسح وحذف كافة الدعوات والتذاكر بنجاح من قاعدة البيانات والنظام!', 'تم الحذف الشامل');
         renderAdminInvitationsTable();
         renderUsersTable();
       } else {

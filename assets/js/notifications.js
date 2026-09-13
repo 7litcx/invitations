@@ -146,8 +146,101 @@
   showToast.warning = (msg, title) => showToast(msg, 'warning', title);
   showToast.info = (msg, title) => showToast(msg, 'info', title);
 
+  /**
+   * نافذة تأكيد عصرية وفاخرة بديلة عن window.confirm
+   * ترجع Promise<boolean>
+   */
+  function showConfirmModal(options) {
+    return new Promise((resolve) => {
+      let config = {
+        title: 'تأكيد الإجراء',
+        message: 'هل أنت متأكد من رغبتك في المتابعة؟',
+        confirmText: 'نعم، تأكيد',
+        cancelText: 'إلغاء',
+        type: 'danger', // 'danger' | 'warning' | 'info'
+        icon: 'fa-solid fa-trash-can'
+      };
+
+      if (typeof options === 'string') {
+        config.message = options;
+      } else if (typeof options === 'object' && options !== null) {
+        config = { ...config, ...options };
+      }
+
+      // إزالة أي نافذة تأكيد سابقة
+      const existing = document.getElementById('custom-confirm-modal');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'custom-confirm-modal';
+      overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm transition-all duration-200';
+
+      const iconBg = config.type === 'danger'
+        ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30 shadow-rose-500/20'
+        : (config.type === 'warning'
+          ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-amber-500/20'
+          : 'bg-purple-500/15 text-purple-500 border border-purple-500/30 shadow-purple-500/20');
+
+      const confirmBtnBg = config.type === 'danger'
+        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30'
+        : (config.type === 'warning'
+          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/30'
+          : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-600/30');
+
+      overlay.innerHTML = `
+        <div class="bg-white dark:bg-[#110d1d] border border-slate-200 dark:border-[#241d3b] max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 text-center transform transition-all scale-100 animate-scaleUp">
+          <div class="w-14 h-14 rounded-2xl ${iconBg} flex items-center justify-center text-2xl mx-auto shadow-md">
+            <i class="${config.icon}"></i>
+          </div>
+          <div class="space-y-1.5">
+            <h4 class="text-base font-black text-slate-900 dark:text-white">${config.title}</h4>
+            <div class="text-xs text-slate-500 dark:text-slate-300 leading-relaxed font-medium">${config.message}</div>
+          </div>
+          <div class="pt-2 flex items-center gap-2.5">
+            <button id="confirm-modal-cancel" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#191428] dark:hover:bg-[#241d3b] text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer">
+              ${config.cancelText}
+            </button>
+            <button id="confirm-modal-ok" class="flex-1 py-2.5 px-4 rounded-xl ${confirmBtnBg} text-xs font-bold shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
+              <i class="${config.icon} text-xs"></i>
+              <span>${config.confirmText}</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      const cleanup = (result) => {
+        document.removeEventListener('keydown', handleKey);
+        overlay.classList.add('opacity-0');
+        setTimeout(() => {
+          overlay.remove();
+        }, 150);
+        resolve(result);
+      };
+
+      const handleKey = (e) => {
+        if (e.key === 'Escape') {
+          cleanup(false);
+        } else if (e.key === 'Enter') {
+          cleanup(true);
+        }
+      };
+
+      document.addEventListener('keydown', handleKey);
+
+      overlay.querySelector('#confirm-modal-cancel')?.addEventListener('click', () => cleanup(false));
+      overlay.querySelector('#confirm-modal-ok')?.addEventListener('click', () => cleanup(true));
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) cleanup(false);
+      });
+    });
+  }
+
   // استبدال window.alert القياسي بالنظام العصري
   window.showToast = showToast;
+  window.showConfirmModal = showConfirmModal;
+  window.confirmModal = showConfirmModal;
   window.alert = function (msg) {
     if (!msg) return;
     const str = String(msg);

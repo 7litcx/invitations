@@ -501,13 +501,25 @@ function setupEditForm() {
 
 // خاصية حذف الدعوة واسترجاع الكوتا فورياً
 window.handleDeleteInvitation = async function(invId, guestName, fromEdit = false) {
-  const displayName = guestName ? `الضيف (${guestName})` : `الدعوة (${invId})`;
-  const confirmMsg = `هل أنت متأكد من رغبتك في حذف دعوة ${displayName}؟\n\nملاحظة: سيتم حذف التذكرة وإلغاء صلاحيتها فوراً، واسترجاع رصيد هذه الدعوة إلى حسابك.`;
-  if (!confirm(confirmMsg)) return;
+  const nameDisplay = guestName ? `دعوة <strong>"${escapeHtml(guestName)}"</strong>` : `الدعوة رقم (<strong>${invId}</strong>)`;
+
+  const confirmed = await showConfirmModal({
+    title: 'حذف الدعوة',
+    message: `هل أنت متأكد من رغبتك في حذف ${nameDisplay}؟<br><span class="text-[11px] text-slate-400 block mt-1.5">سيتم إلغاء صلاحية التذكرة فوراً، واسترجاع رصيد الدعوة إلى حسابك.</span>`,
+    confirmText: 'نعم، احذف الدعوة',
+    cancelText: 'تراجع',
+    type: 'danger',
+    icon: 'fa-solid fa-trash-can'
+  });
+
+  if (!confirmed) return;
 
   const success = await deleteInvitation(invId);
   if (success) {
-    showToast.success(`تم حذف دعوة ${displayName} بنجاح واسترجاع رصيد الكوتا!`, 'تم الحذف');
+    const successMsg = guestName 
+      ? `تم حذف دعوة (${guestName}) وإعادة الرصيد إلى حسابك بنجاح.` 
+      : 'تم حذف الدعوة وإعادة الرصيد إلى حسابك بنجاح.';
+    showToast.success(successMsg, 'تم الحذف');
     renderEventStatistics();
     renderInvitationsTable();
     renderTransferStats();
@@ -517,7 +529,7 @@ window.handleDeleteInvitation = async function(invId, guestName, fromEdit = fals
       window.switchTab('invitations');
     }
   } else {
-    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة.', 'خطأ في الحذف');
+    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة لاحقاً.', 'خطأ في الحذف');
   }
 };
 
