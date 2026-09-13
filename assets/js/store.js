@@ -788,6 +788,54 @@ async function deleteInvitation(id) {
   return true;
 }
 
+// حذف كافة الدعوات بالكامل من النظام والسحابة
+async function deleteAllInvitations() {
+  localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify([]));
+
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      await sb.from('invitations').delete().neq('id', '___dummy_never_match___');
+    } catch (e) {
+      console.warn('Supabase delete all invitations error:', e);
+    }
+  }
+  return true;
+}
+
+// حذف مستخدم بواسطة المشرف
+async function deleteUserByAdmin(userId) {
+  let users = getUsers();
+  const user = users.find(u => u.id === userId);
+  if (!user) return { success: false, message: 'المستخدم غير موجود' };
+
+  if (user.role === 'admin' || user.username === 'admin') {
+    return { success: false, message: 'لا يمكن حذف حساب المشرف الرئيسي.' };
+  }
+
+  // حذف المستخدم محلياً
+  users = users.filter(u => u.id !== userId);
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+  // حذف دعوات المستخدم محلياً أيضاً
+  let invs = getInvitations();
+  invs = invs.filter(i => i.userId !== userId);
+  localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(invs));
+
+  // الحذف من Supabase
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      await sb.from('invitations').delete().eq('user_id', userId);
+      await sb.from('users').delete().eq('id', userId);
+    } catch (e) {
+      console.warn('Supabase delete user error:', e);
+    }
+  }
+
+  return { success: true };
+}
+
 // ----------------------------------------------------------------
 // 5. سجل التحويلات بين المستخدمين
 // ----------------------------------------------------------------

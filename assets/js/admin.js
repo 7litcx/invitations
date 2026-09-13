@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupAdminFilterTabs();
   setupBarcodeScanner();
   setupCloudSyncButton();
+  setupUserSearch();
+  setupInvitationSearch();
+  setupDeleteAllInvitations();
 
   // جلب كافة المستخدمين والدعوات من Supabase وتحديث الجداول
   await Promise.all([
@@ -137,16 +140,39 @@ function setupCreateUserForm() {
   });
 }
 
+// بحث حسابات المستخدمين
+let userSearchQuery = '';
+
+function setupUserSearch() {
+  const input = document.getElementById('search-admin-users');
+  input?.addEventListener('input', (e) => {
+    userSearchQuery = e.target.value.trim().toLowerCase();
+    renderUsersTable();
+  });
+}
+
 // 3. عرض جدول المستخدمين
 function renderUsersTable() {
   const tbody = document.getElementById('admin-users-table-body');
   if (!tbody) return;
 
-  const users = getUsers();
+  let users = getUsers();
   const allInvitations = getInvitations();
 
+  // تصفية المستخدمين بناءً على كلمة البحث
+  if (userSearchQuery) {
+    users = users.filter(u => 
+      (u.name && u.name.toLowerCase().includes(userSearchQuery)) ||
+      (u.username && u.username.toLowerCase().includes(userSearchQuery)) ||
+      (u.major && u.major.toLowerCase().includes(userSearchQuery))
+    );
+  }
+
   if (users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">لا يوجد مستخدمون مسجلون</td></tr>`;
+    const emptyMsg = userSearchQuery 
+      ? `لا توجد حسابات تطابق بحثك: "${escapeHtml(userSearchQuery)}"`
+      : 'لا يوجد مستخدمون مسجلون';
+    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">${emptyMsg}</td></tr>`;
     return;
   }
 
@@ -178,10 +204,16 @@ function renderUsersTable() {
         </td>
         <td class="py-3 px-4 font-semibold font-mono text-slate-700 dark:text-slate-200">${totalUsed} دعوة</td>
         <td class="py-3 px-4 text-center">
-          <button onclick="promptEditUser('${user.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-lg transition hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <span>تعديل</span>
-          </button>
+          <div class="flex items-center justify-center gap-1.5">
+            <button onclick="promptEditUser('${user.id}')" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-lg transition hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="تعديل بيانات وحساب الخريج">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>تعديل</span>
+            </button>
+            ${user.role !== 'admin' && user.username !== 'admin' ? `
+            <button onclick="handleAdminDeleteUser('${user.id}', '${escapeHtml(user.name)}')" class="inline-flex items-center justify-center w-7 h-7 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 bg-rose-50 dark:bg-rose-950/40 rounded-lg transition hover:bg-rose-100 dark:hover:bg-rose-900/50" title="حذف حساب الخريج">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -270,6 +302,17 @@ function setupQuotaModal() {
   });
 }
 
+// بحث سجل الدعوات
+let invSearchQuery = '';
+
+function setupInvitationSearch() {
+  const input = document.getElementById('search-admin-invitations');
+  input?.addEventListener('input', (e) => {
+    invSearchQuery = e.target.value.trim().toLowerCase();
+    renderAdminInvitationsTable();
+  });
+}
+
 // 4. عرض جميع الدعوات مع التصفية وسجل الدعوات المستخدمة
 let currentAdminFilter = 'all'; // 'all' | 'valid' | 'used'
 
@@ -279,7 +322,7 @@ function renderAdminInvitationsTable() {
 
   const allInvitations = getInvitations();
   
-  // تحديث عدادات التبويبات
+  // تحديث عدادات التبويبات الكلية
   const validCount = allInvitations.filter(i => i.status === 'صالحة').length;
   const usedCount = allInvitations.filter(i => i.status === 'مستخدمة').length;
 
@@ -299,10 +342,25 @@ function renderAdminInvitationsTable() {
     filtered = allInvitations.filter(i => i.status === 'مستخدمة');
   }
 
+  // تصفية إضافية بناءً على نص البحث
+  if (invSearchQuery) {
+    filtered = filtered.filter(i => 
+      (i.id && i.id.toLowerCase().includes(invSearchQuery)) ||
+      (i.guestName && i.guestName.toLowerCase().includes(invSearchQuery)) ||
+      (i.phone && i.phone.toLowerCase().includes(invSearchQuery)) ||
+      (i.graduateName && i.graduateName.toLowerCase().includes(invSearchQuery))
+    );
+  }
+
   if (filtered.length === 0) {
-    const emptyMsg = currentAdminFilter === 'used' 
-      ? 'لا توجد أي دعوات مستخدمة حتى الآن.'
-      : (currentAdminFilter === 'valid' ? 'لا توجد دعوات صالحة حالياً.' : 'لا توجد أي دعوات صادرة حتى الآن.');
+    let emptyMsg = 'لا توجد أي دعوات صادرة حتى الآن.';
+    if (invSearchQuery) {
+      emptyMsg = `لا توجد نتائج تطابق بحثك: "${escapeHtml(invSearchQuery)}"`;
+    } else if (currentAdminFilter === 'used') {
+      emptyMsg = 'لا توجد أي دعوات مستخدمة حتى الآن.';
+    } else if (currentAdminFilter === 'valid') {
+      emptyMsg = 'لا توجد دعوات صالحة حالياً.';
+    }
     tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">${emptyMsg}</td></tr>`;
     return;
   }
@@ -721,4 +779,63 @@ window.handleAdminDeleteInvitation = async function(invId, guestName) {
     showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة.', 'خطأ');
   }
 };
+
+// حذف حساب الخريج بواسطة المشرف
+window.handleAdminDeleteUser = async function(userId, userName) {
+  const displayName = userName ? `حساب الخريج (${userName})` : 'هذا الحساب';
+  const confirmed = confirm(
+    `هل أنت متأكد من رغبتك في حذف ${displayName} وجميع الدعوات الصادرة منه نهائياً؟\nلا يمكن التراجع عن هذه الخطوة.`
+  );
+  if (!confirmed) return;
+
+  const result = await deleteUserByAdmin(userId);
+  if (result.success) {
+    showToast.success(`تم حذف ${displayName} بنجاح!`, 'تم الحذف');
+    renderUsersTable();
+    renderAdminInvitationsTable();
+  } else {
+    showToast.error(result.message || 'تعذر حذف الحساب.', 'خطأ');
+  }
+};
+
+// إعداد زر حذف كافة الدعوات
+function setupDeleteAllInvitations() {
+  const btn = document.getElementById('btn-admin-delete-all');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    const invs = getInvitations();
+    if (!invs || invs.length === 0) {
+      showToast.info('سجل الدعوات فارغ بالفعل، لا توجد أي دعوات لحذفها.', 'تنبيه');
+      return;
+    }
+
+    const confirmed = confirm(
+      `⚠️ تحذير أمني هام:\n\nهل أنت متأكد تماماً من رغبتك في حذف جميع الدعوات (${invs.length} دعوة) نهائياً؟\n\nسيتم مسح كافة الدعوات وتذاكر الحضور من السحابة والنظام ولا يمكن التراجع عن هذه العملية إطلاقاً!`
+    );
+
+    if (!confirmed) return;
+
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحذف...</span>';
+
+    try {
+      const success = await deleteAllInvitations();
+      if (success) {
+        showToast.success('تم حذف كافة سجلات وتذاكر الدعوات بنجاح من النظام وقاعدة البيانات!', 'تم الحذف الشامل');
+        renderAdminInvitationsTable();
+        renderUsersTable();
+      } else {
+        showToast.error('حدث خطأ أثناء محاولة حذف جميع الدعوات.', 'خطأ');
+      }
+    } catch (err) {
+      console.error('Delete all invitations error:', err);
+      showToast.error('تعذر إكمال العملية، يرجى المحاولة لاحقاً.', 'خطأ');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  });
+}
 
