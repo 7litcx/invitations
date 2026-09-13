@@ -47,6 +47,12 @@ function updateAuthUI() {
       }
     }
 
+    // التعبئة التلقائية لاسم الخريج في نموذج إنشاء الدعوة
+    const gradNameInput = document.getElementById('field-create-grad-name');
+    if (gradNameInput && currentUser.name) {
+      gradNameInput.value = currentUser.name;
+    }
+
     renderEventStatistics();
     renderInvitationsTable();
     renderTransferStats();
@@ -77,6 +83,15 @@ function setupAuth() {
 
   updateAuthUI();
 
+  // فحص خيار تذكرني واسترجاع اسم المستخدم المحفوظ
+  const savedUsername = localStorage.getItem('grad_real_remembered_username_v4');
+  const uInputEl = document.getElementById('login-username');
+  const remEl = document.getElementById('login-remember');
+  if (savedUsername && uInputEl) {
+    uInputEl.value = savedUsername;
+    if (remEl) remEl.checked = true;
+  }
+
   // معالجة نموذج تسجيل الدخول (مرة واحدة فقط)
   if (loginForm && !loginForm.dataset.initialized) {
     loginForm.dataset.initialized = 'true';
@@ -84,10 +99,11 @@ function setupAuth() {
       e.preventDefault();
       const uInput = document.getElementById('login-username').value;
       const pInput = document.getElementById('login-password').value;
+      const remember = document.getElementById('login-remember')?.checked ?? true;
 
       if (errorAlert) errorAlert.classList.add('hidden');
 
-      const res = await loginUser(uInput, pInput);
+      const res = await loginUser(uInput, pInput, remember);
 
       if (res.success) {
         loginForm.reset();
@@ -184,6 +200,11 @@ function setupNavigation() {
       mobileCreate?.classList.add('active');
       viewCreate?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'إنشاء دعوة جديدة';
+      const curUser = getCurrentUser();
+      const gradInput = document.getElementById('field-create-grad-name');
+      if (gradInput && curUser && curUser.name) {
+        gradInput.value = curUser.name;
+      }
     } else if (target === 'transfer') {
       navTransfer?.classList.add('active');
       mobileTransfer?.classList.add('active');
@@ -464,6 +485,12 @@ function setupEditForm() {
 function setupCreateForm() {
   const form = document.getElementById('create-invite-form');
   if (!form) return;
+
+  const initUser = getCurrentUser();
+  const initGradInput = document.getElementById('field-create-grad-name');
+  if (initGradInput && initUser && initUser.name) {
+    initGradInput.value = initUser.name;
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

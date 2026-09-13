@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   INVITATIONS: 'grad_real_invitations_v4',
   TRANSFERS: 'grad_real_transfers_v4',
   CURRENT_USER: 'grad_real_current_user_v4',
+  REMEMBER_USER: 'grad_real_remembered_username_v4',
   EVENTS: 'grad_real_events_v4'
 };
 
@@ -52,13 +53,20 @@ function initStore() {
 }
 
 // ----------------------------------------------------------------
-// 1. نظام تسجيل الدخول والمصادقة (اسم المستخدم + كلمة المرور فقط)
+// 1. نظام تسجيل الدخول والمصادقة (اسم المستخدم + كلمة المرور فقط + تذكرني)
 // ----------------------------------------------------------------
 
-async function loginUser(username, password) {
+async function loginUser(username, password, remember = true) {
   initStore();
   const cleanUsername = username.trim();
   const cleanPassword = password.trim();
+
+  // حفظ أو مسح اسم المستخدم حسب خيار تذكرني
+  if (remember) {
+    localStorage.setItem(STORAGE_KEYS.REMEMBER_USER, cleanUsername);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.REMEMBER_USER);
+  }
 
   // فحص عبر Supabase إن كان مفعلاً
   const sb = getSupabase();
@@ -84,7 +92,7 @@ async function loginUser(username, password) {
           vipQuota: data.quota_vip !== undefined ? data.quota_vip : 0
         };
         saveLocalUser(mappedUser);
-        setCurrentUser(mappedUser);
+        setCurrentUser(mappedUser, remember);
         return { success: true, user: mappedUser };
       }
     } catch (e) {
@@ -97,7 +105,7 @@ async function loginUser(username, password) {
   const found = users.find(u => u.username === cleanUsername && u.password === cleanPassword);
 
   if (found) {
-    setCurrentUser(found);
+    setCurrentUser(found, remember);
     return { success: true, user: found };
   }
 
@@ -106,23 +114,33 @@ async function loginUser(username, password) {
 
 function getCurrentUser() {
   try {
-    const u = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
-    return u || null;
+    const fromLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
+    if (fromLocal) return fromLocal;
+    const fromSession = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER));
+    return fromSession || null;
   } catch {
     return null;
   }
 }
 
-function setCurrentUser(user) {
+function setCurrentUser(user, remember = true) {
   if (user) {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    if (remember) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    } else {
+      sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    }
   } else {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
   }
 }
 
 function logoutUser() {
   localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+  sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
 }
 
 // ----------------------------------------------------------------
