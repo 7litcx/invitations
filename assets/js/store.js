@@ -75,21 +75,21 @@ async function loginUser(username, password, remember = true) {
       const { data, error } = await sb
         .from('users')
         .select('*')
-        .eq('username', cleanUsername)
-        .eq('password', cleanPassword)
-        .single();
+        .or(`username.ilike.${cleanUsername},name.eq.${cleanUsername}`)
+        .eq('password', cleanPassword);
 
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
+        const row = data[0];
         const mappedUser = {
-          id: data.id,
-          username: data.username,
-          password: data.password,
-          name: data.name,
-          initials: data.name.substring(0, 2),
-          major: data.major,
-          role: data.role || 'user',
-          regularQuota: data.quota_regular !== undefined ? data.quota_regular : 30,
-          vipQuota: data.quota_vip !== undefined ? data.quota_vip : 0
+          id: row.id,
+          username: row.username,
+          password: row.password,
+          name: row.name,
+          initials: row.name && row.name.length >= 2 ? row.name.substring(0, 2) : 'خر',
+          major: row.major || 'لغة إنجليزية',
+          role: row.role || 'user',
+          regularQuota: row.quota_regular !== undefined && row.quota_regular !== null ? row.quota_regular : 27,
+          vipQuota: row.quota_vip !== undefined && row.quota_vip !== null ? row.quota_vip : 3
         };
         saveLocalUser(mappedUser);
         setCurrentUser(mappedUser, remember);
@@ -102,7 +102,10 @@ async function loginUser(username, password, remember = true) {
 
   // فحص محلي
   const users = getUsers();
-  const found = users.find(u => u.username === cleanUsername && u.password === cleanPassword);
+  const found = users.find(u => 
+    (u.username.toLowerCase() === cleanUsername.toLowerCase() || (u.name && u.name.trim() === cleanUsername)) && 
+    u.password === cleanPassword
+  );
 
   if (found) {
     setCurrentUser(found, remember);
@@ -176,7 +179,7 @@ function saveLocalUser(user) {
  * إنشاء مستخدم جديد من قبل الأدمن
  * يحدد المشرف عدد الدعوات العادية وعدد دعوات VIP
  */
-async function createUserByAdmin({ username, password, name, major, regularQuota = 30, vipQuota = 0, role = 'user' }) {
+async function createUserByAdmin({ username, password, name, major, regularQuota = 27, vipQuota = 3, role = 'user' }) {
   const cleanUsername = username.trim();
   const cleanPassword = password.trim();
   const cleanName = name.trim();
@@ -272,8 +275,8 @@ async function syncUsersFromSupabase() {
         initials: d.name && d.name.length >= 2 ? d.name.substring(0, 2) : 'خر',
         major: d.major || '',
         role: d.role || 'user',
-        regularQuota: d.quota_regular !== undefined && d.quota_regular !== null ? d.quota_regular : 30,
-        vipQuota: d.quota_vip !== undefined && d.quota_vip !== null ? d.quota_vip : 0
+        regularQuota: d.quota_regular !== undefined && d.quota_regular !== null ? d.quota_regular : 27,
+        vipQuota: d.quota_vip !== undefined && d.quota_vip !== null ? d.quota_vip : 3
       }));
 
       // دمج المستخدمين محلياً
