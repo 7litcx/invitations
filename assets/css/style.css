@@ -1,0 +1,370 @@
+/* ===================================================
+   أنماط وتنسيقات موقع دعوات حفل التخرج الفاخر
+   =================================================== */
+
+:root {
+  --primary-bg: #0b1329;
+  --secondary-bg: #111e3e;
+  --card-bg: #0f1c3f;
+  --gold-primary: #d4af37;
+  --gold-light: #fef08a;
+  --gold-gradient: linear-gradient(135deg, #d4af37 0%, #f9d976 50%, #e6b94d 100%);
+  --gold-border: rgba(212, 175, 55, 0.4);
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --accent: #eab308;
+  --wax-color: #8b181b;
+  --wax-shadow: rgba(139, 24, 27, 0.4);
+}
+
+/* ثيم الزمرد الفاخر (Emerald) */
+[data-theme="emerald"] {
+  --primary-bg: #062419;
+  --secondary-bg: #0d3829;
+  --card-bg: #092e21;
+  --gold-primary: #d4af37;
+  --gold-light: #fde047;
+  --gold-gradient: linear-gradient(135deg, #d4af37 0%, #fef08a 50%, #c89632 100%);
+  --gold-border: rgba(212, 175, 55, 0.45);
+  --wax-color: #831843;
+}
+
+/* ثيم العنابي الملكي (Burgundy) */
+[data-theme="burgundy"] {
+  --primary-bg: #2a0815;
+  --secondary-bg: #3f1023;
+  --card-bg: #330b1b;
+  --gold-primary: #e2b755;
+  --gold-light: #fef08a;
+  --gold-gradient: linear-gradient(135deg, #e2b755 0%, #fde68a 50%, #b88628 100%);
+  --gold-border: rgba(226, 183, 85, 0.45);
+  --wax-color: #580c1f;
+}
+
+/* ثيم الأسود والذهب الكلاسيكي (Classic Black) */
+[data-theme="black"] {
+  --primary-bg: #0a0a0c;
+  --secondary-bg: #141419;
+  --card-bg: #121217;
+  --gold-primary: #dfba57;
+  --gold-light: #fef9c3;
+  --gold-gradient: linear-gradient(135deg, #dfba57 0%, #fef3c7 50%, #b3882a 100%);
+  --gold-border: rgba(223, 186, 87, 0.5);
+  --wax-color: #831212;
+}
+
+/* الخطوط والخلفيات الأساسية */
+body {
+  font-family: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.02' fill-rule='evenodd'%3E%3Cpath d='M30 30L0 0v60h60V0L30 30zM15 15l15 15-15 15-15-15 15-15zm30 0l15 15-15 15-15-15 15-15z'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+.font-amiri {
+  font-family: 'Amiri', serif;
+}
+
+.font-cairo {
+  font-family: 'Cairo', sans-serif;
+}
+
+/* تأثيرات النصوص الذهبية اللامعة */
+.gold-text {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.gold-glow {
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.box-gold-glow {
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.2), inset 0 0 15px rgba(212, 175, 55, 0.05);
+}
+
+.border-gold-custom {
+  border-color: var(--gold-border);
+}
+
+/* أزرار فاخرة بتأثير التوهج */
+.btn-gold {
+  background: linear-gradient(135deg, #f3ca65 0%, #d4af37 50%, #aa7c11 100%);
+  color: #121316;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.55);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.8s ease;
+}
+
+.btn-gold:hover::after {
+  transform: rotate(30deg) translateX(100%);
+}
+
+.btn-outline-gold {
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.05);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+  color: #fff;
+  border-color: var(--gold-light);
+}
+
+/* ===================================================
+   تأثيرات المظروف الملكي التفاعلي (Interactive Envelope)
+   =================================================== */
+
+.envelope-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  perspective: 1200px;
+}
+
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  background: linear-gradient(145deg, #0e1a38 0%, #081026 100%);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  transition: all 0.6s ease;
+  cursor: pointer;
+}
+
+/* غطاء المظروف (Flap) */
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: linear-gradient(180deg, #132247 0%, #0a132c 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.2s 0.3s;
+  z-index: 5;
+  border-top: 2px solid var(--gold-primary);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+}
+
+.envelope.open .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+/* ختم الشمع الملكي (Wax Seal) */
+.wax-seal {
+  position: absolute;
+  top: 140px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 82px;
+  height: 82px;
+  background: radial-gradient(circle at 35% 35%, #b91c1c 0%, #7f1d1d 65%, #450a0a 100%);
+  border-radius: 50%;
+  box-shadow: 0 6px 20px var(--wax-shadow), inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+}
+
+.wax-seal:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.envelope.open .wax-seal {
+  transform: translate(-50%, -100px) scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wax-seal-inner {
+  width: 66px;
+  height: 66px;
+  border: 1.5px dashed rgba(253, 224, 71, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* الجيب الأمامي للمظروف */
+.envelope-pocket {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(to bottom, #111f42, #0b142b);
+  border-radius: 0 0 14px 14px;
+  z-index: 4;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+  pointer-events: none;
+}
+
+/* بطاقة الدعوة داخل المظروف ثم تخرج */
+.invitation-letter-preview {
+  position: absolute;
+  bottom: 15px;
+  left: 5%;
+  width: 90%;
+  height: 310px;
+  background: linear-gradient(135deg, #101c38 0%, #15254a 100%);
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  z-index: 2;
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.envelope.open .invitation-letter-preview {
+  transform: translateY(-90px);
+  z-index: 6;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212, 175, 55, 0.3);
+}
+
+/* الزخارف الأندلسية والإسلامية الفاخرة لزوايا البطاقة */
+.ornament-corner {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+.ornament-tl { top: 12px; left: 12px; }
+.ornament-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+.ornament-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+.ornament-br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+/* إطار البطاقة الملكي الداخلي */
+.royal-border-frame {
+  position: relative;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 8px;
+  border-radius: 12px;
+}
+.royal-border-frame::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+/* بطاقة الدعوة الرئيسية المعروضة بالكامل */
+.invitation-main-card {
+  background: radial-gradient(circle at 50% 0%, rgba(22, 38, 77, 0.9) 0%, rgba(11, 19, 41, 0.98) 75%);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--gold-border);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 175, 55, 0.15);
+}
+
+/* تأثير التموج والنبض البصري لزر الختم */
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(212, 175, 55, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+.pulse-animation {
+  animation: pulseGlow 2s infinite;
+}
+
+/* عداد الوقت التنازلي التفاعلي */
+.countdown-box {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.countdown-box:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold-light);
+  box-shadow: 0 10px 25px -5px rgba(212, 175, 55, 0.2);
+}
+
+/* مظهر المودال والقوائم المنبثقة */
+.glass-modal {
+  background: rgba(11, 19, 41, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090e1f;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+/* تأثير التكبير عند التمرير للبطاقات التفاعلية */
+.interactive-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.interactive-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.2);
+}

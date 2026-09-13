@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم المشرف | إدارة المستخدمين والكوتا وقاعدة بيانات Supabase</title>
+  
+  <!-- خط عربي رسمي -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <!-- أيقونات FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- مكتبة عميل Supabase الرسمية -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- التنسيقات العصرية والوضع الليلي -->
+  <link rel="stylesheet" href="assets/css/system.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-800 dark:text-slate-100">
+
+  <!-- الترويسة العلوية -->
+  <header class="bg-indigo-950 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg text-indigo-300">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
+          <p class="text-xs text-indigo-200">إدارة حسابات الخريجين والكوتا وقاعدة بيانات Supabase</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="index.html" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>العودة لبوابة الدعوات</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-8 space-y-8">
+
+    <!-- ===================================================
+         1. بطاقة إعداد وربط قاعدة بيانات Supabase
+         =================================================== -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">إعداد وربط قاعدة بيانات Supabase</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">اربط النظام بمشروعك السحابي في Supabase لحفظ كافة المستخدمين والدعوات</p>
+          </div>
+        </div>
+
+        <span id="supabase-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+          يعمل في الوضع المحلي
+        </span>
+      </div>
+
+      <form id="supabase-config-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Project URL (رابط المشروع)</label>
+          <input type="url" id="sb-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white dir-ltr text-right font-mono">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Anon Key (المفتاح العام)</label>
+          <input type="password" id="sb-key" placeholder="eyJhbGciOi..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white dir-ltr text-right font-mono">
+        </div>
+
+        <div class="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 pt-2">
+          <p class="text-[11px] text-slate-400">
+            <i class="fa-solid fa-circle-info text-blue-500 ml-1"></i>
+            تأكد من تطبيق ملف <strong>supabase_schema.sql</strong> في محرر SQL بـ Supabase لإنشاء الجداول بنقرة واحدة.
+          </p>
+
+          <button type="submit" class="btn-primary-modern text-xs">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>حفظ واختبار الاتصال</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================================================
+         2. إنشاء مستخدم جديد (اسم مستخدم + كلمة مرور + كوتا 30)
+         =================================================== -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      
+      <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">إنشاء حساب مستخدم جديد</h2>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">إنشاء يوزر خاص لكل خريج مع كلمة مرور وتخصيص كوتا 30 دعوة</p>
+        </div>
+      </div>
+
+      <form id="create-user-form" class="space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- اسم المستخدم (Username) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المستخدم (للدخول) *</label>
+            <input type="text" id="new-username" required placeholder="مثال: bandar_2026 أو الرقم الجامعي" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono dir-ltr text-right">
+          </div>
+
+          <!-- كلمة المرور (Password) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور *</label>
+            <input type="text" id="new-password" required placeholder="مثال: 123456 أو كلمة سر قوية" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono dir-ltr text-right">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- الاسم الكامل -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الاسم الكامل للخريج *</label>
+            <input type="text" id="new-fullname" required placeholder="مثال: م/بندر أحمد الكثيري" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
+          </div>
+
+          <!-- التخصص -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">التخصص والكلية *</label>
+            <input type="text" id="new-major" required placeholder="مثال: تقنية معلومات" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
+          </div>
+
+          <!-- الكوتا (افتراضياً 30) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">عدد الدعوات (الكوتا) *</label>
+            <input type="number" id="new-quota" min="1" max="200" value="30" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-bold">
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button type="submit" class="btn-primary-modern text-xs">
+            <i class="fa-solid fa-check"></i>
+            <span>حفظ وإنشاء حساب الخريج (30 دعوة)</span>
+          </button>
+        </div>
+
+      </form>
+
+    </section>
+
+    <!-- ===================================================
+         3. جدول إدارة حسابات المستخدمين
+         =================================================== -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">حسابات المستخدمين المسجلين</h2>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">قائمة بجميع الخريجين وبيانات دخولهم وحصص الدعوات</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-right text-xs">
+          <thead class="bg-slate-50/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+            <tr>
+              <th class="py-3 px-4">الاسم الكامل</th>
+              <th class="py-3 px-4">اسم المستخدم (Username)</th>
+              <th class="py-3 px-4">كلمة المرور</th>
+              <th class="py-3 px-4">التخصص</th>
+              <th class="py-3 px-4">الكوتا المخصصة</th>
+              <th class="py-3 px-4">الدعوات المنشأة</th>
+              <th class="py-3 px-4">الرصيد المتبقي</th>
+              <th class="py-3 px-4 text-center">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+            <!-- يتم التعبئة بواسطة admin.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ===================================================
+         4. سجل جميع الدعوات الصادرة (All Invitations)
+         =================================================== -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">سجل جميع الدعوات الصادرة</h2>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">متابعة كافة الدعوات الحقيقية الصادرة من جميع الخريجين</p>
+        </div>
+
+        <button id="btn-export-admin-csv" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+          <i class="fa-solid fa-file-excel"></i>
+          <span>تصدير السجل كملف Excel / CSV</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-right text-xs">
+          <thead class="bg-slate-50/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+            <tr>
+              <th class="py-3 px-4">رقم الدعوة</th>
+              <th class="py-3 px-4">اسم المدعو</th>
+              <th class="py-3 px-4">رقم الهاتف</th>
+              <th class="py-3 px-4">الخريج الداعي</th>
+              <th class="py-3 px-4">النوع</th>
+              <th class="py-3 px-4">الحالة</th>
+              <th class="py-3 px-4">تاريخ الإنشاء</th>
+              <th class="py-3 px-4 text-center">عرض</th>
+            </tr>
+          </thead>
+          <tbody id="admin-invitations-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+            <!-- يتم التعبئة بواسطة admin.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- فوتر -->
+  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400">
+    لوحة تحكم المشرف | ملكية : Soul Media
+  </footer>
+
+  <!-- ملفات الجافاسكربت -->
+  <script src="assets/js/supabaseClient.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
