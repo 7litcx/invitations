@@ -439,6 +439,25 @@ html.dark .transfer-metric-sent {
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
 }
 
+.btn-action-delete {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.btn-action-delete:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+}
+
 /* شارات الجدول */
 .person-count-badge {
   display: inline-flex;

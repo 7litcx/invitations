@@ -205,6 +205,7 @@ function setupNavigation() {
       if (gradInput && curUser && curUser.name) {
         gradInput.value = curUser.name;
       }
+      updateCreateFormQuotaState();
     } else if (target === 'transfer') {
       navTransfer?.classList.add('active');
       mobileTransfer?.classList.add('active');
@@ -429,6 +430,9 @@ function renderInvitationsTable(filters = {}) {
             <a href="${ticketUrl}" target="_blank" class="btn-action-view" title="معاينة التذكرة والباركود">
               <i class="fa-regular fa-eye text-xs"></i>
             </a>
+            <button onclick="handleDeleteInvitation('${inv.id}', '${escapeHtml(inv.guestName)}')" class="btn-action-delete" title="حذف الدعوة">
+              <i class="fa-regular fa-trash-can text-xs"></i>
+            </button>
           </div>
         </td>
       </tr>
@@ -479,6 +483,99 @@ function setupEditForm() {
     showToast.success('تم حفظ تعديلات بيانات الدعوة بنجاح!', 'تم التحديث');
     window.switchTab('invitations');
   });
+
+  // زر حذف الدعوة من شاشة التعديل
+  document.getElementById('btn-delete-from-edit')?.addEventListener('click', async () => {
+    const id = document.getElementById('edit-inv-id').value;
+    const guestName = document.getElementById('edit-field-guest').value;
+    if (id) {
+      await handleDeleteInvitation(id, guestName, true);
+    }
+  });
+}
+
+// خاصية حذف الدعوة واسترجاع الكوتا فورياً
+window.handleDeleteInvitation = async function(invId, guestName, fromEdit = false) {
+  const displayName = guestName ? `الضيف (${guestName})` : `الدعوة (${invId})`;
+  const confirmMsg = `هل أنت متأكد من رغبتك في حذف دعوة ${displayName}؟\n\nملاحظة: سيتم حذف التذكرة وإلغاء صلاحيتها فوراً، واسترجاع رصيد هذه الدعوة إلى حسابك.`;
+  if (!confirm(confirmMsg)) return;
+
+  const success = await deleteInvitation(invId);
+  if (success) {
+    showToast.success(`تم حذف دعوة ${displayName} بنجاح واسترجاع رصيد الكوتا!`, 'تم الحذف');
+    renderEventStatistics();
+    renderInvitationsTable();
+    renderTransferStats();
+    updateCreateFormQuotaState();
+
+    if (fromEdit) {
+      window.switchTab('invitations');
+    }
+  } else {
+    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة.', 'خطأ في الحذف');
+  }
+};
+
+// فحص وإدارة حالة الكوتا في نموذج إنشاء الدعوة
+function updateCreateFormQuotaState() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const stats = getUserStats(user.id);
+  const typeSelect = document.getElementById('field-create-type');
+  const exhaustedBanner = document.getElementById('create-quota-exhausted-banner');
+  const typeWarning = document.getElementById('create-type-quota-warning');
+  const typeWarningText = document.getElementById('create-type-quota-warning-text');
+  const submitBtn = document.getElementById('btn-submit-create-invite');
+
+  if (!typeSelect || !submitBtn) return;
+
+  // تحديث نصوص خيارات نوع الدعوة مع إبراز الرصيد المتبقي
+  const regOption = typeSelect.querySelector('option[value="عادية"]');
+  const vipOption = typeSelect.querySelector('option[value="VIP"]');
+
+  if (regOption) {
+    regOption.textContent = `دعوة عادية (المتبقي: ${stats.regularRemaining})`;
+    regOption.disabled = stats.regularRemaining <= 0;
+  }
+  if (vipOption) {
+    vipOption.textContent = `دعوة VIP (المتبقي: ${stats.vipRemaining})`;
+    vipOption.disabled = stats.vipRemaining <= 0;
+  }
+
+  const selectedType = typeSelect.value;
+  const isSelectedExhausted = (selectedType === 'VIP' && stats.vipRemaining <= 0) ||
+                             (selectedType === 'عادية' && stats.regularRemaining <= 0);
+
+  // إذا انتهت الكوتا بالكامل (عادية + VIP)
+  if (stats.regularRemaining <= 0 && stats.vipRemaining <= 0) {
+    exhaustedBanner?.classList.remove('hidden');
+    typeWarning?.classList.add('hidden');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    submitBtn.innerHTML = '<i class="fa-solid fa-ban ml-1.5"></i> <span>عذراً، استنفذت كامل رصيد الدعوات (0 متبقي)</span>';
+    return;
+  }
+
+  // إذا كان النوع المحدد فقط هو المستنفذ
+  if (isSelectedExhausted) {
+    exhaustedBanner?.classList.add('hidden');
+    typeWarning?.classList.remove('hidden');
+    if (typeWarningText) {
+      typeWarningText.textContent = `تنبيه: لا يوجد رصيد متبقٍ للدعوات الـ ${selectedType} (0 متبقي). يرجى اختيار نوع دعوة آخر أو التواصل مع الإدارة.`;
+    }
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    submitBtn.innerHTML = `<i class="fa-solid fa-ban ml-1.5"></i> <span>رصيد الدعوات الـ ${selectedType} مستنفذ</span>`;
+    return;
+  }
+
+  // يوجد رصيد متاح
+  exhaustedBanner?.classList.add('hidden');
+  typeWarning?.classList.add('hidden');
+  submitBtn.disabled = false;
+  submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+  submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle ml-1.5"></i> <span>إنشاء الدعوة</span>';
 }
 
 // 9. نموذج إنشاء دعوة جديدة
@@ -492,14 +589,31 @@ function setupCreateForm() {
     initGradInput.value = initUser.name;
   }
 
+  // تحديث حالة الكوتا عند تغيير نوع الدعوة
+  document.getElementById('field-create-type')?.addEventListener('change', () => {
+    updateCreateFormQuotaState();
+  });
+
+  updateCreateFormQuotaState();
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = getCurrentUser();
     if (!user) return;
 
+    // فحص صارم للكوتا قبل الإرسال
+    const stats = getUserStats(user.id);
+    const type = document.getElementById('field-create-type').value;
+    const remaining = type === 'VIP' ? stats.vipRemaining : stats.regularRemaining;
+
+    if (remaining <= 0) {
+      showToast.error(`عذراً، لقد استنفذت كامل رصيدك من الدعوات الـ ${type} (0 متبقي). لا يمكن إنشاء دعوة جديدة.`, 'الرصيد مستنفذ');
+      updateCreateFormQuotaState();
+      return;
+    }
+
     const guestName = document.getElementById('field-create-guest').value.trim();
     const phone = document.getElementById('field-create-phone').value.trim();
-    const type = document.getElementById('field-create-type').value;
     const gradName = document.getElementById('field-create-grad-name').value.trim();
     const notes = document.getElementById('field-create-notes').value.trim();
     const eventName = document.getElementById('field-create-event').value;
@@ -516,11 +630,13 @@ function setupCreateForm() {
 
     if (!result.success) {
       showToast.error(result.message, 'تعذر إنشاء الدعوة');
+      updateCreateFormQuotaState();
       return;
     }
 
     form.reset();
     document.getElementById('field-create-grad-name').value = user.name;
+    updateCreateFormQuotaState();
     showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName})! جارٍ فتح التذكرة...`, 'تم إصدار الدعوة');
 
     // فتح صفحة الدعوة والباركود للضيف على الفور

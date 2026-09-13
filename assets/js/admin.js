@@ -256,9 +256,14 @@ function renderAdminInvitationsTable() {
         <td class="py-3 px-4">${inv.status === 'صالحة' ? '<span class="badge-status-valid text-xs">صالحة</span>' : '<span class="badge-status-used text-xs">مستخدمة</span>'}</td>
         <td class="py-3 px-4 font-mono text-xs text-slate-400 dir-ltr text-right">${gregDate}</td>
         <td class="py-3 px-4 text-center">
-          <a href="${ticketUrl}" target="_blank" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-            معاينة &larr;
-          </a>
+          <div class="flex items-center justify-center gap-2">
+            <a href="${ticketUrl}" target="_blank" class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition text-[11px] font-bold" title="معاينة التذكرة">
+              معاينة &larr;
+            </a>
+            <button onclick="handleAdminDeleteInvitation('${inv.id}', '${escapeHtml(inv.guestName)}')" class="px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900 border border-rose-200 dark:border-rose-900 transition text-[11px] font-bold cursor-pointer" title="حذف الدعوة">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
         </td>
       </tr>
     `;
@@ -634,4 +639,18 @@ function setupAdminLogout() {
     });
   }
 }
+
+// حذف الدعوة من قبل المشرف
+window.handleAdminDeleteInvitation = async function(invId, guestName) {
+  const displayName = guestName ? `الضيف (${guestName})` : `الدعوة (${invId})`;
+  if (!confirm(`هل أنت متأكد من رغبتك في حذف دعوة ${displayName} نهائياً؟`)) return;
+
+  const success = await deleteInvitation(invId);
+  if (success) {
+    showToast.success(`تم حذف دعوة ${displayName} بنجاح!`, 'تم الحذف');
+    renderAdminInvitationsTable();
+  } else {
+    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة.', 'خطأ');
+  }
+};
 

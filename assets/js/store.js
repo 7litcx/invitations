@@ -532,14 +532,21 @@ async function updateInvitation(id, updatedData) {
   return false;
 }
 
-function deleteInvitation(id) {
+async function deleteInvitation(id) {
   let all = getInvitations();
+  const exists = all.some(i => i.id === id);
+  if (!exists) return false;
+
   all = all.filter(i => i.id !== id);
   localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
 
   const sb = getSupabase();
   if (sb) {
-    sb.from('invitations').delete().eq('id', id).then(() => {});
+    try {
+      await sb.from('invitations').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Supabase delete invitation error:', e);
+    }
   }
   return true;
 }
