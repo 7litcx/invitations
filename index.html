@@ -197,32 +197,48 @@
               </div>
 
               <div class="p-5 sm:p-6 space-y-4">
-                <!-- أشرطة التقدم للكوتا -->
-                <div class="space-y-3">
-                  <div class="space-y-1.5">
+                <!-- أشرطة التقدم للكوتا: العادية و VIP -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- كوتا عادية -->
+                  <div class="space-y-1.5 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                     <div class="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-bold">
-                      <span id="stat-regular-ratio" class="font-mono text-slate-900 dark:text-white font-black">0 / 30</span>
-                      <span class="text-slate-400">العاديات: المنشأة / الفعلي</span>
+                      <span id="stat-regular-ratio" class="font-mono text-indigo-600 dark:text-indigo-400 font-black">0 / 30</span>
+                      <span class="text-slate-500"><i class="fa-solid fa-ticket text-indigo-500 ml-1"></i>دعوات عادية</span>
                     </div>
                     <div class="progress-track-red">
                       <div id="stat-regular-bar" class="progress-fill-red" style="width: 0%;"></div>
                     </div>
                   </div>
+
+                  <!-- كوتا VIP -->
+                  <div class="space-y-1.5 bg-amber-50/60 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-100 dark:border-amber-900/40">
+                    <div class="flex justify-between text-xs text-amber-900 dark:text-amber-200 font-bold">
+                      <span id="stat-vip-ratio" class="font-mono text-amber-600 dark:text-amber-400 font-black">0 / 0</span>
+                      <span class="text-amber-700 dark:text-amber-400"><i class="fa-solid fa-crown text-amber-500 ml-1"></i>دعوات VIP</span>
+                    </div>
+                    <div class="h-2 w-full bg-amber-200/50 dark:bg-amber-950/60 rounded-full overflow-hidden">
+                      <div id="stat-vip-bar" class="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-300" style="width: 0%;"></div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- صناديق الإحصائيات -->
-                <div class="grid grid-cols-3 gap-3 pt-1">
+                <div class="grid grid-cols-4 gap-2.5 pt-1">
                   <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-regular" class="block font-black text-2xl text-slate-900 dark:text-white font-mono">0</span>
-                    <span class="text-xs text-slate-400 font-medium">المنشأة</span>
+                    <span id="stat-total-regular" class="block font-black text-xl text-slate-900 dark:text-white font-mono">0</span>
+                    <span class="text-[11px] text-slate-400 font-medium">عادية منشأة</span>
                   </div>
                   <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-used" class="block font-black text-2xl text-rose-600 dark:text-rose-400 font-mono">0</span>
-                    <span class="text-xs text-slate-400 font-medium">المستخدمة</span>
+                    <span id="stat-total-vip" class="block font-black text-xl text-amber-600 dark:text-amber-400 font-mono">0</span>
+                    <span class="text-[11px] text-amber-600/80 dark:text-amber-400/80 font-medium">VIP منشأة</span>
                   </div>
                   <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-unused" class="block font-black text-2xl text-emerald-600 dark:text-emerald-400 font-mono">30</span>
-                    <span class="text-xs text-slate-400 font-medium">المتبقية</span>
+                    <span id="stat-total-used" class="block font-black text-xl text-rose-600 dark:text-rose-400 font-mono">0</span>
+                    <span class="text-[11px] text-slate-400 font-medium">المستخدمة</span>
+                  </div>
+                  <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
+                    <span id="stat-total-unused" class="block font-black text-xl text-emerald-600 dark:text-emerald-400 font-mono">0</span>
+                    <span class="text-[11px] text-slate-400 font-medium">المتبقية</span>
                   </div>
                 </div>
 
@@ -230,13 +246,13 @@
                 <div class="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800 gap-2">
                   <div class="flex items-center gap-2">
                     <span id="stat-remaining-badge" class="px-3 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/50">
-                      المتبقي: 30 دعوة
+                      المتبقي: 0 دعوة
                     </span>
-                    <span id="stat-base-quota-text" class="text-[11px] text-slate-400">الحد الأساسي: 30 عادي</span>
+                    <span id="stat-base-quota-text" class="text-[11px] text-slate-400">الرصيد المخصص من الإدارة</span>
                   </div>
 
                   <div id="stat-formula-text" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                    الفعلي: 30 دعوة مخصصة لك
+                    الكوتا معتمدة
                   </div>
                 </div>
 

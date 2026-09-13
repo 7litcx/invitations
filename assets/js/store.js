@@ -156,14 +156,15 @@ function saveLocalUser(user) {
 
 /**
  * إنشاء مستخدم جديد من قبل الأدمن
- * لكل خريج كوتا 30 دعوة افتراضياً
+ * يحدد المشرف عدد الدعوات العادية وعدد دعوات VIP
  */
-async function createUserByAdmin({ username, password, name, major, quota = 30, role = 'user' }) {
+async function createUserByAdmin({ username, password, name, major, regularQuota = 30, vipQuota = 0, role = 'user' }) {
   const cleanUsername = username.trim();
   const cleanPassword = password.trim();
   const cleanName = name.trim();
   const cleanMajor = major.trim();
-  const quotaNum = parseInt(quota, 10) || 30;
+  const regNum = parseInt(regularQuota, 10) || 0;
+  const vipNum = parseInt(vipQuota, 10) || 0;
 
   // التحقق من عدم تكرار اسم المستخدم
   const existing = getUser(cleanUsername);
@@ -180,8 +181,8 @@ async function createUserByAdmin({ username, password, name, major, quota = 30, 
     initials: cleanName.length >= 2 ? cleanName.substring(0, 2) : 'خر',
     major: cleanMajor,
     role,
-    regularQuota: quotaNum,
-    vipQuota: 0
+    regularQuota: regNum,
+    vipQuota: vipNum
   };
 
   // الحفظ في Supabase
@@ -195,8 +196,8 @@ async function createUserByAdmin({ username, password, name, major, quota = 30, 
         name: cleanName,
         major: cleanMajor,
         role,
-        quota_regular: quotaNum,
-        quota_vip: 0
+        quota_regular: regNum,
+        quota_vip: vipNum
       }]);
     } catch (e) {
       console.warn('Error syncing user to Supabase:', e);
@@ -209,17 +210,25 @@ async function createUserByAdmin({ username, password, name, major, quota = 30, 
   return { success: true, user: newUser };
 }
 
-async function updateUserQuota(userId, newQuota) {
+async function updateUserQuota(userId, newRegular, newVip) {
   const users = getUsers();
   const user = users.find(u => u.id === userId);
   if (user) {
-    user.regularQuota = parseInt(newQuota, 10) || 30;
+    if (newRegular !== undefined && newRegular !== null) {
+      user.regularQuota = parseInt(newRegular, 10) || 0;
+    }
+    if (newVip !== undefined && newVip !== null) {
+      user.vipQuota = parseInt(newVip, 10) || 0;
+    }
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 
     const sb = getSupabase();
     if (sb) {
       try {
-        await sb.from('users').update({ quota_regular: user.regularQuota }).eq('id', userId);
+        await sb.from('users').update({ 
+          quota_regular: user.regularQuota,
+          quota_vip: user.vipQuota
+        }).eq('id', userId);
       } catch (e) {
         console.warn('Supabase update quota error:', e);
       }

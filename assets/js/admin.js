@@ -11,9 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCsvExport();
 });
 
-// 1. إعداد واختبار اتصال Supabase
+// 1. إعداد Supabase (يعمل تلقائياً من الإعدادات المدمجة)
 function setupSupabaseConfig() {
   const form = document.getElementById('supabase-config-form');
+  if (!form) return;
+
   const urlInput = document.getElementById('sb-url');
   const keyInput = document.getElementById('sb-key');
   const statusBadge = document.getElementById('supabase-status-badge');
@@ -22,7 +24,7 @@ function setupSupabaseConfig() {
   if (urlInput) urlInput.value = config.url || '';
   if (keyInput) keyInput.value = config.anonKey || '';
 
-  if (config.url && config.anonKey) {
+  if (config.url && config.anonKey && statusBadge) {
     if (statusBadge) {
       statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800';
       statusBadge.textContent = 'متصل بـ Supabase';
@@ -69,14 +71,16 @@ function setupCreateUserForm() {
     const password = document.getElementById('new-password').value.trim();
     const name = document.getElementById('new-fullname').value.trim();
     const major = document.getElementById('new-major').value.trim();
-    const quota = parseInt(document.getElementById('new-quota').value, 10) || 30;
+    const regularQuota = parseInt(document.getElementById('new-quota-regular').value, 10) || 0;
+    const vipQuota = parseInt(document.getElementById('new-quota-vip').value, 10) || 0;
 
     const res = await createUserByAdmin({
       username,
       password,
       name,
       major,
-      quota,
+      regularQuota,
+      vipQuota,
       role: 'user'
     });
 
@@ -86,9 +90,10 @@ function setupCreateUserForm() {
     }
 
     form.reset();
-    document.getElementById('new-quota').value = 30;
+    document.getElementById('new-quota-regular').value = 30;
+    document.getElementById('new-quota-vip').value = 0;
     renderUsersTable();
-    alert(`تم إنشاء حساب الخريج (${name}) بنجاح!\nاسم الدخول: ${username}\nكلمة المرور: ${password}\nالكوتا المخصصة: ${quota} دعوة.`);
+    alert(`تم إنشاء حساب الخريج (${name}) بنجاح!\nاسم الدخول: ${username}\nكلمة المرور: ${password}\nالكوتا: ${regularQuota} عادية | ${vipQuota} VIP.`);
   });
 }
 
@@ -107,9 +112,15 @@ function renderUsersTable() {
 
   tbody.innerHTML = users.map(user => {
     const userInvs = allInvitations.filter(i => i.userId === user.id);
-    const usedCount = userInvs.length;
-    const quota = user.regularQuota !== undefined ? user.regularQuota : 30;
-    const remaining = Math.max(0, quota - usedCount);
+    const regUsed = userInvs.filter(i => i.type === 'عادية').length;
+    const vipUsed = userInvs.filter(i => i.type === 'VIP').length;
+    const totalUsed = userInvs.length;
+
+    const regQuota = user.regularQuota !== undefined ? user.regularQuota : 30;
+    const vipQuota = user.vipQuota !== undefined ? user.vipQuota : 0;
+
+    const regRemaining = Math.max(0, regQuota - regUsed);
+    const vipRemaining = Math.max(0, vipQuota - vipUsed);
 
     return `
       <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
@@ -117,15 +128,17 @@ function renderUsersTable() {
         <td class="py-3 px-4 font-mono font-bold text-indigo-700 dark:text-indigo-400 dir-ltr text-right">${escapeHtml(user.username)}</td>
         <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 dir-ltr text-right">${escapeHtml(user.password)}</td>
         <td class="py-3 px-4 text-slate-600 dark:text-slate-300">${escapeHtml(user.major)}</td>
-        <td class="py-3 px-4 font-bold font-mono text-slate-900 dark:text-white">${quota} دعوة</td>
-        <td class="py-3 px-4 font-semibold font-mono text-blue-600 dark:text-blue-400">${usedCount}</td>
-        <td class="py-3 px-4">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${remaining > 0 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400'}">
-            ${remaining} متبقية
-          </span>
+        <td class="py-3 px-4 font-bold font-mono text-slate-900 dark:text-white">
+          <span class="text-indigo-600 dark:text-indigo-400">${regQuota}</span>
+          <span class="text-[10px] text-slate-400 font-normal">(${regRemaining} متبقية)</span>
         </td>
+        <td class="py-3 px-4 font-bold font-mono text-amber-600 dark:text-amber-400">
+          <span>${vipQuota}</span>
+          <span class="text-[10px] text-amber-700/70 dark:text-amber-500/70 font-normal">(${vipRemaining} متبقية)</span>
+        </td>
+        <td class="py-3 px-4 font-semibold font-mono text-slate-700 dark:text-slate-200">${totalUsed} دعوة</td>
         <td class="py-3 px-4 text-center">
-          <button onclick="promptEditUserQuota('${user.id}', '${escapeHtml(user.name)}', ${quota})" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2 py-1">
+          <button onclick="promptEditUserQuota('${user.id}', '${escapeHtml(user.name)}', ${regQuota}, ${vipQuota})" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-2 py-1 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg">
             تعديل الكوتا
           </button>
         </td>
@@ -134,18 +147,24 @@ function renderUsersTable() {
   }).join('');
 }
 
-window.promptEditUserQuota = async function(userId, userName, currentQuota) {
-  const input = prompt(`أدخل عدد الدعوات (الكوتا) الجديد للخريج (${userName}):`, currentQuota);
-  if (input !== null) {
-    const num = parseInt(input, 10);
-    if (isNaN(num) || num < 0) {
-      alert('يرجى إدخال رقم صحيح.');
-      return;
-    }
-    await updateUserQuota(userId, num);
-    renderUsersTable();
-    alert(`تم تعديل كوتا الخريج (${userName}) إلى ${num} دعوة.`);
+window.promptEditUserQuota = async function(userId, userName, currentReg, currentVip) {
+  const regInput = prompt(`أدخل عدد الدعوات العادية الجديد للخريج (${userName}):`, currentReg);
+  if (regInput === null) return;
+
+  const vipInput = prompt(`أدخل عدد دعوات VIP الجديد للخريج (${userName}):`, currentVip);
+  if (vipInput === null) return;
+
+  const newReg = parseInt(regInput, 10);
+  const newVip = parseInt(vipInput, 10);
+
+  if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
+    alert('يرجى إدخال أرقام صحيحة للدعوات.');
+    return;
   }
+
+  await updateUserQuota(userId, newReg, newVip);
+  renderUsersTable();
+  alert(`تم تعديل كوتا (${userName}) بنجاح:\n- عادية: ${newReg}\n- VIP: ${newVip}`);
 };
 
 // 4. عرض جميع الدعوات الصادرة

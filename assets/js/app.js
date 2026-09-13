@@ -191,44 +191,59 @@ function setupDarkMode() {
   });
 }
 
-// 5. كرت إحصائيات الفعالية الحقيقية والـ 30 دعوة
+// 5. كرت إحصائيات الفعالية الحقيقية (دعوات عادية ودعوات VIP)
 function renderEventStatistics() {
   const user = getCurrentUser();
   if (!user) return;
 
+  const stats = getUserStats(user.id);
   const invitations = getInvitations({ userId: user.id });
-  const totalCreated = invitations.length;
-  const usedCount = invitations.filter(i => i.status === 'مستخدمة').length;
-  const regularQuota = user.regularQuota !== undefined ? user.regularQuota : 30;
-  const remaining = Math.max(0, regularQuota - totalCreated);
 
-  const percent = Math.min(100, Math.round((totalCreated / (regularQuota || 1)) * 100));
+  const totalRegularCreated = stats.regularUsed;
+  const totalVipCreated = stats.vipUsed;
+  const regularQuota = stats.regularAllowed;
+  const vipQuota = stats.vipAllowed;
+
+  const usedCount = invitations.filter(i => i.status === 'مستخدمة').length;
+  const totalRemaining = stats.regularRemaining + stats.vipRemaining;
+
+  const regPercent = regularQuota > 0 ? Math.min(100, Math.round((totalRegularCreated / regularQuota) * 100)) : 0;
+  const vipPercent = vipQuota > 0 ? Math.min(100, Math.round((totalVipCreated / vipQuota) * 100)) : 0;
 
   // تحديث عناصر الواجهة
   const regularRatioEl = document.getElementById('stat-regular-ratio');
   const regularBarEl = document.getElementById('stat-regular-bar');
+  const vipRatioEl = document.getElementById('stat-vip-ratio');
+  const vipBarEl = document.getElementById('stat-vip-bar');
+
   const totalRegEl = document.getElementById('stat-total-regular');
+  const totalVipEl = document.getElementById('stat-total-vip');
   const totalUsedEl = document.getElementById('stat-total-used');
   const totalUnusedEl = document.getElementById('stat-total-unused');
   const remainingBadge = document.getElementById('stat-remaining-badge');
   const baseQuotaText = document.getElementById('stat-base-quota-text');
   const formulaText = document.getElementById('stat-formula-text');
 
-  if (regularRatioEl) regularRatioEl.textContent = `${totalCreated} / ${regularQuota}`;
-  if (regularBarEl) regularBarEl.style.width = `${percent}%`;
-  if (totalRegEl) totalRegEl.textContent = totalCreated;
+  if (regularRatioEl) regularRatioEl.textContent = `${totalRegularCreated} / ${regularQuota}`;
+  if (regularBarEl) regularBarEl.style.width = `${regPercent}%`;
+
+  if (vipRatioEl) vipRatioEl.textContent = `${totalVipCreated} / ${vipQuota}`;
+  if (vipBarEl) vipBarEl.style.width = `${vipPercent}%`;
+
+  if (totalRegEl) totalRegEl.textContent = totalRegularCreated;
+  if (totalVipEl) totalVipEl.textContent = totalVipCreated;
   if (totalUsedEl) totalUsedEl.textContent = usedCount;
-  if (totalUnusedEl) totalUnusedEl.textContent = remaining;
+  if (totalUnusedEl) totalUnusedEl.textContent = totalRemaining;
 
   if (remainingBadge) {
-    remainingBadge.textContent = `المتبقي: ${remaining} دعوة`;
-    remainingBadge.className = remaining > 0
+    remainingBadge.textContent = `المتبقي: ${totalRemaining} دعوة (${stats.regularRemaining} عادية | ${stats.vipRemaining} VIP)`;
+    remainingBadge.className = totalRemaining > 0
       ? 'px-3 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/50'
       : 'px-3 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800/50';
   }
 
-  if (baseQuotaText) baseQuotaText.textContent = `الحد الأساسي: ${regularQuota} عادي`;
-  if (formulaText) formulaText.textContent = `الفعلي: ${regularQuota} دعوة مخصصة لحسابك`;
+  if (baseQuotaText) baseQuotaText.textContent = `الكوتا: ${regularQuota} عادي | ${vipQuota} VIP`;
+  if (formulaText) formulaText.textContent = `حساب معتمد`;
 }
 
 // 6. شريط البحث والفلترة المباشرة
