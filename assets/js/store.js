@@ -17,7 +17,7 @@ const STORAGE_KEYS = {
 const DEFAULT_EVENTS = [
   {
     id: 'EVT-01',
-    name: 'حفل تخرج تخصص لغة إنجليزية 2026',
+    name: 'حفل التخرج 2026',
     date: '2026-09-06',
     dateDisplay: '2026-09-06',
     timeDisplay: '00:00:00',
@@ -86,7 +86,7 @@ async function loginUser(username, password, remember = true) {
           password: row.password,
           name: row.name,
           initials: row.name && row.name.length >= 2 ? row.name.substring(0, 2) : 'خر',
-          major: row.major || 'لغة إنجليزية',
+          major: row.major || 'عام',
           role: row.role || 'user',
           regularQuota: row.quota_regular !== undefined && row.quota_regular !== null ? row.quota_regular : 27,
           vipQuota: row.quota_vip !== undefined && row.quota_vip !== null ? row.quota_vip : 3
@@ -648,7 +648,7 @@ async function createInvitation(userId, data) {
     guestName: cleanGuestName,
     phone: cleanPhone,
     graduateName: data.graduateName || user.name,
-    major: data.major || user.major || 'لغة إنجليزية',
+    major: data.major || user.major || 'عام',
     event: data.event || DEFAULT_EVENTS[0].name,
     peopleCount: 1,
     type,
@@ -973,7 +973,7 @@ async function transferInvitations(fromUserId, toUserId, count, type, eventName,
     direction: 'sent',
     count: countNum,
     type,
-    event: eventName || (DEFAULT_EVENTS[0]?.name || 'حفل تخرج تخصص لغة إنجليزية 2026'),
+    event: eventName || (DEFAULT_EVENTS[0]?.name || 'حفل التخرج 2026'),
     notes: notes || '',
     dateDisplay: new Date().toISOString().split('T')[0],
     timeDisplay: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })

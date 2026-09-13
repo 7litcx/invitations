@@ -1,12 +1,31 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نظام الدعوات الإلكترونية | Soul Media</title>
   
   <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
   
+  <!-- Open Graph / بطاقة المشاركة لمواقع التواصل وواتساب -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://invitations-xi-flax.vercel.app/">
+  <meta property="og:title" content="نظام الدعوات الإلكترونية | Soul Media">
+  <meta property="og:description" content="منصة Soul Media لإدارة وتصميم الدعوات الإلكترونية الفاخرة وتذاكر الدخول الذكية.">
+  <meta property="og:image" content="https://invitations-xi-flax.vercel.app/assets/images/og_image.png">
+  <meta property="og:image:secure_url" content="https://invitations-xi-flax.vercel.app/assets/images/og_image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="شعار سول ميديا - Soul Media">
+
+  <!-- بطاقة Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="نظام الدعوات الإلكترونية | Soul Media">
+  <meta name="twitter:description" content="منصة Soul Media لإدارة وتصميم الدعوات الإلكترونية الفاخرة وتذاكر الدخول الذكية.">
+  <meta name="twitter:image" content="https://invitations-xi-flax.vercel.app/assets/images/og_image.png">
+
   <!-- خط عربي رسمي وحديث -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,7 +104,7 @@
         </div>
         <div>
           <h2 class="text-xl font-black text-slate-900 dark:text-white">نظام الدعوات الإلكترونية</h2>
-          <p class="text-xs text-slate-400 font-medium mt-1">حفل تخرج تخصص لغة إنجليزية 2026</p>
+          <p class="text-xs text-slate-400 font-medium mt-1">منصة الدعوات وتذاكر الدخول الذكية</p>
         </div>
       </div>
 
@@ -156,7 +175,7 @@
                 <h1 class="font-black text-indigo-600 dark:text-indigo-400 text-sm leading-tight">Soul Media</h1>
                 <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800/40">دعوات</span>
               </div>
-              <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">حفل تخرج لغة إنجليزية 2026</p>
+              <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">منصة الدعوات الإلكترونية</p>
             </div>
           </div>
           
@@ -229,10 +248,6 @@
           </button>
 
           <span id="header-real-date" class="hidden md:inline-block text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">Sunday, 13 September 2026</span>
-          
-          <button id="btn-toggle-dark" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center text-sm transition shadow-sm" title="تبديل الوضع الليلي">
-            <i id="dark-icon" class="fa-regular fa-moon"></i>
-          </button>
 
           <!-- زر الدخول للوحة الأدمن إن كان المستخدم مشرفاً -->
           <a id="admin-panel-link" href="admin.html" class="hidden px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shadow-sm">
@@ -263,7 +278,7 @@
 
             <div class="event-stat-card dark:bg-slate-900 dark:border-slate-800">
               <div class="event-header-gradient px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-bold shadow-sm">
-                <span class="text-xs sm:text-sm font-black tracking-wide">حفل تخرج تخصص لغة إنجليزية 2026</span>
+                <span class="text-xs sm:text-sm font-black tracking-wide">حفل التخرج 2026</span>
                 <span class="font-mono text-[10px] sm:text-[11px] opacity-95 bg-white/20 px-2.5 py-1 rounded-lg">2026-09-06 00:00:00</span>
               </div>
 
@@ -361,7 +376,7 @@
               <div class="relative">
                 <select id="filter-event-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 appearance-none pr-8">
                   <option value="الكل">جميع الفعاليات</option>
-                  <option value="حفل تخرج تخصص لغة إنجليزية 2026">حفل تخرج تخصص لغة إنجليزية 2026</option>
+                  <option value="حفل التخرج 2026">حفل التخرج 2026</option>
                 </select>
                 <i class="fa-regular fa-calendar absolute top-3.5 left-3 text-slate-400 text-xs pointer-events-none"></i>
               </div>
@@ -509,7 +524,7 @@
               <div>
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اختر الفعالية *</label>
                 <select id="field-create-event" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                  <option value="حفل تخرج تخصص لغة إنجليزية 2026">حفل تخرج تخصص لغة إنجليزية 2026 (2026-09-06)</option>
+                  <option value="حفل التخرج 2026">حفل التخرج 2026 (2026-09-06)</option>
                 </select>
               </div>
 
@@ -571,7 +586,7 @@
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
               <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">الفعالية</label>
               <select id="transfer-event-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                <option value="حفل تخرج تخصص لغة إنجليزية 2026">حفل تخرج تخصص لغة إنجليزية 2026</option>
+                <option value="حفل التخرج 2026">حفل التخرج 2026</option>
               </select>
             </div>
 

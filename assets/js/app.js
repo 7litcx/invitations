@@ -1,6 +1,6 @@
 /**
- * app.js - نظام الدعوات الإلكترونية (حفل تخرج تخصص لغة إنجليزية 2026)
- * يدعم تسجيل الدخول باسم المستخدم وكلمة المرور فقط، وحذف كافة البيانات الوهمية
+ * app.js - نظام وتطبيق إدارة الدعوات والتذاكر الذكية
+ * حقوق التطوير والتصميم: Soul Media
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -256,32 +256,11 @@ function setupNavigation() {
   sidebarBackdrop?.addEventListener('click', closeMobileSidebar);
 }
 
-// 4. الوضع الليلي المطور
+// 4. الوضع الليلي الإجباري المعتمد
 function setupDarkMode() {
-  const toggleBtn = document.getElementById('btn-toggle-dark');
-  const icon = document.getElementById('dark-icon');
-  if (!toggleBtn) return;
-
-  const isDark = localStorage.getItem('theme_dark') === 'true';
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-    document.body.classList.add('dark');
-    if (icon) icon.className = 'fa-solid fa-sun text-amber-400';
-  } else {
-    document.documentElement.classList.remove('dark');
-    document.body.classList.remove('dark');
-    if (icon) icon.className = 'fa-regular fa-moon';
-  }
-
-  toggleBtn.addEventListener('click', () => {
-    const isNowDark = document.documentElement.classList.toggle('dark');
-    document.body.classList.toggle('dark', isNowDark);
-    localStorage.setItem('theme_dark', isNowDark);
-
-    if (icon) {
-      icon.className = isNowDark ? 'fa-solid fa-sun text-amber-400' : 'fa-regular fa-moon';
-    }
-  });
+  document.documentElement.classList.add('dark');
+  document.body.classList.add('dark');
+  localStorage.setItem('theme_dark', 'true');
 }
 
 // 5. كرت إحصائيات الفعالية الحقيقية (دعوات عادية ودعوات VIP)
@@ -640,7 +619,7 @@ function setupCreateForm() {
       phone,
       type,
       graduateName: gradName || user.name,
-      major: user.major || 'لغة إنجليزية',
+      major: user.major || 'عام',
       notes,
       event: eventName
     });
@@ -858,8 +837,8 @@ window.openShareModal = function(invId, guestName, relUrl) {
   if (waBtn) {
     const user = getCurrentUser();
     const gradName = user ? user.name : 'الخريج';
-    const major = (user && user.major) ? user.major : 'لغة إنجليزية';
-    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*\nالتخصص: *${major}*\n\nيرجى فتح الرابط لإبراز بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
+    const majorText = (user && user.major) ? `\nالتخصص: *${user.major}*` : '';
+    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*${majorText}\n\nيرجى فتح الرابط لإبراز بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
     waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   }
 

@@ -404,7 +404,7 @@ function setupCsvExport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `سجل_دعوات_حفل_تخرج_لغة_إنجليزية_${new Date().toISOString().substring(0,10)}.csv`;
+    a.download = `سجل_دعوات_حفل_التخرج_${new Date().toISOString().substring(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     showToast.success('تم تصدير سجل الدعوات إلى ملف Excel / CSV بنجاح!', 'تم التصدير');

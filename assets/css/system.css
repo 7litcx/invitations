@@ -8,18 +8,18 @@
   --primary-hover: #9072c9;
   --primary-gradient: linear-gradient(135deg, #a890d8 0%, #7855b8 100%);
   --sidebar-w: 270px;
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f1f5f9;
-  --border: #e2e8f0;
+  --bg-page: #08060d;
+  --bg-card: #110d1d;
+  --bg-card-subtle: #191428;
+  --border: #241d3b;
   --border-focus: #a890d8;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
 }
 
-/* الوضع الليلي عالي التباين والوضوح (Dark Mode High Contrast) */
-html.dark, body.dark {
+/* الوضع الليلي الدائم عالي التباين والفخامة (Permanent Dark Mode) */
+html, html.dark, body, body.dark {
   --bg-page: #08060d;
   --bg-card: #110d1d;
   --bg-card-subtle: #191428;
