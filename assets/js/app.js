@@ -51,11 +51,20 @@ function setupAuth() {
 
     renderEventStatistics();
     renderInvitationsTable();
+    renderTransferStats();
+    populateTransferRecipients();
 
-    // مزامنة سحابية هادئة في الخلفية لتحديث الجدول تلقائياً
-    syncUserInvitations(currentUser.id).then(() => {
+    // مزامنة سحابية هادئة في الخلفية لتحديث البيانات والجداول تلقائياً
+    Promise.all([
+      syncUsersFromSupabase(),
+      syncUserInvitations(currentUser.id),
+      syncTransfersFromSupabase(currentUser.id)
+    ]).then(() => {
       renderEventStatistics();
       renderInvitationsTable();
+      renderTransferStats();
+      renderTransfersLog();
+      populateTransferRecipients();
     });
   } else {
     loginContainer?.classList.remove('hidden');
@@ -141,6 +150,15 @@ function setupNavigation() {
       if (titleEl) titleEl.textContent = 'تحويل الدعوات';
       renderTransferStats();
       renderTransfersLog();
+      populateTransferRecipients();
+      syncUsersFromSupabase().then(() => {
+        populateTransferRecipients();
+        renderTransferStats();
+        renderEventStatistics();
+      });
+      syncTransfersFromSupabase(getCurrentUser()?.id).then(() => {
+        renderTransfersLog();
+      });
     } else if (target === 'edit') {
       viewEdit?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'تعديل بيانات الدعوة';
@@ -429,43 +447,110 @@ function setupCreateForm() {
 }
 
 // 10. قسم تحويل الدعوات
-function setupTransferSection() {
+function populateTransferRecipients() {
   const user = getCurrentUser();
   const recipientSelect = document.getElementById('transfer-recipient-select');
+  if (!recipientSelect || !user) return;
 
-  if (recipientSelect && user) {
-    const users = getUsers().filter(u => u.id !== user.id);
-    recipientSelect.innerHTML = `
-      <option value="">اكتب أو اختر اسم المستخدم للبحث...</option>
-      ${users.map(u => `<option value="${u.id}">${u.name} (${u.major})</option>`).join('')}
-    `;
+  const currentVal = recipientSelect.value;
+  let otherUsers = getUsers().filter(u => u.id !== user.id && u.role !== 'admin');
+  
+  if (otherUsers.length === 0) {
+    otherUsers = getUsers().filter(u => u.id !== user.id);
+  }
+
+  if (otherUsers.length === 0) {
+    recipientSelect.innerHTML = `<option value="">لا يوجد مستخدمون آخرون مسجلون حالياً...</option>`;
+    return;
+  }
+
+  recipientSelect.innerHTML = `
+    <option value="">اختر الخريج المستقبل للدعوات...</option>
+    ${otherUsers.map(u => `
+      <option value="${u.id}" ${u.id === currentVal ? 'selected' : ''}>
+        ${escapeHtml(u.name)} (${escapeHtml(u.major || 'خريج')})
+      </option>
+    `).join('')}
+  `;
+}
+
+function updateTransferCountLimits() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const stats = getUserStats(user.id);
+  const typeSelect = document.getElementById('transfer-type-select');
+  const countInput = document.getElementById('transfer-count-input');
+  if (!countInput) return;
+
+  const type = typeSelect ? typeSelect.value : 'عادية';
+  const maxAvailable = type === 'VIP' ? stats.vipRemaining : stats.regularRemaining;
+
+  countInput.max = maxAvailable;
+  if (maxAvailable === 0) {
+    countInput.value = 0;
+  } else if (parseInt(countInput.value, 10) > maxAvailable || parseInt(countInput.value, 10) <= 0) {
+    countInput.value = 1;
+  }
+}
+
+function setupTransferSection() {
+  populateTransferRecipients();
+
+  const typeSelect = document.getElementById('transfer-type-select');
+  if (typeSelect) {
+    typeSelect.addEventListener('change', updateTransferCountLimits);
   }
 
   const submitBtn = document.getElementById('btn-submit-transfer');
   if (submitBtn) {
     submitBtn.addEventListener('click', async () => {
-      const recipientId = recipientSelect.value;
-      const eventName = document.getElementById('transfer-event-select').value;
-      const type = document.getElementById('transfer-type-select').value;
-      const count = document.getElementById('transfer-count-input').value;
-      const notes = document.getElementById('transfer-notes').value;
+      const user = getCurrentUser();
+      if (!user) {
+        alert('يرجى تسجيل الدخول أولاً.');
+        return;
+      }
+
+      const recipientSelect = document.getElementById('transfer-recipient-select');
+      const recipientId = recipientSelect?.value;
+      const eventName = document.getElementById('transfer-event-select')?.value;
+      const type = document.getElementById('transfer-type-select')?.value || 'عادية';
+      const count = document.getElementById('transfer-count-input')?.value;
+      const notes = document.getElementById('transfer-notes')?.value;
 
       if (!recipientId) {
-        alert('يرجى اختيار المستخدم المستقبل.');
+        alert('يرجى اختيار الخريج المستقبل للتحويل.');
         return;
       }
 
-      const res = await transferInvitations(user.id, recipientId, count, type, eventName, notes);
-      if (!res.success) {
+      const countNum = parseInt(count, 10);
+      if (isNaN(countNum) || countNum <= 0) {
+        alert('يرجى تحديد عدد صحيح موجب من الدعوات.');
+        return;
+      }
+
+      const origHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري التحويل...</span>';
+
+      try {
+        const res = await transferInvitations(user.id, recipientId, countNum, type, eventName, notes);
+        if (!res.success) {
+          alert(res.message);
+          return;
+        }
+
         alert(res.message);
-        return;
+        document.getElementById('transfer-notes').value = '';
+        renderTransferStats();
+        renderTransfersLog();
+        renderEventStatistics();
+        updateTransferCountLimits();
+      } catch (err) {
+        alert('حدث خطأ أثناء إجراء التحويل.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
       }
-
-      alert(res.message);
-      document.getElementById('transfer-notes').value = '';
-      renderTransferStats();
-      renderTransfersLog();
-      renderEventStatistics();
     });
   }
 }
@@ -480,6 +565,8 @@ function renderTransferStats() {
 
   if (regEl) regEl.textContent = stats.regularRemaining;
   if (vipEl) vipEl.textContent = stats.vipRemaining;
+
+  updateTransferCountLimits();
 }
 
 function renderTransfersLog() {

@@ -2,13 +2,21 @@
  * admin.js - منطق لوحة المشرف لإدارة المستخدمين، الكوتا، وإعدادات Supabase
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initStore();
   setupSupabaseConfig();
   renderUsersTable();
   renderAdminInvitationsTable();
   setupCreateUserForm();
   setupCsvExport();
+
+  // جلب كافة المستخدمين والدعوات من Supabase وتحديث الجداول
+  await Promise.all([
+    syncUsersFromSupabase(),
+    syncUserInvitations()
+  ]);
+  renderUsersTable();
+  renderAdminInvitationsTable();
 });
 
 // 1. إعداد Supabase (يعمل تلقائياً من الإعدادات المدمجة)

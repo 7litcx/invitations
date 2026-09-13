@@ -238,6 +238,59 @@ async function updateUserQuota(userId, newRegular, newVip) {
   return false;
 }
 
+// مزامنة كافة المستخدمين من Supabase وحفظهم محلياً
+async function syncUsersFromSupabase() {
+  const sb = getSupabase();
+  if (!sb) return getUsers();
+
+  try {
+    const { data, error } = await sb.from('users').select('*');
+    if (!error && data && data.length > 0) {
+      const mappedUsers = data.map(d => ({
+        id: d.id,
+        username: d.username,
+        password: d.password,
+        name: d.name,
+        initials: d.name && d.name.length >= 2 ? d.name.substring(0, 2) : 'خر',
+        major: d.major || '',
+        role: d.role || 'user',
+        regularQuota: d.quota_regular !== undefined && d.quota_regular !== null ? d.quota_regular : 30,
+        vipQuota: d.quota_vip !== undefined && d.quota_vip !== null ? d.quota_vip : 0
+      }));
+
+      // دمج المستخدمين محلياً
+      const localUsers = getUsers();
+      const userMap = new Map();
+      localUsers.forEach(u => userMap.set(u.id, u));
+      mappedUsers.forEach(u => {
+        const existing = userMap.get(u.id);
+        if (existing) {
+          userMap.set(u.id, { ...existing, ...u });
+        } else {
+          userMap.set(u.id, u);
+        }
+      });
+
+      const mergedUsers = Array.from(userMap.values());
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(mergedUsers));
+
+      // تحديث كوتا المستخدم الحالي إن كان مسجلاً
+      const curUser = getCurrentUser();
+      if (curUser) {
+        const fresh = mergedUsers.find(u => u.id === curUser.id || u.username === curUser.username);
+        if (fresh) {
+          setCurrentUser(fresh);
+        }
+      }
+
+      return mergedUsers;
+    }
+  } catch (e) {
+    console.warn('Sync users error:', e);
+  }
+  return getUsers();
+}
+
 // ----------------------------------------------------------------
 // 3. إدارة كوتا وإحصائيات المستخدم
 // ----------------------------------------------------------------
@@ -491,12 +544,57 @@ function getTransfers(userId) {
   return list;
 }
 
+// مزامنة سجل التحويلات من Supabase
+async function syncTransfersFromSupabase(userId) {
+  const sb = getSupabase();
+  if (!sb) return getTransfers(userId);
+
+  try {
+    let query = sb.from('transfers').select('*').order('created_at', { ascending: false });
+    if (userId) {
+      query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+    }
+
+    const { data, error } = await query;
+    if (!error && data) {
+      const mapped = data.map(d => ({
+        id: d.id,
+        fromUserId: d.from_user_id,
+        toUserId: d.to_user_id,
+        fromUserName: d.from_user_name,
+        toUserName: d.to_user_name,
+        direction: d.from_user_id === userId ? 'sent' : 'received',
+        count: d.count,
+        type: d.type || 'عادية',
+        event: d.event,
+        notes: d.notes || '',
+        dateDisplay: d.created_at ? new Date(d.created_at).toLocaleDateString('ar-SA') : 'الآن',
+        timeDisplay: d.created_at ? new Date(d.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''
+      }));
+
+      // دمج وحفظ محلي
+      const local = getTransfers();
+      const mergedMap = new Map();
+      local.forEach(item => mergedMap.set(item.id, item));
+      mapped.forEach(item => mergedMap.set(item.id, item));
+
+      const mergedList = Array.from(mergedMap.values());
+      localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify(mergedList));
+      return userId ? mergedList.filter(t => t.fromUserId === userId || t.toUserId === userId) : mergedList;
+    }
+  } catch (e) {
+    console.warn('Sync transfers error:', e);
+  }
+  return getTransfers(userId);
+}
+
 async function transferInvitations(fromUserId, toUserId, count, type, eventName, notes = '') {
+  // التأكد من جلب أحدث المستخدمين
   const fromUser = getUser(fromUserId);
   const toUser = getUser(toUserId);
 
   if (!fromUser || !toUser) {
-    return { success: false, message: 'يرجى اختيار المستخدم المستقبل.' };
+    return { success: false, message: 'يرجى اختيار المستخدم المستقبل للدعوات.' };
   }
   if (fromUserId === toUserId) {
     return { success: false, message: 'لا يمكنك تحويل الدعوات إلى نفسك.' };
@@ -504,31 +602,57 @@ async function transferInvitations(fromUserId, toUserId, count, type, eventName,
 
   const countNum = parseInt(count, 10);
   if (isNaN(countNum) || countNum <= 0) {
-    return { success: false, message: 'يرجى إدخال عدد صحيح من الدعوات.' };
+    return { success: false, message: 'يرجى إدخال عدد صحيح موجب من الدعوات (1 فأكثر).' };
   }
 
   const stats = getUserStats(fromUserId);
-  if (type === 'عادية' && stats.regularRemaining < countNum) {
-    return { success: false, message: `رصيدك المتاح من الدعوات العادية هو ${stats.regularRemaining} فقط.` };
-  }
-  if (type === 'VIP' && stats.vipRemaining < countNum) {
-    return { success: false, message: `رصيدك المتاح من دعوات VIP هو ${stats.vipRemaining} فقط.` };
+  if (type === 'VIP') {
+    if (stats.vipRemaining < countNum) {
+      return { success: false, message: `رصيدك المتاح من دعوات VIP هو ${stats.vipRemaining} فقط، لا يمكنك تحويل ${countNum}.` };
+    }
+  } else {
+    if (stats.regularRemaining < countNum) {
+      return { success: false, message: `رصيدك المتاح من الدعوات العادية هو ${stats.regularRemaining} فقط، لا يمكنك تحويل ${countNum}.` };
+    }
   }
 
-  // تعديل الكوتا
+  // حساب الكوتا الجديدة
+  let newFromReg = fromUser.regularQuota !== undefined ? fromUser.regularQuota : 30;
+  let newFromVip = fromUser.vipQuota !== undefined ? fromUser.vipQuota : 0;
+  let newToReg = toUser.regularQuota !== undefined ? toUser.regularQuota : 30;
+  let newToVip = toUser.vipQuota !== undefined ? toUser.vipQuota : 0;
+
+  if (type === 'VIP') {
+    newFromVip = Math.max(0, newFromVip - countNum);
+    newToVip = newToVip + countNum;
+  } else {
+    newFromReg = Math.max(0, newFromReg - countNum);
+    newToReg = newToReg + countNum;
+  }
+
+  // 1. تحديث جدول المستخدمين المحلي
   const users = getUsers();
   const uFrom = users.find(u => u.id === fromUserId);
   const uTo = users.find(u => u.id === toUserId);
-
-  if (type === 'VIP') {
-    uFrom.vipQuota = Math.max(0, (uFrom.vipQuota || 0) - countNum);
-    uTo.vipQuota = (uTo.vipQuota || 0) + countNum;
-  } else {
-    uFrom.regularQuota = Math.max(0, (uFrom.regularQuota || 30) - countNum);
-    uTo.regularQuota = (uTo.regularQuota || 30) + countNum;
+  if (uFrom) {
+    uFrom.regularQuota = newFromReg;
+    uFrom.vipQuota = newFromVip;
+  }
+  if (uTo) {
+    uTo.regularQuota = newToReg;
+    uTo.vipQuota = newToVip;
   }
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
 
+  // 2. تحديث كائن المستخدم الحالي في التخزين المحلي فوراً
+  const curUser = getCurrentUser();
+  if (curUser && curUser.id === fromUserId) {
+    curUser.regularQuota = newFromReg;
+    curUser.vipQuota = newFromVip;
+    setCurrentUser(curUser);
+  }
+
+  // 3. إنشاء سجل التحويل
   const newTransfer = {
     id: `TR-${Date.now()}`,
     fromUserId,
@@ -538,31 +662,42 @@ async function transferInvitations(fromUserId, toUserId, count, type, eventName,
     direction: 'sent',
     count: countNum,
     type,
-    event: eventName || DEFAULT_EVENTS[0].name,
-    notes,
+    event: eventName || (DEFAULT_EVENTS[0]?.name || 'حفل تخرج الدفعة السادسة تقنية معلومات'),
+    notes: notes || '',
     dateDisplay: 'الآن',
-    timeDisplay: new Date().toLocaleTimeString('ar-SA')
+    timeDisplay: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
   };
 
   const transfers = getTransfers();
   transfers.unshift(newTransfer);
   localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify(transfers));
 
-  // مزامنة Supabase
+  // 4. مزامنة سحابية مع Supabase (تحديث كوتا الطرفين وإضافة سجل التحويل)
   const sb = getSupabase();
   if (sb) {
-    sb.from('transfers').insert([{
-      id: newTransfer.id,
-      from_user_id: fromUserId,
-      to_user_id: toUserId,
-      from_user_name: fromUser.name,
-      to_user_name: toUser.name,
-      count: countNum,
-      type,
-      event: newTransfer.event,
-      notes
-    }]).then(() => {});
+    try {
+      await Promise.all([
+        sb.from('users').update({ quota_regular: newFromReg, quota_vip: newFromVip }).eq('id', fromUserId),
+        sb.from('users').update({ quota_regular: newToReg, quota_vip: newToVip }).eq('id', toUserId),
+        sb.from('transfers').insert([{
+          id: newTransfer.id,
+          from_user_id: fromUserId,
+          to_user_id: toUserId,
+          from_user_name: fromUser.name,
+          to_user_name: toUser.name,
+          count: countNum,
+          type,
+          event: newTransfer.event,
+          notes: notes || ''
+        }])
+      ]);
+    } catch (err) {
+      console.warn('Supabase transfer sync warning:', err);
+    }
   }
 
-  return { success: true, message: `تم تحويل ${countNum} دعوة بنجاح إلى ${toUser.name}!` };
+  return { 
+    success: true, 
+    message: `تم تحويل ${countNum} دعوة (${type}) بنجاح إلى ${toUser.name}!` 
+  };
 }
