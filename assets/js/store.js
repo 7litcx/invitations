@@ -468,6 +468,7 @@ async function createInvitation(userId, data) {
     guestName: data.guestName.trim(),
     phone: data.phone.trim(),
     graduateName: data.graduateName || user.name,
+    major: data.major || user.major || 'لغة إنجليزية',
     event: data.event || DEFAULT_EVENTS[0].name,
     peopleCount: 1,
     type,

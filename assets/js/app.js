@@ -509,6 +509,7 @@ function setupCreateForm() {
       phone,
       type,
       graduateName: gradName || user.name,
+      major: user.major || 'لغة إنجليزية',
       notes,
       event: eventName
     });
@@ -724,7 +725,8 @@ window.openShareModal = function(invId, guestName, relUrl) {
   if (waBtn) {
     const user = getCurrentUser();
     const gradName = user ? user.name : 'الخريج';
-    const text = `🎓 *دعوة لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*\n(حفل تخرج تخصص لغة إنجليزية 2026)\n\nتفضلوا بالاطلاع على بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
+    const major = (user && user.major) ? user.major : 'لغة إنجليزية';
+    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*\nالتخصص: *${major}*\n\nيرجى فتح الرابط لإبراز بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
     waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   }
 

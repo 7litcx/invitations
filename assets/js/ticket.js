@@ -122,7 +122,18 @@ function generateTicketQR(invitation) {
 function setupTicketActions(invitation) {
   // زر واتساب
   document.getElementById('btn-ticket-whatsapp')?.addEventListener('click', () => {
-    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل تخرج تخصص لغة إنجليزية 2026*\n\nالمكرم/ة: *${invitation.guestName}*\nبدعوة من: *${invitation.graduateName}*\nنوع الدعوة: *${invitation.type}*\nرقم التذكرة: *${invitation.id}*\n\nيرجى فتح الرابط لإبراز بطاقة الدعوة والباركود المخصص عند بوابة الدخول:\n${window.location.href}`;
+    let major = invitation.major;
+    if (!major && invitation.userId && typeof getUser === 'function') {
+      const gradUser = getUser(invitation.userId);
+      if (gradUser && gradUser.major) major = gradUser.major;
+    }
+    if (!major && typeof getCurrentUser === 'function') {
+      const curUser = getCurrentUser();
+      if (curUser && curUser.major) major = curUser.major;
+    }
+    if (!major) major = 'لغة إنجليزية';
+
+    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${invitation.guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${invitation.graduateName}*\nالتخصص: *${major}*\nنوع الدعوة: *${invitation.type}*\n\nيرجى فتح الرابط لإبراز بطاقة الدعوة والباركود المخصص عند بوابة الدخول:\n${window.location.href}`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   });
