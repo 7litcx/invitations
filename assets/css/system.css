@@ -787,20 +787,31 @@ html.dark .toast-close-btn:hover {
 .scanner-viewport-wrapper {
   position: relative;
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
   margin: 0 auto;
-  aspect-ratio: 1 / 1;
+  min-height: 280px;
   background-color: #050811;
   border-radius: 1.25rem;
   overflow: hidden;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(99, 102, 241, 0.3);
+  border: 2px solid rgba(99, 102, 241, 0.4);
 }
 
-.scanner-viewport-wrapper video {
+#qr-reader {
   width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
+  border: none !important;
+}
+
+#qr-reader video {
+  border-radius: 1rem;
+}
+
+#qr-reader__scan_region {
+  background: transparent !important;
+}
+
+#qr-reader__dashboard_section_csr {
+  display: none !important;
 }
 
 .scanner-laser-line {
@@ -812,29 +823,21 @@ html.dark .toast-close-btn:hover {
   background: linear-gradient(90deg, transparent, #22c55e, #4ade80, transparent);
   box-shadow: 0 0 14px 4px rgba(74, 222, 128, 0.75);
   z-index: 10;
-  animation: scanLaser 2.2s ease-in-out infinite alternate;
+  pointer-events: none;
+  animation: scanLaser 2s ease-in-out infinite alternate;
 }
 
 @keyframes scanLaser {
   0% {
-    top: 6%;
+    top: 10%;
     opacity: 0.3;
   }
   50% {
     opacity: 1;
   }
   100% {
-    top: 92%;
+    top: 90%;
     opacity: 0.4;
   }
-}
-
-.scanner-target-corners {
-  position: absolute;
-  inset: 12%;
-  border: 2px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 1rem;
-  pointer-events: none;
-  z-index: 5;
 }
 

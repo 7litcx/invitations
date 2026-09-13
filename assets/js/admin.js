@@ -357,10 +357,21 @@ async function startCameraScanner() {
       html5QrScanner = new Html5Qrcode("qr-reader");
     }
 
+    // إعدادات محسنة للمسح فائق السرعة عبر كامل الإطار بدون تقييد صارم للمربع
     const config = {
-      fps: 15,
-      qrbox: { width: 220, height: 220 },
-      aspectRatio: 1.0
+      fps: 20,
+      qrbox: (viewfinderWidth, viewfinderHeight) => {
+        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+        const qrboxSize = Math.floor(minEdge * 0.82);
+        return {
+          width: qrboxSize,
+          height: qrboxSize
+        };
+      },
+      aspectRatio: 1.0,
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
     };
 
     await html5QrScanner.start(
@@ -382,7 +393,7 @@ async function startCameraScanner() {
     if (cameraBtnText) cameraBtnText.textContent = 'إيقاف تشغيل الكاميرا';
   } catch (err) {
     console.error('Camera start error:', err);
-    showToast.error('يرجى السماح بصلاحية الكاميرا في المتصفح للتمكن من مسح التذاكر.', 'إذن الكاميرا');
+    showToast.error('يرجى التأكد من منح صلاحية الكاميرا للمتصفح للتمكن من مسح التذاكر.', 'إذن الكاميرا');
     laserEl?.classList.add('hidden');
     if (cameraBtnText) cameraBtnText.textContent = 'تشغيل الكاميرا للمسح';
   }
