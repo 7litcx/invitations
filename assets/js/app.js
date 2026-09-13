@@ -118,6 +118,14 @@ function setupNavigation() {
   const navInv = document.getElementById('nav-invitations');
   const navCreate = document.getElementById('nav-create');
   const navTransfer = document.getElementById('nav-transfer');
+
+  const mobileInv = document.getElementById('mobile-nav-invitations');
+  const mobileCreate = document.getElementById('mobile-nav-create');
+  const mobileTransfer = document.getElementById('mobile-nav-transfer');
+
+  const sidebar = document.getElementById('app-sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const btnCloseSidebar = document.getElementById('btn-close-sidebar');
   
   const btnGotoTransfer = document.getElementById('btn-goto-transfer');
   const btnGotoCreate = document.getElementById('btn-goto-create');
@@ -130,22 +138,35 @@ function setupNavigation() {
   const viewEdit = document.getElementById('view-edit');
   const titleEl = document.getElementById('current-view-title');
 
+  function closeMobileSidebar() {
+    sidebar?.classList.remove('open');
+    sidebarBackdrop?.classList.remove('active');
+  }
+
+  function openMobileSidebar() {
+    sidebar?.classList.add('open');
+    sidebarBackdrop?.classList.add('active');
+  }
+
   window.switchTab = function(target) {
-    [navInv, navCreate, navTransfer].forEach(n => n?.classList.remove('active'));
+    [navInv, navCreate, navTransfer, mobileInv, mobileCreate, mobileTransfer].forEach(n => n?.classList.remove('active'));
     [viewInv, viewCreate, viewTransfer, viewEdit].forEach(v => v?.classList.add('hidden'));
 
     if (target === 'invitations') {
       navInv?.classList.add('active');
+      mobileInv?.classList.add('active');
       viewInv?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'قائمة الدعوات';
       renderEventStatistics();
       renderInvitationsTable();
     } else if (target === 'create') {
       navCreate?.classList.add('active');
+      mobileCreate?.classList.add('active');
       viewCreate?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'إنشاء دعوة جديدة';
     } else if (target === 'transfer') {
       navTransfer?.classList.add('active');
+      mobileTransfer?.classList.add('active');
       viewTransfer?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'تحويل الدعوات';
       renderTransferStats();
@@ -164,12 +185,17 @@ function setupNavigation() {
       if (titleEl) titleEl.textContent = 'تعديل بيانات الدعوة';
     }
 
-    document.getElementById('app-sidebar')?.classList.remove('open');
+    closeMobileSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   navInv?.addEventListener('click', () => switchTab('invitations'));
   navCreate?.addEventListener('click', () => switchTab('create'));
   navTransfer?.addEventListener('click', () => switchTab('transfer'));
+
+  mobileInv?.addEventListener('click', () => switchTab('invitations'));
+  mobileCreate?.addEventListener('click', () => switchTab('create'));
+  mobileTransfer?.addEventListener('click', () => switchTab('transfer'));
   
   btnGotoTransfer?.addEventListener('click', () => switchTab('transfer'));
   btnGotoCreate?.addEventListener('click', () => switchTab('create'));
@@ -177,8 +203,15 @@ function setupNavigation() {
   btnCancelEdit?.addEventListener('click', () => switchTab('invitations'));
 
   document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
-    document.getElementById('app-sidebar')?.classList.toggle('open');
+    if (sidebar?.classList.contains('open')) {
+      closeMobileSidebar();
+    } else {
+      openMobileSidebar();
+    }
   });
+
+  btnCloseSidebar?.addEventListener('click', closeMobileSidebar);
+  sidebarBackdrop?.addEventListener('click', closeMobileSidebar);
 }
 
 // 4. الوضع الليلي المطور

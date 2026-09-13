@@ -29,20 +29,20 @@
 
   <!-- الترويسة العلوية -->
   <header class="bg-indigo-950 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg text-indigo-300">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg text-indigo-300 flex-shrink-0">
           <i class="fa-solid fa-user-shield"></i>
         </div>
         <div>
-          <h1 class="text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
-          <p class="text-xs text-indigo-200">إدارة حسابات الخريجين وتخصيص كوتا الدعوات العادية و VIP</p>
+          <h1 class="text-sm sm:text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
+          <p class="text-[11px] sm:text-xs text-indigo-200">إدارة حسابات الخريجين وتخصيص كوتا الدعوات العادية و VIP</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5">
-        <a href="index.html" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition">
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+        <a href="index.html" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition w-full sm:w-auto">
           <i class="fa-solid fa-arrow-left"></i>
           <span>العودة لبوابة الدعوات</span>
         </a>
@@ -52,12 +52,12 @@
   </header>
 
   <!-- المحتوى الرئيسي -->
-  <main class="max-w-6xl mx-auto w-full px-4 py-8 space-y-8">
+  <main class="max-w-6xl mx-auto w-full px-3.5 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
     <!-- ===================================================
          1. إنشاء حساب مستخدم جديد وتحديد كوتا العادية و VIP
          =================================================== -->
-    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
       
       <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
         <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">
@@ -135,7 +135,7 @@
     <!-- ===================================================
          3. جدول إدارة حسابات المستخدمين
          =================================================== -->
-    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
       
       <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
@@ -144,8 +144,8 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-        <table class="w-full text-right text-xs">
+      <div class="table-responsive-wrapper rounded-xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-right text-xs whitespace-nowrap">
           <thead class="bg-slate-50/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="py-3 px-4">الاسم الكامل</th>
@@ -169,7 +169,7 @@
     <!-- ===================================================
          4. سجل جميع الدعوات الصادرة (All Invitations)
          =================================================== -->
-    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
@@ -177,14 +177,14 @@
           <p class="text-[11px] text-slate-500 dark:text-slate-400">متابعة كافة الدعوات الحقيقية الصادرة من جميع الخريجين</p>
         </div>
 
-        <button id="btn-export-admin-csv" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+        <button id="btn-export-admin-csv" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition w-full sm:w-auto">
           <i class="fa-solid fa-file-excel"></i>
           <span>تصدير السجل كملف Excel / CSV</span>
         </button>
       </div>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-        <table class="w-full text-right text-xs">
+      <div class="table-responsive-wrapper rounded-xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-right text-xs whitespace-nowrap">
           <thead class="bg-slate-50/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="py-3 px-4">رقم الدعوة</th>
