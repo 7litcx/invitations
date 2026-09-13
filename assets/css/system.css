@@ -787,9 +787,9 @@ html.dark .toast-close-btn:hover {
 .scanner-viewport-wrapper {
   position: relative;
   width: 100%;
-  max-width: 360px;
+  max-width: 440px;
   margin: 0 auto;
-  min-height: 280px;
+  min-height: 320px;
   background-color: #050811;
   border-radius: 1.25rem;
   overflow: hidden;
@@ -804,6 +804,7 @@ html.dark .toast-close-btn:hover {
 
 #qr-reader video {
   border-radius: 1rem;
+  width: 100% !important;
 }
 
 #qr-reader__scan_region {

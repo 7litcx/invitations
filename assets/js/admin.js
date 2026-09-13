@@ -357,17 +357,9 @@ async function startCameraScanner() {
       html5QrScanner = new Html5Qrcode("qr-reader");
     }
 
-    // إعدادات محسنة للمسح فائق السرعة عبر كامل الإطار بدون تقييد صارم للمربع
+    // فحص شامل عبر كامل الإطار (بدون حصر أو تقييد لسرعة الالتقاط الفوري)
     const config = {
-      fps: 20,
-      qrbox: (viewfinderWidth, viewfinderHeight) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const qrboxSize = Math.floor(minEdge * 0.82);
-        return {
-          width: qrboxSize,
-          height: qrboxSize
-        };
-      },
+      fps: 25,
       aspectRatio: 1.0,
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: true
@@ -384,7 +376,7 @@ async function startCameraScanner() {
         await verifyTicketCode(decodedText);
       },
       (errorMessage) => {
-        // خطأ قراءة فريم فردي (طبيعي أثناء البحث عن الكود)
+        // فحص مستمر
       }
     );
 

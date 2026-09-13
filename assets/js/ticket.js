@@ -98,8 +98,8 @@ function generateTicketQR(invitation) {
     try {
       new QRCode(container, {
         text: fullUrl,
-        width: 160,
-        height: 160,
+        width: 220,
+        height: 220,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
@@ -113,7 +113,7 @@ function generateTicketQR(invitation) {
   // المحاولة 2 (احتياطي دائم): إذا لم تظهر مكتبة JS يولد الباركود عبر صورة سريعة
   if (!qrGenerated || container.children.length === 0) {
     const qrImg = document.createElement('img');
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=000000&bgcolor=ffffff&data=${encodeURIComponent(fullUrl)}`;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=000000&bgcolor=ffffff&data=${encodeURIComponent(fullUrl)}`;
     qrImg.alt = `QR-${invitation.id}`;
     qrImg.className = 'w-full h-full object-contain';
     container.appendChild(qrImg);

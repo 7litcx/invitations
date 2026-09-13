@@ -67,18 +67,18 @@
     /* موضع الباركود المخصص الممسوح ضوئياً متطابق بدقة في قلب الزوايا المذهبة */
     .qr-scanner-box {
       position: absolute;
-      top: 89.2%;
+      top: 89%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: clamp(72px, 22vw, 86px);
-      height: clamp(72px, 22vw, 86px);
+      width: clamp(92px, 26vw, 110px);
+      height: clamp(92px, 26vw, 110px);
       display: flex;
       align-items: center;
       justify-content: center;
       background: #ffffff;
-      padding: 3px;
-      border-radius: 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      padding: 4px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.22);
       z-index: 10;
     }
 
@@ -86,6 +86,7 @@
       width: 100% !important;
       height: 100% !important;
       object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
       image-rendering: pixelated;
     }
 
