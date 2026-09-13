@@ -17,12 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 1. إدارة المصادقة وتسجيل الدخول (اسم المستخدم + كلمة المرور فقط)
-function setupAuth() {
+// 1. إدارة المصادقة وتحديث الواجهة
+function updateAuthUI() {
   const loginContainer = document.getElementById('login-container');
   const mainAppContainer = document.getElementById('main-app-container');
-  const loginForm = document.getElementById('system-login-form');
-  const errorAlert = document.getElementById('login-error-alert');
-  const logoutBtn = document.getElementById('btn-logout-sidebar');
   const adminLink = document.getElementById('admin-panel-link');
 
   const currentUser = getCurrentUser();
@@ -70,9 +68,18 @@ function setupAuth() {
     loginContainer?.classList.remove('hidden');
     mainAppContainer?.classList.add('hidden');
   }
+}
 
-  // معالجة نموذج تسجيل الدخول
-  if (loginForm) {
+function setupAuth() {
+  const loginForm = document.getElementById('system-login-form');
+  const errorAlert = document.getElementById('login-error-alert');
+  const logoutBtn = document.getElementById('btn-logout-sidebar');
+
+  updateAuthUI();
+
+  // معالجة نموذج تسجيل الدخول (مرة واحدة فقط)
+  if (loginForm && !loginForm.dataset.initialized) {
+    loginForm.dataset.initialized = 'true';
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const uInput = document.getElementById('login-username').value;
@@ -94,7 +101,7 @@ function setupAuth() {
           return;
         }
 
-        setupAuth();
+        updateAuthUI();
       } else {
         if (errorAlert) {
           errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';
@@ -105,11 +112,12 @@ function setupAuth() {
     });
   }
 
-  // تسجيل الخروج
-  if (logoutBtn) {
+  // تسجيل الخروج (مرة واحدة فقط)
+  if (logoutBtn && !logoutBtn.dataset.initialized) {
+    logoutBtn.dataset.initialized = 'true';
     logoutBtn.addEventListener('click', () => {
       logoutUser();
-      setupAuth();
+      updateAuthUI();
       showToast.info('تم تسجيل الخروج بنجاح. نراك قريباً!', 'تسجيل الخروج');
     });
   }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * notifications.js - نظام الإشعارات والتنبيهات العصرية الفاخرة
  * يدعم التنبيهات المنبثقة (Toast Notifications) مع أيقونات تفاعلية وشريط وقت وأصوات بصرية أنيقة
  */
@@ -31,8 +31,11 @@
     info: 'معلومة'
   };
 
+  // سجل لمنع تكرار الإشعارات المتطابقة في نفس اللحظة (Deduplication)
+  const recentToasts = new Map();
+
   /**
-   * عرض إشعار توست حديث وأنيق
+   * عرض إشعار توست حديث وأنيق مع منع التكرار الذكي
    */
   function showToast(options, type = 'success', title = '', duration = 4000) {
     let config = {
@@ -53,6 +56,14 @@
         config.title = DEFAULT_TITLES[config.type] || '';
       }
     }
+
+    // فحص منع التكرار: إذا كان نفس الإشعار ونفس الرسالة قد ظهرت قبل أقل من ثانيتين يتم تجاهل التكرار
+    const toastKey = `${config.type}_${config.title}_${config.message}`;
+    const now = Date.now();
+    if (recentToasts.has(toastKey) && (now - recentToasts.get(toastKey)) < 2000) {
+      return null;
+    }
+    recentToasts.set(toastKey, now);
 
     const container = getOrCreateToastContainer();
     const toast = document.createElement('div');
