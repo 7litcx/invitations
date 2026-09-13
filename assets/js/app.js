@@ -485,9 +485,12 @@ function setupCreateForm() {
 
     form.reset();
     document.getElementById('field-create-grad-name').value = user.name;
-    showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName}) برقم: ${result.invitation.id}`, 'تم إصدار الدعوة');
+    showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName})! جارٍ فتح التذكرة...`, 'تم إصدار الدعوة');
 
-    window.switchTab('invitations');
+    // فتح صفحة الدعوة والباركود للضيف على الفور
+    setTimeout(() => {
+      window.location.href = `ticket.html?id=${result.invitation.id}`;
+    }, 450);
   });
 }
 
