@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCsvExport();
   setupAdminFilterTabs();
   setupBarcodeScanner();
-  setupCloudSyncButton();
   setupUserSearch();
   setupInvitationSearch();
   setupDeleteAllInvitations();
@@ -26,33 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderUsersTable();
   renderAdminInvitationsTable();
 });
-
-// زر المزامنة الفورية مع السحابة لتطابق كافة الأجهزة
-function setupCloudSyncButton() {
-  const syncBtn = document.getElementById('btn-sync-cloud');
-  if (!syncBtn) return;
-
-  syncBtn.addEventListener('click', async () => {
-    syncBtn.disabled = true;
-    syncBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin text-sm"></i> <span>جاري التحديث...</span>';
-
-    try {
-      await Promise.all([
-        syncUsersFromSupabase(),
-        syncUserInvitations()
-      ]);
-      renderUsersTable();
-      renderAdminInvitationsTable();
-      showToast.success('تمت مزامنة كافة الدعوات والمستخدمين بنجاح وتطابقها التام مع قاعدة البيانات السحابية!', 'تمت المزامنة بنجاح');
-    } catch (err) {
-      console.error('Manual sync error:', err);
-      showToast.error('تعذر إكمال المزامنة السحابية. يرجى التحقق من الاتصال بالإنترنت.', 'خطأ في المزامنة');
-    } finally {
-      syncBtn.disabled = false;
-      syncBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> <span>مزامنة وتحديث السحابة</span>';
-    }
-  });
-}
 
 // 1. إعداد Supabase (يعمل تلقائياً من الإعدادات المدمجة)
 function setupSupabaseConfig() {
