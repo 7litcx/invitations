@@ -462,10 +462,17 @@ window.openEditView = function(invId) {
   if (typeSelect) typeSelect.value = eventType;
 
   document.getElementById('edit-field-event').value = inv.event;
-  document.getElementById('edit-field-type').value = inv.type || 'عادية';
-  document.getElementById('edit-field-notes').value = inv.notes || '';
-
   updateEditHostLabel(eventType);
+  
+  // إخفاء حقل VIP عند اختيار زواج أو مناسبة خاصة في شاشة التعديل
+  const editVipContainer = document.getElementById('edit-field-type-container');
+  if (eventType === 'wedding' || eventType === 'private') {
+    editVipContainer?.classList.add('hidden');
+    document.getElementById('edit-field-type').value = 'عادية';
+  } else {
+    editVipContainer?.classList.remove('hidden');
+  }
+
   window.switchTab('edit');
 };
 
@@ -474,7 +481,15 @@ function setupEditForm() {
   if (!form) return;
 
   document.getElementById('edit-field-event-type')?.addEventListener('change', (e) => {
-    updateEditHostLabel(e.target.value);
+    const selectedType = e.target.value;
+    updateEditHostLabel(selectedType);
+    const editVipContainer = document.getElementById('edit-field-type-container');
+    if (selectedType === 'wedding' || selectedType === 'private') {
+      editVipContainer?.classList.add('hidden');
+      document.getElementById('edit-field-type').value = 'عادية';
+    } else {
+      editVipContainer?.classList.remove('hidden');
+    }
   });
 
   form.addEventListener('submit', async (e) => {
@@ -665,10 +680,25 @@ function setupCreateForm() {
   updateCreateHostLabel(initialType);
   populateCreateEvents(initialType);
 
+  const updateCreateVipVisibility = (type) => {
+    const typeWrapper = document.getElementById('field-create-type-wrapper');
+    const typeField = document.getElementById('field-create-type');
+    if (type === 'wedding' || type === 'private') {
+      typeWrapper?.classList.add('hidden');
+      if (typeField) typeField.value = 'عادية';
+    } else {
+      typeWrapper?.classList.remove('hidden');
+    }
+  };
+
+  updateCreateVipVisibility(initialType);
+
   typeSelect?.addEventListener('change', (e) => {
     const type = e.target.value;
     updateCreateHostLabel(type);
     populateCreateEvents(type);
+    updateCreateVipVisibility(type);
+    updateCreateFormQuotaState();
   });
 
   // تحديث حالة الكوتا عند تغيير نوع الدعوة
@@ -683,9 +713,12 @@ function setupCreateForm() {
     const user = getCurrentUser();
     if (!user) return;
 
+    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
+    const isVipHidden = (eventType === 'wedding' || eventType === 'private');
+
     // فحص صارم للكوتا قبل الإرسال
     const stats = getUserStats(user.id);
-    const type = document.getElementById('field-create-type').value;
+    const type = isVipHidden ? 'عادية' : document.getElementById('field-create-type').value;
     const remaining = type === 'VIP' ? stats.vipRemaining : stats.regularRemaining;
 
     if (remaining <= 0) {

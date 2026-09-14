@@ -79,15 +79,45 @@ function setupCreateUserForm() {
   const form = document.getElementById('create-user-form');
   if (!form) return;
 
+  const majorSelect = document.getElementById('new-major');
+  const vipContainer = document.getElementById('new-quota-vip-container');
+  const regContainer = document.getElementById('new-quota-regular-container');
+  const regLabel = document.getElementById('new-quota-regular-label');
+  const regHint = document.getElementById('new-quota-regular-hint');
+  const vipInput = document.getElementById('new-quota-vip');
+
+  const updateVipVisibility = () => {
+    const val = majorSelect ? majorSelect.value : 'حفل تخرج';
+    if (val === 'زواج' || val === 'مناسبة خاصة') {
+      vipContainer?.classList.add('hidden');
+      regContainer?.classList.add('sm:col-span-2');
+      if (regLabel) regLabel.textContent = 'إجمالي عدد الدعوات المسموحة *';
+      if (regHint) regHint.textContent = 'الافتراضي: 30 دعوة لكل مستخدم';
+      if (vipInput) vipInput.value = 0;
+    } else {
+      vipContainer?.classList.remove('hidden');
+      regContainer?.classList.remove('sm:col-span-2');
+      if (regLabel) regLabel.textContent = 'عدد الدعوات العادية *';
+      if (regHint) regHint.textContent = 'الافتراضي: 27 دعوة عادية لكل مستخدم';
+      if (vipInput && (vipInput.value === '0' || !vipInput.value)) {
+        vipInput.value = 3;
+      }
+    }
+  };
+
+  majorSelect?.addEventListener('change', updateVipVisibility);
+  updateVipVisibility();
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const username = document.getElementById('new-username').value.trim();
     const password = document.getElementById('new-password').value.trim();
     const name = document.getElementById('new-fullname').value.trim();
-    const major = document.getElementById('new-major').value.trim();
+    const major = majorSelect ? majorSelect.value.trim() : 'حفل تخرج';
     const regularQuota = parseInt(document.getElementById('new-quota-regular').value, 10) || 0;
-    const vipQuota = parseInt(document.getElementById('new-quota-vip').value, 10) || 0;
+    const isVipHidden = (major === 'زواج' || major === 'مناسبة خاصة');
+    const vipQuota = isVipHidden ? 0 : (parseInt(document.getElementById('new-quota-vip').value, 10) || 0);
 
     const res = await createUserByAdmin({
       username,
@@ -105,10 +135,11 @@ function setupCreateUserForm() {
     }
 
     form.reset();
-    document.getElementById('new-quota-regular').value = 30;
-    document.getElementById('new-quota-vip').value = 0;
+    document.getElementById('new-quota-regular').value = isVipHidden ? 30 : 27;
+    if (vipInput) vipInput.value = isVipHidden ? 0 : 3;
+    updateVipVisibility();
     renderUsersTable();
-    showToast.success(`تم إنشاء حساب الخريج (${name}) بنجاح!\nاسم الدخول: ${username}`, 'تم إنشاء الحساب');
+    showToast.success(`تم إنشاء حساب الداعي (${name}) بنجاح!\nاسم الدخول: ${username}`, 'تم إنشاء الحساب');
   });
 }
 
@@ -192,6 +223,24 @@ function renderUsersTable() {
   }).join('');
 }
 
+function updateModalVipVisibility(major) {
+  const vipContainer = document.getElementById('quota-modal-vip-container');
+  const regContainer = document.getElementById('quota-modal-reg-container');
+  const regLabel = document.getElementById('quota-modal-reg-label');
+  const vipInput = document.getElementById('quota-modal-vip');
+
+  if (major === 'زواج' || major === 'مناسبة خاصة') {
+    vipContainer?.classList.add('hidden');
+    regContainer?.classList.add('sm:col-span-2');
+    if (regLabel) regLabel.textContent = 'إجمالي الدعوات المسموحة *';
+    if (vipInput) vipInput.value = 0;
+  } else {
+    vipContainer?.classList.remove('hidden');
+    regContainer?.classList.remove('sm:col-span-2');
+    if (regLabel) regLabel.textContent = 'الدعوات العادية *';
+  }
+}
+
 // نافذة تعديل بيانات وحساب الخريج والكوتا
 window.promptEditUser = function(userId) {
   const modal = document.getElementById('quota-modal');
@@ -207,13 +256,24 @@ window.promptEditUser = function(userId) {
   const regQuota = user.regularQuota !== undefined ? user.regularQuota : 30;
   const vipQuota = user.vipQuota !== undefined ? user.vipQuota : 0;
 
+  let selectedMajor = user.major || 'حفل تخرج';
+  if (selectedMajor.includes('زواج') || selectedMajor === 'wedding') {
+    selectedMajor = 'زواج';
+  } else if (selectedMajor.includes('خاصة') || selectedMajor === 'private') {
+    selectedMajor = 'مناسبة خاصة';
+  } else {
+    selectedMajor = 'حفل تخرج';
+  }
+
   document.getElementById('quota-modal-userid').value = user.id;
   document.getElementById('quota-modal-fullname').value = user.name || '';
   document.getElementById('quota-modal-username-val').value = user.username || '';
   document.getElementById('quota-modal-password').value = user.password || '';
-  document.getElementById('quota-modal-major').value = user.major || '';
+  document.getElementById('quota-modal-major').value = selectedMajor;
   document.getElementById('quota-modal-reg').value = regQuota;
   document.getElementById('quota-modal-vip').value = vipQuota;
+
+  updateModalVipVisibility(selectedMajor);
 
   modal.classList.remove('hidden');
 };
@@ -228,11 +288,15 @@ function setupQuotaModal() {
   const form = document.getElementById('quota-modal-form');
   const closeBtn = document.getElementById('close-quota-modal');
   const cancelBtn = document.getElementById('cancel-quota-modal');
+  const majorSelect = document.getElementById('quota-modal-major');
 
   const closeModal = () => modal?.classList.add('hidden');
 
   closeBtn?.addEventListener('click', closeModal);
   cancelBtn?.addEventListener('click', closeModal);
+  majorSelect?.addEventListener('change', (e) => {
+    updateModalVipVisibility(e.target.value);
+  });
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -240,16 +304,17 @@ function setupQuotaModal() {
     const name = document.getElementById('quota-modal-fullname').value.trim();
     const username = document.getElementById('quota-modal-username-val').value.trim();
     const password = document.getElementById('quota-modal-password').value.trim();
-    const major = document.getElementById('quota-modal-major').value.trim();
+    const major = majorSelect ? majorSelect.value.trim() : 'حفل تخرج';
+    const isVipHidden = (major === 'زواج' || major === 'مناسبة خاصة');
     const newReg = parseInt(document.getElementById('quota-modal-reg').value, 10);
-    const newVip = parseInt(document.getElementById('quota-modal-vip').value, 10);
+    const newVip = isVipHidden ? 0 : parseInt(document.getElementById('quota-modal-vip').value, 10);
 
     if (!name || !username || !password) {
       showToast.warning('يرجى ملء جميع الحقول الإلزامية (الاسم، اسم المستخدم، كلمة المرور).', 'تنبيه');
       return;
     }
 
-    if (isNaN(newReg) || newReg < 0 || isNaN(newVip) || newVip < 0) {
+    if (isNaN(newReg) || newReg < 0 || (!isVipHidden && (isNaN(newVip) || newVip < 0))) {
       showToast.warning('يرجى إدخال أرقام صحيحة أكبر من أو تساوي الصفر للكوتا.', 'تنبيه');
       return;
     }
