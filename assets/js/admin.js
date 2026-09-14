@@ -333,7 +333,7 @@ function renderAdminInvitationsTable() {
     } else if (currentAdminFilter === 'valid') {
       emptyMsg = 'لا توجد دعوات صالحة حالياً.';
     }
-    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">${emptyMsg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400">${emptyMsg}</td></tr>`;
     return;
   }
 
@@ -344,12 +344,23 @@ function renderAdminInvitationsTable() {
       ? new Date(inv.createdAt).toISOString().split('T')[0] 
       : '-';
 
+    const eventType = inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation');
+    let eventBadge = '';
+    if (eventType === 'wedding') {
+      eventBadge = `<span class="badge-event-wedding"><i class="fa-solid fa-ring"></i> ${escapeHtml(inv.event || 'حفل زواج')}</span>`;
+    } else if (eventType === 'private') {
+      eventBadge = `<span class="badge-event-private"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(inv.event || 'مناسبة خاصة')}</span>`;
+    } else {
+      eventBadge = `<span class="badge-event-grad"><i class="fa-solid fa-graduation-cap"></i> ${escapeHtml(inv.event || 'حفل تخرج')}</span>`;
+    }
+
     return `
       <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
         <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-700 dark:text-indigo-400">${inv.id}</td>
         <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">${escapeHtml(inv.guestName)}</td>
         <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 dir-ltr text-right">${escapeHtml(inv.phone)}</td>
-        <td class="py-3 px-4 text-slate-700 dark:text-slate-300">${escapeHtml(inv.graduateName)}</td>
+        <td class="py-3 px-4 text-slate-700 dark:text-slate-300 font-semibold">${escapeHtml(inv.graduateName)}</td>
+        <td class="py-3 px-4 text-xs">${eventBadge}</td>
         <td class="py-3 px-4">${inv.type === 'VIP' ? '<span class="badge-vip text-[10px]">VIP</span>' : '<span class="text-xs text-slate-500">عادية</span>'}</td>
         <td class="py-3 px-4">${inv.status === 'صالحة' ? '<span class="badge-status-valid text-xs">صالحة</span>' : '<span class="badge-status-used text-xs">مستخدمة</span>'}</td>
         <td class="py-3 px-4 font-mono text-xs text-slate-400 dir-ltr text-right">${gregDate}</td>
@@ -385,7 +396,7 @@ function setupAdminFilterTabs() {
   btnUsed?.addEventListener('click', () => setFilter('used', btnUsed));
 }
 
-// 5. تصدير CSV
+// 5. تصدير سجل الدعوات إلى ملف Excel / CSV
 function setupCsvExport() {
   document.getElementById('btn-export-admin-csv')?.addEventListener('click', () => {
     const invitations = getInvitations();
@@ -394,17 +405,19 @@ function setupCsvExport() {
       return;
     }
 
-    let csv = "\uFEFFرقم الدعوة,اسم المدعو,رقم الهاتف,الخريج الداعي,النوع,الحالة,تاريخ الإنشاء (ميلادي)\n";
+    let csv = "\uFEFFرقم الدعوة,اسم المدعو,رقم الهاتف,الداعي,المناسبة والفعالية,نوع المناسبة,النوع,الحالة,تاريخ الإنشاء (ميلادي)\n";
     invitations.forEach(i => {
       const gDate = i.createdAt ? new Date(i.createdAt).toISOString().split('T')[0] : '';
-      csv += `"${i.id}","${i.guestName}","${i.phone}","${i.graduateName}","${i.type}","${i.status}","${gDate}"\n`;
+      const eventType = i.eventType || (typeof detectEventType === 'function' ? detectEventType(i.event) : 'graduation');
+      const catLabel = eventType === 'wedding' ? 'حفل زواج' : (eventType === 'private' ? 'مناسبة خاصة' : 'حفل تخرج');
+      csv += `"${i.id}","${i.guestName}","${i.phone}","${i.graduateName}","${i.event || ''}","${catLabel}","${i.type}","${i.status}","${gDate}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `سجل_دعوات_حفل_التخرج_${new Date().toISOString().substring(0,10)}.csv`;
+    a.download = `سجل_الدعوات_الرسمي_${new Date().toISOString().substring(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     showToast.success('تم تصدير سجل الدعوات إلى ملف Excel / CSV بنجاح!', 'تم التصدير');
@@ -655,7 +668,7 @@ async function verifyTicketCode(rawCode) {
           <strong class="font-mono text-indigo-600 dark:text-indigo-400">${invitation.id}</strong>
         </div>
         <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-          <span class="text-slate-400 block text-[10px]">الخريج الداعي:</span>
+          <span class="text-slate-400 block text-[10px]">الداعي:</span>
           <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(invitation.graduateName)}</strong>
         </div>
         <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
@@ -663,8 +676,8 @@ async function verifyTicketCode(rawCode) {
           <strong class="font-mono dir-ltr inline-block text-slate-700 dark:text-slate-300">${escapeHtml(invitation.phone || '-')}</strong>
         </div>
         <div class="bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-          <span class="text-slate-400 block text-[10px]">الفعالية:</span>
-          <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(invitation.event || 'حفل التخرج')}</strong>
+          <span class="text-slate-400 block text-[10px]">الفعالية والمناسبة:</span>
+          <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(invitation.event || 'حفل')}</strong>
         </div>
       </div>
 
@@ -689,7 +702,7 @@ async function verifyTicketCode(rawCode) {
             تم استخدام هذه التذكرة مسبقاً!
           </span>
           <h5 class="text-sm font-black text-slate-900 dark:text-white">${escapeHtml(invitation.guestName)}</h5>
-          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">رقم الدعوة: <span class="font-mono font-bold">${invitation.id}</span> | الخريج: ${escapeHtml(invitation.graduateName)}</p>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">رقم الدعوة: <span class="font-mono font-bold">${invitation.id}</span> | الداعي: ${escapeHtml(invitation.graduateName)}</p>
         </div>
       </div>
       <div class="pt-1 flex justify-end">

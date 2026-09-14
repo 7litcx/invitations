@@ -23,14 +23,18 @@ CREATE TABLE IF NOT EXISTS invitations (
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     guest_name TEXT NOT NULL,
     phone TEXT NOT NULL,
-    graduate_name TEXT NOT NULL,
+    graduate_name TEXT NOT NULL, -- اسم الداعي / الخريج / العريس
     event TEXT NOT NULL,
+    event_type TEXT DEFAULT 'graduation', -- نوع المناسبة: 'wedding' أو 'private' أو 'graduation'
     people_count INT DEFAULT 1,
     type TEXT DEFAULT 'عادية', -- 'عادية' أو 'VIP'
     status TEXT DEFAULT 'صالحة', -- 'صالحة' أو 'مستخدمة'
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- في حال كان الجدول موجوداً مسبقاً، يمكنك تشغيل هذا السطر لإضافة العمود:
+-- ALTER TABLE invitations ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'graduation';
 
 -- 3. جدول سجل التحويلات بين المستخدمين (Transfers Table)
 CREATE TABLE IF NOT EXISTS transfers (

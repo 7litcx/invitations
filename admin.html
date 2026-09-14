@@ -98,7 +98,7 @@
             <h1 class="text-sm sm:text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600/30 text-purple-300 border border-purple-500/30">Soul Media</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-purple-200/80 mt-0.5">إدارة حسابات الخريجين وتخصيص كوتا الدعوات العادية و VIP</p>
+          <p class="text-[10px] sm:text-xs text-purple-200/80 mt-0.5">إدارة حسابات الداعين والمستخدمين وتخصيص كوتا الدعوات العادية و VIP</p>
         </div>
       </div>
 
@@ -132,7 +132,7 @@
         </div>
         <div>
           <h2 class="text-sm font-bold text-slate-900 dark:text-white">إنشاء حساب مستخدم جديد</h2>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">إنشاء يوزر خاص لكل خريج مع كلمة مرور وتحديد عدد الدعوات العادية ودعوات الـ VIP</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">إنشاء يوزر خاص لكل داعٍ أو صاحب مناسبة مع كلمة مرور وتحديد عدد الدعوات العادية ودعوات الـ VIP</p>
         </div>
       </div>
 
@@ -142,7 +142,7 @@
           <!-- اسم المستخدم (Username) -->
           <div>
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المستخدم (للدخول) *</label>
-            <input type="text" id="new-username" required placeholder="مثال: bandar_2026 أو الرقم الجامعي" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono dir-ltr text-right">
+            <input type="text" id="new-username" required placeholder="مثال: wedding_host أو bandar_2026" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-mono dir-ltr text-right">
           </div>
 
           <!-- كلمة المرور (Password) -->
@@ -155,14 +155,14 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- الاسم الكامل -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الاسم الكامل للخريج *</label>
-            <input type="text" id="new-fullname" required placeholder="مثال: م/بندر أحمد الكثيري" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الاسم الكامل للداعي / صاحب المناسبة *</label>
+            <input type="text" id="new-fullname" required placeholder="مثال: عائلة فلان / م. بندر الكثيري" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
           </div>
 
-          <!-- التخصص -->
+          <!-- التخصص أو نوع المناسبة -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">التخصص *</label>
-            <input type="text" id="new-major" required placeholder="مثال: عام / تقنية معلومات" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">التخصص أو نوع المناسبة *</label>
+            <input type="text" id="new-major" required placeholder="مثال: حفل زواج / مناسبة خاصة / عام" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
           </div>
         </div>
 
@@ -174,7 +174,7 @@
               عدد الدعوات العادية *
             </label>
             <input type="number" id="new-quota-regular" min="0" max="500" value="27" class="w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-bold font-mono">
-            <span class="text-[10px] text-slate-400 mt-1 block">الافتراضي: 27 دعوة عادية لكل خريج</span>
+            <span class="text-[10px] text-slate-400 mt-1 block">الافتراضي: 27 دعوة عادية لكل مستخدم</span>
           </div>
 
           <!-- عدد دعوات VIP -->
@@ -184,14 +184,14 @@
               عدد دعوات VIP *
             </label>
             <input type="number" id="new-quota-vip" min="0" max="100" value="3" class="w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 text-xs text-slate-800 dark:text-white font-bold font-mono">
-            <span class="text-[10px] text-amber-700/80 dark:text-amber-400 mt-1 block">الافتراضي: 3 دعوات VIP لكل خريج</span>
+            <span class="text-[10px] text-amber-700/80 dark:text-amber-400 mt-1 block">الافتراضي: 3 دعوات VIP لكل مستخدم</span>
           </div>
         </div>
 
         <div class="flex justify-end pt-2">
           <button type="submit" class="btn-primary-modern text-xs">
             <i class="fa-solid fa-check"></i>
-            <span>حفظ وإنشاء حساب الخريج</span>
+            <span>حفظ وإنشاء الحساب</span>
           </button>
         </div>
 
@@ -288,7 +288,8 @@
               <th class="py-3 px-4">رقم الدعوة</th>
               <th class="py-3 px-4">اسم المدعو</th>
               <th class="py-3 px-4">رقم الهاتف</th>
-              <th class="py-3 px-4">الخريج الداعي</th>
+              <th class="py-3 px-4">الداعي</th>
+              <th class="py-3 px-4">المناسبة والفعالية</th>
               <th class="py-3 px-4">النوع</th>
               <th class="py-3 px-4">الحالة</th>
               <th class="py-3 px-4">تاريخ الإنشاء</th>
@@ -305,7 +306,7 @@
 
   </main>
 
-  <!-- مودال تعديل حساب وبيانات الخريج والكوتا -->
+  <!-- مودال تعديل حساب وبيانات الداعي والكوتا -->
   <div id="quota-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
     <div class="bg-white dark:bg-slate-900 max-w-lg w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -314,7 +315,7 @@
             <i class="fa-solid fa-user-pen"></i>
           </div>
           <div>
-            <h4 class="font-bold text-slate-800 dark:text-white text-sm">تعديل حساب وبيانات الخريج</h4>
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm">تعديل حساب وبيانات المستخدم / الداعي</h4>
             <p class="text-[11px] text-slate-500 dark:text-slate-400">تعديل بيانات الدخول (اليوزر وكلمة المرور) والاسم والكوتا</p>
           </div>
         </div>
@@ -326,11 +327,11 @@
       <form id="quota-modal-form" class="space-y-4">
         <input type="hidden" id="quota-modal-userid">
 
-        <!-- الاسم الكامل للخريج -->
+        <!-- الاسم الكامل للداعي -->
         <div>
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
             <i class="fa-solid fa-user text-indigo-500 ml-1"></i>
-            الاسم الكامل للخريج *
+            الاسم الكامل للداعي / صاحب المناسبة *
           </label>
           <input type="text" id="quota-modal-fullname" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white font-bold">
         </div>
@@ -354,11 +355,11 @@
           </div>
         </div>
 
-        <!-- التخصص -->
+        <!-- التخصص أو نوع المناسبة -->
         <div>
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-            <i class="fa-solid fa-graduation-cap text-indigo-500 ml-1"></i>
-            التخصص *
+            <i class="fa-solid fa-tags text-indigo-500 ml-1"></i>
+            التخصص أو نوع المناسبة *
           </label>
           <input type="text" id="quota-modal-major" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white">
         </div>

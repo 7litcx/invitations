@@ -13,18 +13,104 @@ const STORAGE_KEYS = {
   EVENTS: 'grad_real_events_v4'
 };
 
-// الفعالية الافتراضية
+// فئات وأنواع المناسبات المعتمدة
+const EVENT_CATEGORIES = {
+  wedding: {
+    id: 'wedding',
+    name: 'حفل زواج',
+    icon: 'fa-ring',
+    badgeText: 'حفل زواج',
+    hostLabel: 'اسم العريس / الداعي',
+    hostPlaceholder: 'اسم العريس أو عائلة الداعي',
+    detailLabel: 'المناسبة',
+    defaultTitle: 'حفل زفاف مبارك',
+    tagClass: 'badge-event-wedding'
+  },
+  private: {
+    id: 'private',
+    name: 'مناسبة خاصة',
+    icon: 'fa-sparkles',
+    badgeText: 'مناسبة خاصة',
+    hostLabel: 'صاحب المناسبة / الداعي',
+    hostPlaceholder: 'اسم صاحب الدعوة أو المنظم',
+    detailLabel: 'نوع الفعالية',
+    defaultTitle: 'مناسبة خاصة واحتفال VIP',
+    tagClass: 'badge-event-private'
+  },
+  graduation: {
+    id: 'graduation',
+    name: 'حفل تخرج',
+    icon: 'fa-graduation-cap',
+    badgeText: 'حفل تخرج',
+    hostLabel: 'اسم الخريج (الداعي)',
+    hostPlaceholder: 'اسم الخريج الداعي',
+    detailLabel: 'التخصص',
+    defaultTitle: 'حفل التخرج 2026',
+    tagClass: 'badge-event-grad'
+  }
+};
+
+// الفعاليات الافتراضية
 const DEFAULT_EVENTS = [
   {
     id: 'EVT-01',
     name: 'حفل التخرج 2026',
+    type: 'graduation',
+    categoryName: 'حفل تخرج',
     date: '2026-09-06',
     dateDisplay: '2026-09-06',
-    timeDisplay: '00:00:00',
+    timeDisplay: '08:00:00',
     venue: 'قاعة الاحتفالات الكبرى',
     city: 'المكلا'
+  },
+  {
+    id: 'EVT-02',
+    name: 'حفل زفاف مبارك',
+    type: 'wedding',
+    categoryName: 'حفل زواج',
+    date: '2026-10-15',
+    dateDisplay: '2026-10-15',
+    timeDisplay: '20:00:00',
+    venue: 'قصر الأفراح الملكي',
+    city: 'الرياض'
+  },
+  {
+    id: 'EVT-03',
+    name: 'مناسبة خاصة واحتفال VIP',
+    type: 'private',
+    categoryName: 'مناسبة خاصة',
+    date: '2026-11-01',
+    dateDisplay: '2026-11-01',
+    timeDisplay: '19:30:00',
+    venue: 'قاعة كبار الشخصيات',
+    city: 'جدة'
   }
 ];
+
+// دالة الكشف التلقائي عن نوع المناسبة بناءً على الاسم أو المدخلات
+function detectEventType(name = '') {
+  const str = String(name || '').toLowerCase();
+  if (str.includes('زواج') || str.includes('زفاف') || str.includes('عرس') || str.includes('قران') || str.includes('wedding')) {
+    return 'wedding';
+  }
+  if (str.includes('خاص') || str.includes('احتفال') || str.includes('عشاء') || str.includes('مأدبة') || str.includes('private') || str.includes('vip')) {
+    return 'private';
+  }
+  return 'graduation';
+}
+
+function getEventCategories() {
+  return EVENT_CATEGORIES;
+}
+
+function getEventsList() {
+  initStore();
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.EVENTS));
+    if (saved && Array.isArray(saved) && saved.length > 0) return saved;
+  } catch {}
+  return DEFAULT_EVENTS;
+}
 
 // الحساب المبدئي الوحيد للمشرف لتسجيل الدخول والبدء بإنشاء المستخدمين
 const INITIAL_ADMIN = {
@@ -422,6 +508,7 @@ async function syncUserInvitations(userId) {
         phone: d.phone,
         graduateName: d.graduate_name,
         event: d.event,
+        eventType: d.event_type || d.eventType || detectEventType(d.event),
         peopleCount: d.people_count || 1,
         type: d.type || 'عادية',
         status: d.status || 'صالحة',
@@ -518,6 +605,7 @@ async function fetchInvitationById(id) {
           phone: data.phone,
           graduateName: data.graduate_name,
           event: data.event,
+          eventType: data.event_type || data.eventType || detectEventType(data.event),
           peopleCount: data.people_count || 1,
           type: data.type || 'عادية',
           status: data.status || 'صالحة',
@@ -642,6 +730,9 @@ async function createInvitation(userId, data) {
   // توليد معرّف فريد عالمياً لا يتكرر ولا يتصادم بين المستخدمين إطلاقاً
   const uniqueId = await generateUniqueInvitationId();
 
+  const chosenEvent = data.event || DEFAULT_EVENTS[0].name;
+  const chosenType = data.eventType || detectEventType(chosenEvent);
+
   const newInv = {
     id: uniqueId,
     userId: user.id,
@@ -649,7 +740,8 @@ async function createInvitation(userId, data) {
     phone: cleanPhone,
     graduateName: data.graduateName || user.name,
     major: data.major || user.major || 'عام',
-    event: data.event || DEFAULT_EVENTS[0].name,
+    event: chosenEvent,
+    eventType: chosenType,
     peopleCount: 1,
     type,
     status: 'صالحة',
@@ -667,6 +759,7 @@ async function createInvitation(userId, data) {
         phone: newInv.phone,
         graduate_name: newInv.graduateName,
         event: newInv.event,
+        event_type: newInv.eventType,
         people_count: newInv.peopleCount,
         type: newInv.type,
         status: newInv.status,
@@ -757,6 +850,8 @@ async function updateInvitation(id, updatedData) {
       if (updatedData.phone !== undefined) updatePayload.phone = all[idx].phone;
       if (updatedData.graduateName !== undefined) updatePayload.graduate_name = all[idx].graduateName;
       if (updatedData.peopleCount !== undefined) updatePayload.people_count = all[idx].peopleCount;
+      if (updatedData.event !== undefined) updatePayload.event = all[idx].event;
+      if (updatedData.eventType !== undefined) updatePayload.event_type = all[idx].eventType;
       if (updatedData.type !== undefined) updatePayload.type = all[idx].type;
       if (updatedData.status !== undefined) updatePayload.status = all[idx].status;
       if (updatedData.notes !== undefined) updatePayload.notes = all[idx].notes;

@@ -361,7 +361,11 @@ function renderInvitationsTable(filters = {}) {
   }
 
   if (filters.event && filters.event !== 'الكل') {
-    invitations = invitations.filter(inv => inv.event === filters.event);
+    if (filters.event === 'wedding' || filters.event === 'private' || filters.event === 'graduation') {
+      invitations = invitations.filter(inv => (inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation')) === filters.event);
+    } else {
+      invitations = invitations.filter(inv => inv.event === filters.event);
+    }
   }
 
   if (invitations.length === 0) {
@@ -386,6 +390,16 @@ function renderInvitationsTable(filters = {}) {
       ? `<span class="badge-status-valid">صالحة</span>`
       : `<span class="badge-status-used">مستخدمة</span>`;
 
+    const eventType = inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation');
+    let eventBadge = '';
+    if (eventType === 'wedding') {
+      eventBadge = `<span class="badge-event-wedding"><i class="fa-solid fa-ring"></i> ${escapeHtml(inv.event || 'حفل زواج')}</span>`;
+    } else if (eventType === 'private') {
+      eventBadge = `<span class="badge-event-private"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(inv.event || 'مناسبة خاصة')}</span>`;
+    } else {
+      eventBadge = `<span class="badge-event-grad"><i class="fa-solid fa-graduation-cap"></i> ${escapeHtml(inv.event || 'حفل تخرج')}</span>`;
+    }
+
     const ticketUrl = `ticket.html?id=${inv.id}`;
 
     return `
@@ -394,7 +408,7 @@ function renderInvitationsTable(filters = {}) {
         <td class="py-3 px-4 font-bold text-xs text-slate-900 dark:text-white table-cell-guest">${escapeHtml(inv.guestName)}</td>
         <td class="py-3 px-4 font-mono text-xs dir-ltr text-right text-slate-700 dark:text-slate-200 table-cell-phone">${escapeHtml(inv.phone)}</td>
         <td class="py-3 px-4 font-semibold text-xs text-slate-700 dark:text-slate-300 table-cell-grad">${escapeHtml(inv.graduateName)}</td>
-        <td class="py-3 px-4 text-xs text-slate-500 dark:text-slate-400 table-cell-event">${escapeHtml(inv.event)}</td>
+        <td class="py-3 px-4 text-xs table-cell-event">${eventBadge}</td>
         <td class="py-3 px-4"><span class="person-count-badge">${inv.peopleCount || 1}</span></td>
         <td class="py-3 px-4 table-cell-type">${typeBadge}</td>
         <td class="py-3 px-4">${statusBadge}</td>
@@ -419,26 +433,49 @@ function renderInvitationsTable(filters = {}) {
   }).join('');
 }
 
+function updateEditHostLabel(type) {
+  const labelEl = document.getElementById('edit-host-label');
+  if (!labelEl) return;
+  if (type === 'wedding') {
+    labelEl.textContent = 'اسم العريس / الداعي';
+  } else if (type === 'private') {
+    labelEl.textContent = 'صاحب المناسبة / الداعي';
+  } else {
+    labelEl.textContent = 'اسم الخريج (الداعي)';
+  }
+}
+
 // 8. شاشة تعديل بيانات الدعوة
 window.openEditView = function(invId) {
   const inv = getInvitation(invId);
   if (!inv) return;
+
+  const eventType = inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation');
 
   document.getElementById('edit-inv-id').value = inv.id;
   document.getElementById('edit-field-guest').value = inv.guestName;
   document.getElementById('edit-field-phone').value = inv.phone;
   document.getElementById('edit-field-grad-name').value = inv.graduateName;
   document.getElementById('edit-field-people-count').value = inv.peopleCount || 1;
+  
+  const typeSelect = document.getElementById('edit-field-event-type');
+  if (typeSelect) typeSelect.value = eventType;
+
   document.getElementById('edit-field-event').value = inv.event;
   document.getElementById('edit-field-type').value = inv.type || 'عادية';
   document.getElementById('edit-field-notes').value = inv.notes || '';
 
+  updateEditHostLabel(eventType);
   window.switchTab('edit');
 };
 
 function setupEditForm() {
   const form = document.getElementById('edit-invite-form');
   if (!form) return;
+
+  document.getElementById('edit-field-event-type')?.addEventListener('change', (e) => {
+    updateEditHostLabel(e.target.value);
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -447,6 +484,8 @@ function setupEditForm() {
     const phone = document.getElementById('edit-field-phone').value.trim();
     const gradName = document.getElementById('edit-field-grad-name').value.trim();
     const peopleCount = parseInt(document.getElementById('edit-field-people-count').value, 10) || 1;
+    const eventType = document.getElementById('edit-field-event-type')?.value || 'graduation';
+    const event = document.getElementById('edit-field-event').value.trim();
     const type = document.getElementById('edit-field-type').value;
     const notes = document.getElementById('edit-field-notes').value.trim();
 
@@ -455,6 +494,8 @@ function setupEditForm() {
       phone,
       graduateName: gradName,
       peopleCount,
+      event,
+      eventType,
       type,
       notes
     });
@@ -574,6 +615,39 @@ function updateCreateFormQuotaState() {
   submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle ml-1.5"></i> <span>إنشاء الدعوة</span>';
 }
 
+function populateCreateEvents(selectedType = 'wedding') {
+  const select = document.getElementById('field-create-event');
+  if (!select) return;
+
+  const events = typeof getEventsList === 'function' ? getEventsList() : DEFAULT_EVENTS;
+  const filtered = events.filter(e => (e.type || (typeof detectEventType === 'function' ? detectEventType(e.name) : 'graduation')) === selectedType);
+
+  let optionsHtml = '';
+  if (filtered.length > 0) {
+    optionsHtml = filtered.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)} (${e.dateDisplay || ''})</option>`).join('');
+  } else {
+    const defaultName = selectedType === 'wedding' ? 'حفل زفاف مبارك' : (selectedType === 'private' ? 'مناسبة خاصة واحتفال VIP' : 'حفل التخرج 2026');
+    optionsHtml = `<option value="${defaultName}">${defaultName}</option>`;
+  }
+  select.innerHTML = optionsHtml;
+}
+
+function updateCreateHostLabel(type) {
+  const hostLabel = document.getElementById('field-create-host-label');
+  const gradInput = document.getElementById('field-create-grad-name');
+  if (!hostLabel) return;
+  if (type === 'wedding') {
+    hostLabel.textContent = 'اسم العريس / الداعي (أهل العرس)';
+    if (gradInput) gradInput.placeholder = 'مثال: الداعي / عائلة فلان';
+  } else if (type === 'private') {
+    hostLabel.textContent = 'صاحب المناسبة / الداعي';
+    if (gradInput) gradInput.placeholder = 'اسم صاحب الدعوة أو المنظم';
+  } else {
+    hostLabel.textContent = 'اسم الخريج (الداعي)';
+    if (gradInput) gradInput.placeholder = 'اسم الخريج';
+  }
+}
+
 // 9. نموذج إنشاء دعوة جديدة
 function setupCreateForm() {
   const form = document.getElementById('create-invite-form');
@@ -584,6 +658,18 @@ function setupCreateForm() {
   if (initGradInput && initUser && initUser.name) {
     initGradInput.value = initUser.name;
   }
+
+  // تهيئة قائمة الفعاليات لنوع المناسبة المختار
+  const typeSelect = document.getElementById('field-create-event-type');
+  const initialType = typeSelect ? typeSelect.value : 'wedding';
+  updateCreateHostLabel(initialType);
+  populateCreateEvents(initialType);
+
+  typeSelect?.addEventListener('change', (e) => {
+    const type = e.target.value;
+    updateCreateHostLabel(type);
+    populateCreateEvents(type);
+  });
 
   // تحديث حالة الكوتا عند تغيير نوع الدعوة
   document.getElementById('field-create-type')?.addEventListener('change', () => {
@@ -612,6 +698,7 @@ function setupCreateForm() {
     const phone = document.getElementById('field-create-phone').value.trim();
     const gradName = document.getElementById('field-create-grad-name').value.trim();
     const notes = document.getElementById('field-create-notes').value.trim();
+    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
     const eventName = document.getElementById('field-create-event').value;
 
     const result = await createInvitation(user.id, {
@@ -621,7 +708,8 @@ function setupCreateForm() {
       graduateName: gradName || user.name,
       major: user.major || 'عام',
       notes,
-      event: eventName
+      event: eventName,
+      eventType
     });
 
     if (!result.success) {
@@ -632,6 +720,9 @@ function setupCreateForm() {
 
     form.reset();
     document.getElementById('field-create-grad-name').value = user.name;
+    const curType = document.getElementById('field-create-event-type')?.value || 'wedding';
+    updateCreateHostLabel(curType);
+    populateCreateEvents(curType);
     updateCreateFormQuotaState();
     showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName})! جارٍ فتح التذكرة...`, 'تم إصدار الدعوة');
 
