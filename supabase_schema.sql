@@ -11,11 +11,17 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     name TEXT NOT NULL,
     major TEXT NOT NULL,
+    event TEXT, -- اسم المناسبة / الفعالية
+    event_type TEXT DEFAULT 'graduation', -- نوع المناسبة
     role TEXT DEFAULT 'user', -- 'admin' أو 'user'
     quota_regular INT DEFAULT 30, -- 30 دعوة لكل شخص افتراضياً
     quota_vip INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- لتحديث الجداول الموجودة مسبقاً في Supabase:
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS event TEXT;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS event_type TEXT;
 
 -- 2. جدول الدعوات والتذاكر (Invitations Table)
 CREATE TABLE IF NOT EXISTS invitations (

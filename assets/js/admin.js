@@ -80,6 +80,7 @@ function setupCreateUserForm() {
   if (!form) return;
 
   const majorSelect = document.getElementById('new-major');
+  const eventInput = document.getElementById('new-event');
   const vipContainer = document.getElementById('new-quota-vip-container');
   const regContainer = document.getElementById('new-quota-regular-container');
   const regLabel = document.getElementById('new-quota-regular-label');
@@ -94,6 +95,13 @@ function setupCreateUserForm() {
       if (regLabel) regLabel.textContent = 'إجمالي عدد الدعوات المسموحة *';
       if (regHint) regHint.textContent = 'الافتراضي: 30 دعوة لكل مستخدم';
       if (vipInput) vipInput.value = 0;
+      if (eventInput) {
+        if (val === 'زواج' && (!eventInput.value || eventInput.value === 'حفل التخرج 2026' || eventInput.value === 'مناسبة خاصة واحتفال VIP')) {
+          eventInput.value = 'حفل زفاف مبارك';
+        } else if (val === 'مناسبة خاصة' && (!eventInput.value || eventInput.value === 'حفل التخرج 2026' || eventInput.value === 'حفل زفاف مبارك')) {
+          eventInput.value = 'مناسبة خاصة واحتفال VIP';
+        }
+      }
     } else {
       vipContainer?.classList.remove('hidden');
       regContainer?.classList.remove('sm:col-span-2');
@@ -101,6 +109,9 @@ function setupCreateUserForm() {
       if (regHint) regHint.textContent = 'الافتراضي: 27 دعوة عادية لكل مستخدم';
       if (vipInput && (vipInput.value === '0' || !vipInput.value)) {
         vipInput.value = 3;
+      }
+      if (eventInput && (!eventInput.value || eventInput.value === 'حفل زفاف مبارك' || eventInput.value === 'مناسبة خاصة واحتفال VIP')) {
+        eventInput.value = 'حفل التخرج 2026';
       }
     }
   };
@@ -115,6 +126,7 @@ function setupCreateUserForm() {
     const password = document.getElementById('new-password').value.trim();
     const name = document.getElementById('new-fullname').value.trim();
     const major = majorSelect ? majorSelect.value.trim() : 'حفل تخرج';
+    const eventName = eventInput ? eventInput.value.trim() : '';
     const regularQuota = parseInt(document.getElementById('new-quota-regular').value, 10) || 0;
     const isVipHidden = (major === 'زواج' || major === 'مناسبة خاصة');
     const vipQuota = isVipHidden ? 0 : (parseInt(document.getElementById('new-quota-vip').value, 10) || 0);
@@ -124,6 +136,7 @@ function setupCreateUserForm() {
       password,
       name,
       major,
+      event: eventName,
       regularQuota,
       vipQuota,
       role: 'user'
@@ -195,8 +208,10 @@ function renderUsersTable() {
       <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
         <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">${escapeHtml(user.name)}</td>
         <td class="py-3 px-4 font-mono font-bold text-indigo-700 dark:text-indigo-400 dir-ltr text-right">${escapeHtml(user.username)}</td>
-        <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 dir-ltr text-right">${escapeHtml(user.password)}</td>
-        <td class="py-3 px-4 text-slate-600 dark:text-slate-300">${escapeHtml(user.major)}</td>
+        <td class="py-3 px-4 text-slate-700 dark:text-slate-200">
+          <div class="font-bold text-xs">${escapeHtml(user.major || 'حفل تخرج')}</div>
+          ${user.event ? `<div class="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">${escapeHtml(user.event)}</div>` : ''}
+        </td>
         <td class="py-3 px-4 font-bold font-mono text-slate-900 dark:text-white">
           <span class="text-indigo-600 dark:text-indigo-400">${regQuota}</span>
           <span class="text-[10px] text-slate-400 font-normal">(${regRemaining} متبقية)</span>
@@ -265,15 +280,23 @@ window.promptEditUser = function(userId) {
     selectedMajor = 'حفل تخرج';
   }
 
+  const occasion = (typeof resolveUserOccasion === 'function')
+    ? resolveUserOccasion(user)
+    : { majorLabel: selectedMajor, eventName: user.event || 'حفل التخرج 2026' };
+
   document.getElementById('quota-modal-userid').value = user.id;
   document.getElementById('quota-modal-fullname').value = user.name || '';
   document.getElementById('quota-modal-username-val').value = user.username || '';
   document.getElementById('quota-modal-password').value = user.password || '';
-  document.getElementById('quota-modal-major').value = selectedMajor;
+  document.getElementById('quota-modal-major').value = occasion.majorLabel;
+  const modalEventInput = document.getElementById('quota-modal-event');
+  if (modalEventInput) {
+    modalEventInput.value = user.event || occasion.eventName;
+  }
   document.getElementById('quota-modal-reg').value = regQuota;
   document.getElementById('quota-modal-vip').value = vipQuota;
 
-  updateModalVipVisibility(selectedMajor);
+  updateModalVipVisibility(occasion.majorLabel);
 
   modal.classList.remove('hidden');
 };
@@ -289,13 +312,24 @@ function setupQuotaModal() {
   const closeBtn = document.getElementById('close-quota-modal');
   const cancelBtn = document.getElementById('cancel-quota-modal');
   const majorSelect = document.getElementById('quota-modal-major');
+  const eventInput = document.getElementById('quota-modal-event');
 
   const closeModal = () => modal?.classList.add('hidden');
 
   closeBtn?.addEventListener('click', closeModal);
   cancelBtn?.addEventListener('click', closeModal);
   majorSelect?.addEventListener('change', (e) => {
-    updateModalVipVisibility(e.target.value);
+    const val = e.target.value;
+    updateModalVipVisibility(val);
+    if (eventInput) {
+      if (val === 'زواج' && (!eventInput.value || eventInput.value === 'حفل التخرج 2026' || eventInput.value === 'مناسبة خاصة واحتفال VIP')) {
+        eventInput.value = 'حفل زفاف مبارك';
+      } else if (val === 'مناسبة خاصة' && (!eventInput.value || eventInput.value === 'حفل التخرج 2026' || eventInput.value === 'حفل زفاف مبارك')) {
+        eventInput.value = 'مناسبة خاصة واحتفال VIP';
+      } else if (val === 'حفل تخرج' && (!eventInput.value || eventInput.value === 'حفل زفاف مبارك' || eventInput.value === 'مناسبة خاصة واحتفال VIP')) {
+        eventInput.value = 'حفل التخرج 2026';
+      }
+    }
   });
 
   form?.addEventListener('submit', async (e) => {
@@ -305,6 +339,7 @@ function setupQuotaModal() {
     const username = document.getElementById('quota-modal-username-val').value.trim();
     const password = document.getElementById('quota-modal-password').value.trim();
     const major = majorSelect ? majorSelect.value.trim() : 'حفل تخرج';
+    const eventName = eventInput ? eventInput.value.trim() : '';
     const isVipHidden = (major === 'زواج' || major === 'مناسبة خاصة');
     const newReg = parseInt(document.getElementById('quota-modal-reg').value, 10);
     const newVip = isVipHidden ? 0 : parseInt(document.getElementById('quota-modal-vip').value, 10);
@@ -324,6 +359,7 @@ function setupQuotaModal() {
       username,
       password,
       major,
+      event: eventName,
       regularQuota: newReg,
       vipQuota: newVip
     });

@@ -200,12 +200,16 @@ function setupNavigation() {
       mobileCreate?.classList.add('active');
       viewCreate?.classList.remove('hidden');
       if (titleEl) titleEl.textContent = 'إنشاء دعوة جديدة';
-      const curUser = getCurrentUser();
-      const gradInput = document.getElementById('field-create-grad-name');
-      if (gradInput && curUser && curUser.name) {
-        gradInput.value = curUser.name;
+      if (typeof applyUserOccasionToCreateForm === 'function') {
+        applyUserOccasionToCreateForm();
+      } else {
+        const curUser = getCurrentUser();
+        const gradInput = document.getElementById('field-create-grad-name');
+        if (gradInput && curUser && curUser.name) {
+          gradInput.value = curUser.name;
+        }
+        updateCreateFormQuotaState();
       }
-      updateCreateFormQuotaState();
     } else if (target === 'transfer') {
       navTransfer?.classList.add('active');
       mobileTransfer?.classList.add('active');
@@ -630,21 +634,38 @@ function updateCreateFormQuotaState() {
   submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle ml-1.5"></i> <span>إنشاء الدعوة</span>';
 }
 
-function populateCreateEvents(selectedType = 'wedding') {
+function populateCreateEvents(selectedType = 'wedding', targetEventName = '') {
   const select = document.getElementById('field-create-event');
   if (!select) return;
 
   const events = typeof getEventsList === 'function' ? getEventsList() : DEFAULT_EVENTS;
   const filtered = events.filter(e => (e.type || (typeof detectEventType === 'function' ? detectEventType(e.name) : 'graduation')) === selectedType);
 
+  let options = [...filtered];
+
+  // إذا كانت هناك مناسبة خاصة بالمستخدم غير مدرجة في القائمة، يتم إدراجها في البداية
+  if (targetEventName && !options.some(e => e.name === targetEventName)) {
+    options.unshift({
+      name: targetEventName,
+      type: selectedType,
+      dateDisplay: 'المناسبة المحددة'
+    });
+  }
+
   let optionsHtml = '';
-  if (filtered.length > 0) {
-    optionsHtml = filtered.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)} (${e.dateDisplay || ''})</option>`).join('');
+  if (options.length > 0) {
+    optionsHtml = options.map(e => {
+      const isSelected = (targetEventName && e.name === targetEventName) ? 'selected' : '';
+      return `<option value="${escapeHtml(e.name)}" ${isSelected}>${escapeHtml(e.name)}${e.dateDisplay ? ` (${e.dateDisplay})` : ''}</option>`;
+    }).join('');
   } else {
-    const defaultName = selectedType === 'wedding' ? 'حفل زفاف مبارك' : (selectedType === 'private' ? 'مناسبة خاصة واحتفال VIP' : 'حفل التخرج 2026');
-    optionsHtml = `<option value="${defaultName}">${defaultName}</option>`;
+    const defaultName = targetEventName || (selectedType === 'wedding' ? 'حفل زفاف مبارك' : (selectedType === 'private' ? 'مناسبة خاصة واحتفال VIP' : 'حفل التخرج 2026'));
+    optionsHtml = `<option value="${defaultName}" selected>${defaultName}</option>`;
   }
   select.innerHTML = optionsHtml;
+  if (targetEventName) {
+    select.value = targetEventName;
+  }
 }
 
 function updateCreateHostLabel(type) {
@@ -663,35 +684,60 @@ function updateCreateHostLabel(type) {
   }
 }
 
+function updateCreateVipVisibility(type) {
+  const typeWrapper = document.getElementById('field-create-type-wrapper');
+  const typeField = document.getElementById('field-create-type');
+  if (type === 'wedding' || type === 'private') {
+    typeWrapper?.classList.add('hidden');
+    if (typeField) typeField.value = 'عادية';
+  } else {
+    typeWrapper?.classList.remove('hidden');
+  }
+}
+
+// دالة المطابقة التلقائية لنوع المناسبة والمناسبة من حساب المستخدم
+function applyUserOccasionToCreateForm() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const occasion = (typeof resolveUserOccasion === 'function')
+    ? resolveUserOccasion(user)
+    : { eventType: 'wedding', eventName: 'حفل زفاف مبارك' };
+
+  const typeSelect = document.getElementById('field-create-event-type');
+  const gradInput = document.getElementById('field-create-grad-name');
+
+  // 1. تعيين نوع المناسبة تلقائياً ليطابق حساب المستخدم
+  if (typeSelect) {
+    typeSelect.value = occasion.eventType;
+  }
+
+  // 2. تعبئة وتحديد المناسبة المطابقة لحساب المستخدم تلقائياً
+  populateCreateEvents(occasion.eventType, occasion.eventName);
+
+  // 3. تحديث المسميات وحالة حقل VIP
+  updateCreateHostLabel(occasion.eventType);
+  updateCreateVipVisibility(occasion.eventType);
+
+  // 4. تعبئة اسم الداعي من الحساب
+  if (gradInput && user.name) {
+    gradInput.value = user.name;
+  }
+
+  // 5. تحديث فحص الكوتا
+  updateCreateFormQuotaState();
+}
+window.applyUserOccasionToCreateForm = applyUserOccasionToCreateForm;
+
 // 9. نموذج إنشاء دعوة جديدة
 function setupCreateForm() {
   const form = document.getElementById('create-invite-form');
   if (!form) return;
 
-  const initUser = getCurrentUser();
-  const initGradInput = document.getElementById('field-create-grad-name');
-  if (initGradInput && initUser && initUser.name) {
-    initGradInput.value = initUser.name;
-  }
-
-  // تهيئة قائمة الفعاليات لنوع المناسبة المختار
   const typeSelect = document.getElementById('field-create-event-type');
-  const initialType = typeSelect ? typeSelect.value : 'wedding';
-  updateCreateHostLabel(initialType);
-  populateCreateEvents(initialType);
 
-  const updateCreateVipVisibility = (type) => {
-    const typeWrapper = document.getElementById('field-create-type-wrapper');
-    const typeField = document.getElementById('field-create-type');
-    if (type === 'wedding' || type === 'private') {
-      typeWrapper?.classList.add('hidden');
-      if (typeField) typeField.value = 'عادية';
-    } else {
-      typeWrapper?.classList.remove('hidden');
-    }
-  };
-
-  updateCreateVipVisibility(initialType);
+  // تطبيق مطابقة المناسبة ونوع المناسبة تلقائياً من حساب المستخدم
+  applyUserOccasionToCreateForm();
 
   typeSelect?.addEventListener('change', (e) => {
     const type = e.target.value;
@@ -705,8 +751,6 @@ function setupCreateForm() {
   document.getElementById('field-create-type')?.addEventListener('change', () => {
     updateCreateFormQuotaState();
   });
-
-  updateCreateFormQuotaState();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -752,11 +796,7 @@ function setupCreateForm() {
     }
 
     form.reset();
-    document.getElementById('field-create-grad-name').value = user.name;
-    const curType = document.getElementById('field-create-event-type')?.value || 'wedding';
-    updateCreateHostLabel(curType);
-    populateCreateEvents(curType);
-    updateCreateFormQuotaState();
+    applyUserOccasionToCreateForm();
     showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName})! جارٍ فتح التذكرة...`, 'تم إصدار الدعوة');
 
     // فتح صفحة الدعوة والباركود للضيف على الفور

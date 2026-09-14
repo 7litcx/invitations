@@ -103,6 +103,52 @@ function getEventCategories() {
   return EVENT_CATEGORIES;
 }
 
+// استنتاج ومطابقة مناسبة ونوع مناسبة المستخدم تلقائياً
+function resolveUserOccasion(user) {
+  if (!user) {
+    return {
+      eventType: 'graduation',
+      eventName: 'حفل التخرج 2026',
+      majorLabel: 'حفل تخرج'
+    };
+  }
+
+  let eventType = user.eventType;
+  let eventName = user.event;
+
+  // استنتاج نوع المناسبة
+  if (!eventType) {
+    const raw = ((user.major || '') + ' ' + (user.event || '')).toLowerCase();
+    if (raw.includes('زواج') || raw.includes('زفاف') || raw.includes('عرس') || raw.includes('wedding')) {
+      eventType = 'wedding';
+    } else if (raw.includes('خاصة') || raw.includes('vip') || raw.includes('private')) {
+      eventType = 'private';
+    } else {
+      eventType = 'graduation';
+    }
+  }
+
+  // استنتاج اسم المناسبة / الفعالية
+  if (!eventName || eventName.trim() === '') {
+    if (user.major && !['حفل تخرج', 'زواج', 'مناسبة خاصة', 'عام', 'خريج', 'إدارة الحفل'].includes(user.major.trim())) {
+      eventName = user.major.trim();
+    } else if (eventType === 'wedding') {
+      eventName = 'حفل زفاف مبارك';
+    } else if (eventType === 'private') {
+      eventName = 'مناسبة خاصة واحتفال VIP';
+    } else {
+      eventName = 'حفل التخرج 2026';
+    }
+  }
+
+  return {
+    eventType,
+    eventName,
+    majorLabel: eventType === 'wedding' ? 'زواج' : (eventType === 'private' ? 'مناسبة خاصة' : 'حفل تخرج')
+  };
+}
+window.resolveUserOccasion = resolveUserOccasion;
+
 function getEventsList() {
   initStore();
   try {
@@ -166,13 +212,16 @@ async function loginUser(username, password, remember = true) {
 
       if (!error && data && data.length > 0) {
         const row = data[0];
+        const occ = resolveUserOccasion({ major: row.major, event: row.event, eventType: row.event_type });
         const mappedUser = {
           id: row.id,
           username: row.username,
           password: row.password,
           name: row.name,
           initials: row.name && row.name.length >= 2 ? row.name.substring(0, 2) : 'خر',
-          major: row.major || 'عام',
+          major: row.major || occ.majorLabel,
+          event: row.event || occ.eventName,
+          eventType: row.event_type || occ.eventType,
           role: row.role || 'user',
           regularQuota: row.quota_regular !== undefined && row.quota_regular !== null ? row.quota_regular : 27,
           vipQuota: row.quota_vip !== undefined && row.quota_vip !== null ? row.quota_vip : 3
@@ -265,11 +314,14 @@ function saveLocalUser(user) {
  * إنشاء مستخدم جديد من قبل الأدمن
  * يحدد المشرف عدد الدعوات العادية وعدد دعوات VIP
  */
-async function createUserByAdmin({ username, password, name, major, regularQuota = 27, vipQuota = 3, role = 'user' }) {
+async function createUserByAdmin({ username, password, name, major, event = '', regularQuota = 27, vipQuota = 3, role = 'user' }) {
   const cleanUsername = username.trim();
   const cleanPassword = password.trim();
   const cleanName = name.trim();
   const cleanMajor = major.trim();
+  const occ = resolveUserOccasion({ major: cleanMajor, event });
+  const cleanEvent = (event || '').trim() || occ.eventName;
+  const userEventType = occ.eventType;
   const regNum = parseInt(regularQuota, 10) || 0;
   const vipNum = parseInt(vipQuota, 10) || 0;
 
@@ -287,6 +339,8 @@ async function createUserByAdmin({ username, password, name, major, regularQuota
     name: cleanName,
     initials: cleanName.length >= 2 ? cleanName.substring(0, 2) : 'خر',
     major: cleanMajor,
+    event: cleanEvent,
+    eventType: userEventType,
     role,
     regularQuota: regNum,
     vipQuota: vipNum
@@ -345,6 +399,14 @@ async function updateUserByAdmin(userId, updates = {}) {
   user.name = cleanName;
   user.initials = cleanName.length >= 2 ? cleanName.substring(0, 2) : 'خر';
   user.major = cleanMajor;
+  if (updates.event !== undefined) {
+    user.event = updates.event.trim();
+  }
+  if (updates.eventType !== undefined) {
+    user.eventType = updates.eventType;
+  } else {
+    user.eventType = cleanMajor === 'زواج' ? 'wedding' : (cleanMajor === 'مناسبة خاصة' ? 'private' : 'graduation');
+  }
   user.regularQuota = regNum;
   user.vipQuota = vipNum;
 
