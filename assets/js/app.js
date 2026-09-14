@@ -5,6 +5,10 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initStore();
+  // مزامنة خلفية للمستخدمين من Supabase لضمان توفر البيانات أوفلاين وسرعة الدخول
+  if (typeof syncUsersFromSupabase === 'function') {
+    syncUsersFromSupabase().catch(() => {});
+  }
   setupRealDate();
   setupAuth();
   setupNavigation();
@@ -80,6 +84,8 @@ function setupAuth() {
   const loginForm = document.getElementById('system-login-form');
   const errorAlert = document.getElementById('login-error-alert');
   const logoutBtn = document.getElementById('btn-logout-sidebar');
+  const togglePassBtn = document.getElementById('btn-toggle-password');
+  const passInput = document.getElementById('login-password');
 
   updateAuthUI();
 
@@ -92,6 +98,19 @@ function setupAuth() {
     if (remEl) remEl.checked = true;
   }
 
+  // تبديل إظهار / إخفاء كلمة المرور
+  if (togglePassBtn && passInput && !togglePassBtn.dataset.initialized) {
+    togglePassBtn.dataset.initialized = 'true';
+    togglePassBtn.addEventListener('click', () => {
+      const isPassword = passInput.type === 'password';
+      passInput.type = isPassword ? 'text' : 'password';
+      const icon = togglePassBtn.querySelector('i');
+      if (icon) {
+        icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+      }
+    });
+  }
+
   // معالجة نموذج تسجيل الدخول (مرة واحدة فقط)
   if (loginForm && !loginForm.dataset.initialized) {
     loginForm.dataset.initialized = 'true';
@@ -100,30 +119,51 @@ function setupAuth() {
       const uInput = document.getElementById('login-username').value;
       const pInput = document.getElementById('login-password').value;
       const remember = document.getElementById('login-remember')?.checked ?? true;
+      const submitBtn = document.getElementById('btn-login-submit');
 
       if (errorAlert) errorAlert.classList.add('hidden');
 
-      const res = await loginUser(uInput, pInput, remember);
+      // حالة التحميل أثناء الفحص
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-1.5"></i><span>جارٍ التحقق...</span>';
+      }
 
-      if (res.success) {
-        loginForm.reset();
-        showToast.success(`مرحباً بك مجدداً، ${res.user.name}`, 'تم تسجيل الدخول');
-        
-        // إذا كان المستخدم أدمن، توجيهه فوراً وبشكل تلقائي إلى لوحة التحكم
-        if (res.user.role === 'admin') {
-          setTimeout(() => {
-            window.location.href = 'admin.html';
-          }, 400);
-          return;
+      try {
+        const res = await loginUser(uInput, pInput, remember);
+
+        if (res.success) {
+          loginForm.reset();
+          showToast.success(`مرحباً بك مجدداً، ${res.user.name}`, 'تم تسجيل الدخول');
+          
+          // إذا كان المستخدم أدمن، توجيهه فوراً وبشكل تلقائي إلى لوحة التحكم
+          if (res.user.role === 'admin') {
+            setTimeout(() => {
+              window.location.href = 'admin.html';
+            }, 400);
+            return;
+          }
+
+          updateAuthUI();
+        } else {
+          if (errorAlert) {
+            errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';
+            errorAlert.classList.remove('hidden');
+          }
+          showToast.error(res.message || 'خطأ في اسم المستخدم أو كلمة المرور', 'فشل تسجيل الدخول');
         }
-
-        updateAuthUI();
-      } else {
+      } catch (err) {
+        console.error('Login submit exception:', err);
         if (errorAlert) {
-          errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';
+          errorAlert.textContent = 'حدث خطأ غير متوقع أثناء تسجيل الدخول، يرجى المحاولة لاحقاً.';
           errorAlert.classList.remove('hidden');
         }
-        showToast.error(res.message || 'خطأ في اسم المستخدم أو كلمة المرور', 'فشل تسجيل الدخول');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
       }
     });
   }
