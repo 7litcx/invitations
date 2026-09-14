@@ -815,7 +815,6 @@ function setupCreateForm() {
     const phone = document.getElementById('field-create-phone').value.trim();
     const gradName = document.getElementById('field-create-grad-name').value.trim();
     const notes = document.getElementById('field-create-notes').value.trim();
-    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
     const eventName = document.getElementById('field-create-event').value;
 
     const result = await createInvitation(user.id, {
