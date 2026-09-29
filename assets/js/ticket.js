@@ -128,6 +128,13 @@ function renderTicket(invitation) {
     if (venueTime) venueTime.textContent = 'قاعة الاحتفالات الكبرى - 8:00 صباحاً';
   }
 
+  // إذا كانت الدعوة تحتوي على تصميم خاص مرفوع
+  if (invitation.customDesign && visualCard) {
+    visualCard.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${invitation.customDesign}')`;
+    visualCard.style.backgroundSize = 'cover';
+    visualCard.style.backgroundPosition = 'center';
+  }
+
   // البيانات المشتركة في كرت التفاصيل
   const gradNameEl = document.getElementById('ticket-grad-name');
   if (gradNameEl) gradNameEl.textContent = invitation.hostName || invitation.graduateName || '-';

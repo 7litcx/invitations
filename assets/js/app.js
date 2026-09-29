@@ -530,10 +530,17 @@ function renderInvitationsGrid(items, container) {
     const displayGuest = inv.guestName || 'ضيف كريم';
     const displayDate = inv.createdAt ? inv.createdAt.split(' ')[0] : '2026-10-15';
 
+    const customThumbStyle = inv.customDesign 
+      ? `style="background-image: linear-gradient(rgba(16, 11, 30, 0.25), rgba(16, 11, 30, 0.7)), url('${inv.customDesign}'); background-size: cover; background-position: center;"`
+      : '';
+    const customBadge = inv.customDesign 
+      ? `<span class="badge-pill badge-pill-purple text-[9px]"><i class="fa-solid fa-palette text-[9px]"></i> مخصص</span>`
+      : '';
+
     return `
       <div class="invitation-card-item">
         <!-- مصغر البطاقة الجرافيكي -->
-        <div class="invitation-card-thumb ${themeClass}">
+        <div class="invitation-card-thumb ${themeClass}" ${customThumbStyle}>
           <div class="card-mini-watermark">
             <span class="text-[9px] uppercase tracking-widest text-purple-300 block mb-0.5">SOUL MEDIA</span>
             <h5 class="text-xs font-bold text-white truncate">${escapeHtml(displayEvent)}</h5>
@@ -546,7 +553,7 @@ function renderInvitationsGrid(items, container) {
           <div>
             <div class="flex items-center justify-between gap-1 mb-1.5">
               <h4 class="font-bold text-slate-800 text-xs truncate">${escapeHtml(displayEvent)}</h4>
-              ${stateBadge}
+              <div class="flex items-center gap-1">${customBadge}${stateBadge}</div>
             </div>
 
             <div class="text-[11px] text-slate-500 space-y-1">
@@ -615,6 +622,10 @@ function renderInvitationsTable(items, tbody) {
   }).join('');
 }
 
+// متغيرات حفظ تصميم الدعوة المخصص المرفوع
+let currentUploadedCustomDesign = null;
+let editUploadedCustomDesign = null;
+
 // ===================================================
 // 5. المعاينة الحية الفورية للبطاقة (Live Preview Engine)
 // ===================================================
@@ -625,6 +636,15 @@ function setupLivePreview() {
   const timeInput = document.getElementById('field-create-time');
   const typeSelect = document.getElementById('field-create-type');
   const eventTypeSelect = document.getElementById('field-create-event-type');
+
+  // خيارات التصميم: الافتراضي أو رفع تصميم خاص
+  const choiceDefault = document.getElementById('design-choice-default');
+  const choiceCustom = document.getElementById('design-choice-custom');
+  const labelDefault = document.getElementById('label-template-default');
+  const labelCustom = document.getElementById('label-template-custom');
+  const uploadBox = document.getElementById('custom-design-upload-box');
+  const fileInput = document.getElementById('field-custom-design-file');
+  const removeBtn = document.getElementById('btn-remove-custom-design');
 
   const inputs = [guestInput, eventInput, dateInput, timeInput, typeSelect, eventTypeSelect];
   inputs.forEach(el => {
@@ -647,6 +667,76 @@ function setupLivePreview() {
       updateLivePreview();
     });
   }
+
+  // التبديل بين قالب سول ميديا ورفع تصميم خاص
+  if (choiceDefault && choiceCustom) {
+    choiceDefault.addEventListener('change', () => {
+      if (choiceDefault.checked) {
+        if (labelDefault) labelDefault.className = 'flex items-center gap-2.5 p-3 rounded-xl border-2 border-purple-600 bg-purple-50/60 cursor-pointer text-xs font-bold text-purple-900 transition';
+        if (labelCustom) labelCustom.className = 'flex items-center gap-2.5 p-3 rounded-xl border-2 border-slate-200 hover:border-purple-300 bg-white cursor-pointer text-xs font-bold text-slate-700 transition';
+        if (uploadBox) uploadBox.classList.add('hidden');
+        currentUploadedCustomDesign = null;
+        updateLivePreview();
+      }
+    });
+
+    choiceCustom.addEventListener('change', () => {
+      if (choiceCustom.checked) {
+        if (labelCustom) labelCustom.className = 'flex items-center gap-2.5 p-3 rounded-xl border-2 border-purple-600 bg-purple-50/60 cursor-pointer text-xs font-bold text-purple-900 transition';
+        if (labelDefault) labelDefault.className = 'flex items-center gap-2.5 p-3 rounded-xl border-2 border-slate-200 hover:border-purple-300 bg-white cursor-pointer text-xs font-bold text-slate-700 transition';
+        if (uploadBox) uploadBox.classList.remove('hidden');
+        updateLivePreview();
+      }
+    });
+  }
+
+  // معالجة رفع ملف صورة التصميم
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('يرجى اختيار ملف صورة صالح (PNG, JPG, JPEG, WebP)');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        currentUploadedCustomDesign = evt.target.result;
+
+        const thumb = document.getElementById('custom-design-thumb');
+        const filename = document.getElementById('custom-design-filename');
+        const previewBox = document.getElementById('custom-design-preview-container');
+        const promptBox = document.getElementById('custom-design-prompt');
+
+        if (thumb) thumb.src = currentUploadedCustomDesign;
+        if (filename) filename.textContent = file.name;
+        if (previewBox) previewBox.classList.remove('hidden');
+        if (promptBox) promptBox.classList.add('hidden');
+
+        updateLivePreview();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // حذف التصميم المرفوع والرجوع للقالب
+  if (removeBtn) {
+    removeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      currentUploadedCustomDesign = null;
+      if (fileInput) fileInput.value = '';
+
+      const previewBox = document.getElementById('custom-design-preview-container');
+      const promptBox = document.getElementById('custom-design-prompt');
+      if (previewBox) previewBox.classList.add('hidden');
+      if (promptBox) promptBox.classList.remove('hidden');
+
+      updateLivePreview();
+    });
+  }
 }
 
 function updateLivePreview() {
@@ -661,12 +751,25 @@ function updateLivePreview() {
   const previewDate = document.getElementById('preview-event-date');
   const previewTime = document.getElementById('preview-event-time');
   const previewBadge = document.getElementById('preview-badge-type');
+  const liveCard = document.getElementById('live-card-container');
 
   if (previewEvent) previewEvent.textContent = eventVal;
   if (previewGuest) previewGuest.textContent = guestVal;
   if (previewDate) previewDate.innerHTML = `<i class="fa-regular fa-calendar ml-1"></i>${dateVal}`;
   if (previewTime) previewTime.innerHTML = `<i class="fa-regular fa-clock ml-1"></i>${timeVal}`;
   if (previewBadge) previewBadge.textContent = typeVal === 'VIP' ? 'دعوة VIP خاصة' : 'دعوة عادية';
+
+  // تحديث خلفية كرت المعاينة إذا تم رفع تصميم مخصص
+  if (liveCard) {
+    if (currentUploadedCustomDesign) {
+      liveCard.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${currentUploadedCustomDesign}')`;
+      liveCard.style.backgroundSize = 'cover';
+      liveCard.style.backgroundPosition = 'center';
+    } else {
+      liveCard.style.backgroundImage = 'linear-gradient(145deg, #171126 0%, #261942 50%, #171126 100%)';
+      liveCard.style.backgroundSize = 'auto';
+    }
+  }
 
   // توليد QR كود للمعاينة الحية
   const qrBox = document.getElementById('preview-qr-box');
@@ -724,14 +827,22 @@ function setupCreateForm() {
       isUsed: false,
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
       notes: notes,
-      theme: eventType
+      theme: eventType,
+      customDesign: currentUploadedCustomDesign || null // حفظ التصميم المرفوع
     };
 
     saveInvitation(newInv);
 
-    // تصفير النموذج
+    // تصفير النموذج وحالة الرفع
     form.reset();
-    alert('تم إصدار ونشر الدعوة بنجاح!');
+    currentUploadedCustomDesign = null;
+    document.getElementById('custom-design-preview-container')?.classList.add('hidden');
+    document.getElementById('custom-design-prompt')?.classList.remove('hidden');
+    document.getElementById('custom-design-upload-box')?.classList.add('hidden');
+    const defaultRadio = document.getElementById('design-choice-default');
+    if (defaultRadio) defaultRadio.checked = true;
+
+    alert('تم إصدار ونشر الدعوة بنجاح باستخدام التصميم المعتمد!');
     
     // الانتقال المباشر لشاشة تفاصيل الدعوة لعرضها ومشاركتها
     viewInvitationDetails(newInv.id);
@@ -753,11 +864,24 @@ window.viewInvitationDetails = function(invId) {
   const cardGuest = document.getElementById('details-card-guest');
   const cardType = document.getElementById('details-card-type-badge');
   const cardCode = document.getElementById('details-card-code');
+  const cardPreview = document.getElementById('details-card-preview');
 
   if (cardEvent) cardEvent.textContent = inv.event || 'حفل زفاف مبارك';
   if (cardGuest) cardGuest.textContent = inv.guestName;
   if (cardType) cardType.textContent = inv.type || 'عادية';
   if (cardCode) cardCode.textContent = inv.code || inv.id;
+
+  // تطبيق التصميم المخصص على البطاقة إن وُجد
+  if (cardPreview) {
+    if (inv.customDesign) {
+      cardPreview.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${inv.customDesign}')`;
+      cardPreview.style.backgroundSize = 'cover';
+      cardPreview.style.backgroundPosition = 'center';
+    } else {
+      cardPreview.style.backgroundImage = 'linear-gradient(145deg, #171126 0%, #261942 50%, #171126 100%)';
+      cardPreview.style.backgroundSize = 'auto';
+    }
+  }
 
   // توليد الباركود عالي الدقة
   const qrBox = document.getElementById('details-qrcode-render');
@@ -781,7 +905,7 @@ window.viewInvitationDetails = function(invId) {
   document.getElementById('details-field-event').textContent = inv.event || 'حفل زفاف';
   document.getElementById('details-field-guest').textContent = inv.guestName;
   document.getElementById('details-field-phone').textContent = inv.guestPhone || '-';
-  document.getElementById('details-field-type').textContent = `دعوة ${inv.type || 'عادية'}`;
+  document.getElementById('details-field-type').textContent = `دعوة ${inv.type || 'عادية'}${inv.customDesign ? ' (بتصميم خاص)' : ''}`;
   document.getElementById('details-field-seats').textContent = `${inv.peopleCount || 1} أشخاص`;
   document.getElementById('details-field-created').textContent = inv.createdAt || '2026-09-20';
   document.getElementById('details-field-host').textContent = inv.hostName || 'أحمد محمد علي';
@@ -845,12 +969,85 @@ window.editInvitation = function(invId) {
   document.getElementById('edit-field-people-count').value = inv.peopleCount || 1;
   document.getElementById('edit-field-notes').value = inv.notes || '';
 
+  // تعيين حالة التصميم المخصص للتعديل
+  editUploadedCustomDesign = inv.customDesign || null;
+  const editThumb = document.getElementById('edit-custom-design-thumb');
+  const editPreview = document.getElementById('edit-custom-design-preview');
+  const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
+  const editBadge = document.getElementById('edit-design-badge');
+  const editLabel = document.getElementById('edit-custom-design-label');
+
+  if (inv.customDesign) {
+    if (editThumb) editThumb.src = inv.customDesign;
+    if (editPreview) editPreview.classList.remove('hidden');
+    if (editRemoveBtn) editRemoveBtn.classList.remove('hidden');
+    if (editBadge) {
+      editBadge.textContent = 'تصميم خاص مرفوع';
+      editBadge.className = 'text-[10px] text-purple-700 font-bold bg-purple-100 px-2 py-0.5 rounded border border-purple-300';
+    }
+    if (editLabel) editLabel.textContent = 'تغيير صورة التصميم';
+  } else {
+    if (editPreview) editPreview.classList.add('hidden');
+    if (editRemoveBtn) editRemoveBtn.classList.add('hidden');
+    if (editBadge) {
+      editBadge.textContent = 'القالب الافتراضي';
+      editBadge.className = 'text-[10px] text-slate-500 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200';
+    }
+    if (editLabel) editLabel.textContent = 'رفع صورة تصميم خاصة';
+  }
+
   switchView('edit');
 };
 
 function setupEditForm() {
   const form = document.getElementById('edit-invite-form');
   const deleteBtn = document.getElementById('btn-delete-from-edit');
+  const editFileInput = document.getElementById('edit-field-custom-design-file');
+  const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
+
+  if (editFileInput) {
+    editFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('يرجى اختيار ملف صورة صالح (PNG, JPG, JPEG, WebP)');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        editUploadedCustomDesign = evt.target.result;
+        const editThumb = document.getElementById('edit-custom-design-thumb');
+        const editPreview = document.getElementById('edit-custom-design-preview');
+        const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
+        const editBadge = document.getElementById('edit-design-badge');
+
+        if (editThumb) editThumb.src = editUploadedCustomDesign;
+        if (editPreview) editPreview.classList.remove('hidden');
+        if (editRemoveBtn) editRemoveBtn.classList.remove('hidden');
+        if (editBadge) {
+          editBadge.textContent = 'تصميم جديد جاهز للحفظ';
+          editBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (editRemoveBtn) {
+    editRemoveBtn.addEventListener('click', () => {
+      editUploadedCustomDesign = null;
+      if (editFileInput) editFileInput.value = '';
+      document.getElementById('edit-custom-design-preview')?.classList.add('hidden');
+      editRemoveBtn.classList.add('hidden');
+      const editBadge = document.getElementById('edit-design-badge');
+      if (editBadge) {
+        editBadge.textContent = 'القالب الافتراضي';
+        editBadge.className = 'text-[10px] text-slate-500 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200';
+      }
+    });
+  }
 
   if (form) {
     form.addEventListener('submit', (e) => {
@@ -866,6 +1063,7 @@ function setupEditForm() {
       inv.type = document.getElementById('edit-field-type').value;
       inv.peopleCount = parseInt(document.getElementById('edit-field-people-count').value || '1', 10);
       inv.notes = document.getElementById('edit-field-notes').value.trim();
+      inv.customDesign = editUploadedCustomDesign; // حفظ التعديل على التصميم المخصص
 
       saveInvitation(inv);
       alert('تم حفظ التعديلات بنجاح!');
