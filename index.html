@@ -1,32 +1,20 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام الدعوات الإلكترونية | Soul Media</title>
+  <title>سول ميديا | Soul Media - منصة الدعوات الإلكترونية وتذاكر الدخول الذكية</title>
   
   <link rel="icon" type="image/png" href="assets/images/favicon.png">
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
   
-  <!-- Open Graph / بطاقة المشاركة لمواقع التواصل وواتساب -->
+  <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://invitations.soulmediaa.com/">
-  <meta property="og:title" content="نظام الدعوات الإلكترونية | Soul Media">
-  <meta property="og:description" content="منصة Soul Media لإدارة وتصميم الدعوات الإلكترونية الفاخرة وتذاكر الدخول الذكية.">
-  <meta property="og:image" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
-  <meta property="og:image:secure_url" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="شعار سول ميديا - Soul Media">
-
-  <!-- بطاقة Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="نظام الدعوات الإلكترونية | Soul Media">
-  <meta name="twitter:description" content="منصة Soul Media لإدارة وتصميم الدعوات الإلكترونية الفاخرة وتذاكر الدخول الذكية.">
-  <meta name="twitter:image" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
-
-  <!-- خط عربي رسمي وحديث -->
+  <meta property="og:title" content="سول ميديا | Soul Media - منصة الدعوات الإلكترونية">
+  <meta property="og:description" content="منصة Soul Media الفاخرة لتصميم وإدارة ومشاركة الدعوات الإلكترونية وتذاكر الدخول الذكية.">
+  <meta property="og:image" content="assets/images/og_image.png">
+  
+  <!-- خط عربي رسمي وحديث: Cairo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -39,39 +27,17 @@
       theme: {
         extend: {
           colors: {
-            indigo: {
-              50: '#f9f7fc',
-              100: '#f1edfa',
-              200: '#e4dbf4',
-              300: '#d1c2ec',
-              400: '#bda6e3',
-              500: '#a890d8',
-              600: '#a890d8',
-              700: '#9072c9',
-              800: '#7855b8',
-              900: '#62429b',
-              950: '#3b2563',
-            },
-            purple: {
-              50: '#f9f7fc',
-              100: '#f1edfa',
-              200: '#e4dbf4',
-              300: '#d1c2ec',
-              400: '#bda6e3',
-              500: '#a890d8',
-              600: '#a890d8',
-              700: '#9072c9',
-              800: '#7855b8',
-              900: '#62429b',
-              950: '#3b2563',
-            },
             soul: {
-              purple: '#a890d8',
-              bright: '#bda6e3',
-              light: '#f1edfa',
-              dark: '#08060d',
-              card: '#110d1d',
-              border: '#241d3b'
+              50: '#f8f7fd',
+              100: '#f3f0fa',
+              200: '#ede8f5',
+              300: '#dcd3ef',
+              400: '#ab95e3',
+              500: '#7047eb',
+              600: '#6035d8',
+              700: '#5026c4',
+              800: '#411ea2',
+              900: '#321680'
             }
           }
         }
@@ -86,124 +52,184 @@
   <!-- مكتبة QRCode.js لتوليد الباركود -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- التنسيقات المطورة والألوان العصرية -->
+  <!-- تنسيقات الهوية المعتمدة لـ Soul Media -->
   <link rel="stylesheet" href="assets/css/system.css">
 </head>
-<body class="bg-slate-50 dark:bg-[#08060d] min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
+<body>
 
   <!-- ===================================================
-       واجهة تسجيل الدخول (Login Screen - اسم المستخدم وكلمة المرور فقط)
+       1. واجهة تسجيل الدخول المنقسمة (Split Login Screen)
+       مطابقة تماماً للشاشة رقم 1 في التصميم المعتمد
        =================================================== -->
-  <div id="login-container" class="min-h-screen flex items-center justify-center p-3 sm:p-4 bg-slate-50 dark:bg-[#08060d]">
-    <div class="max-w-md w-full bg-white dark:bg-[#110d1d] border border-slate-200 dark:border-[#241d3b] rounded-2xl p-5 sm:p-8 shadow-xl shadow-purple-950/10 space-y-6">
+  <div id="login-container" class="split-login-wrapper">
+    
+    <!-- الجانب الأيمن: نموذج الدخول وشعار سول ميديا -->
+    <div class="flex flex-col justify-between p-6 sm:p-12 lg:p-16 max-w-xl mx-auto w-full">
       
-      <!-- الشعار والترويسة -->
-      <div class="text-center space-y-3">
-        <div class="inline-flex items-center justify-center p-3.5 sm:p-4 rounded-2xl bg-black border border-purple-500/30 shadow-xl shadow-purple-950/40 mx-auto">
-          <img src="assets/images/logo.png" alt="سول ميديا - Soul Media" class="h-20 sm:h-24 w-auto object-contain">
+      <!-- الشعار العلوي -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200/60 p-2 flex items-center justify-center shadow-sm">
+          <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-full h-full object-contain">
         </div>
         <div>
-          <h2 class="text-xl font-black text-slate-900 dark:text-white">نظام الدعوات الإلكترونية</h2>
-          <p class="text-xs text-slate-400 font-medium mt-1">منصة الدعوات وتذاكر الدخول الذكية</p>
+          <h1 class="text-lg font-black text-slate-900 leading-tight">سول ميديا</h1>
+          <span class="text-[10px] tracking-widest text-purple-700 font-bold uppercase">SOUL MEDIA</span>
         </div>
       </div>
 
-      <!-- نموذج تسجيل الدخول -->
-      <form id="system-login-form" class="space-y-4 pt-2">
-        <!-- اسم المستخدم -->
+      <!-- محتوى النموذج المركزي -->
+      <div class="my-auto py-8 space-y-6">
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المستخدم</label>
-          <div class="relative">
-            <input type="text" id="login-username" required placeholder="أدخل اسم المستخدم" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white focus:bg-white focus:outline-none pr-9 dir-ltr text-right font-mono">
-            <i class="fa-regular fa-user absolute top-3.5 right-3 text-slate-400 text-xs pointer-events-none"></i>
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-900 leading-snug">مرحباً بك في سول ميديا</h2>
+          <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1.5">ابدأ رحلتك في إنشاء وإدارة الدعوات الإلكترونية وتذاكر الدخول الذكية</p>
+        </div>
+
+        <form id="system-login-form" class="space-y-4">
+          <!-- البريد الإلكتروني أو اسم المستخدم -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">البريد الإلكتروني أو اسم المستخدم</label>
+            <div class="relative">
+              <input type="text" id="login-username" required placeholder="أدخل بريدك الإلكتروني أو اسم المستخدم" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-purple-600 pr-10 dir-ltr text-right transition">
+              <i class="fa-regular fa-envelope absolute top-3.5 right-3.5 text-slate-400 text-xs pointer-events-none"></i>
+            </div>
           </div>
-        </div>
 
-        <!-- كلمة المرور -->
-        <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور</label>
-          <div class="relative">
-            <input type="password" id="login-password" required placeholder="أدخل كلمة المرور" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white focus:bg-white focus:outline-none pr-9 pl-10 dir-ltr text-right font-mono">
-            <i class="fa-solid fa-lock absolute top-3.5 right-3 text-slate-400 text-xs pointer-events-none"></i>
-            <button type="button" id="btn-toggle-password" class="absolute top-2.5 left-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs focus:outline-none" title="إظهار / إخفاء كلمة المرور">
-              <i class="fa-regular fa-eye"></i>
-            </button>
+          <!-- كلمة المرور -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-slate-700">كلمة المرور</label>
+              <a href="#" onclick="alert('يرجى التواصل مع إدارة النظام لإعادة تعيين كلمة المرور'); return false;" class="text-[11px] font-bold text-purple-600 hover:text-purple-700 transition">نسيت كلمة المرور؟</a>
+            </div>
+            <div class="relative">
+              <input type="password" id="login-password" required placeholder="أدخل كلمة المرور" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-purple-600 pr-10 pl-10 dir-ltr text-right transition">
+              <i class="fa-solid fa-lock absolute top-3.5 right-3.5 text-slate-400 text-xs pointer-events-none"></i>
+              <button type="button" id="btn-toggle-password" class="absolute top-3.5 left-3.5 text-slate-400 hover:text-slate-600 text-xs focus:outline-none" title="إظهار / إخفاء كلمة المرور">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- خيار تذكرني -->
-        <div class="flex items-center justify-between pt-0.5 pb-1">
-          <label class="flex items-center gap-2 cursor-pointer select-none group">
-            <input type="checkbox" id="login-remember" checked class="w-4 h-4 rounded text-indigo-600 bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer">
-            <span class="text-xs font-semibold text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition">تذكرني</span>
-          </label>
-        </div>
+          <!-- تذكرني -->
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="login-remember" checked class="w-4 h-4 rounded text-purple-600 bg-slate-50 border-slate-300 focus:ring-purple-500 cursor-pointer">
+              <span class="text-xs font-semibold text-slate-600">تذكرني</span>
+            </label>
+          </div>
 
-        <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 text-xs font-semibold border border-rose-200 dark:border-rose-900"></div>
+          <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200"></div>
 
-        <button type="submit" id="btn-login-submit" class="btn-primary-modern w-full justify-center py-3 text-xs shadow-lg">
-          <i class="fa-solid fa-arrow-right-to-bracket ml-1.5"></i>
-          <span>تسجيل الدخول</span>
-        </button>
-      </form>
+          <!-- زر تسجيل الدخول -->
+          <button type="submit" id="btn-login-submit" class="btn-primary-soul w-full py-3.5 text-xs shadow-md">
+            <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+            <span>تسجيل الدخول</span>
+          </button>
 
-      <!-- حقوق الملكية -->
-      <div class="text-center text-[11px] text-slate-400 dark:text-slate-500 pt-3 border-t border-slate-100 dark:border-[#241d3b] flex items-center justify-center gap-1.5">
+          <!-- شريط الحسابات التجريبية السريعة -->
+          <div class="pt-2 text-center">
+            <span class="text-[11px] text-slate-400 block mb-2 font-medium">تجربة سريعة بنقرة واحدة:</span>
+            <div class="flex items-center justify-center gap-2">
+              <button type="button" id="btn-quick-login-ahmed" class="px-3 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 text-[11px] font-bold border border-purple-200 transition">
+                <i class="fa-regular fa-user ml-1"></i> حساب أحمد (مستخدم)
+              </button>
+              <button type="button" id="btn-quick-login-admin" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold border border-slate-200 transition">
+                <i class="fa-solid fa-user-shield ml-1"></i> حساب المشرف (Admin)
+              </button>
+            </div>
+          </div>
+
+          <!-- إنشاء حساب -->
+          <div class="text-center text-xs text-slate-500 pt-2">
+            <span>ليس لديك حساب؟</span>
+            <a href="#" onclick="alert('للحصول على حساب جديد والاشتراك في باقات سول ميديا، تواصل مع فريق المبيعات.'); return false;" class="text-purple-600 font-bold mr-1 hover:underline">إنشاء حساب جديد</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- حقوق الملكية في الأسفل -->
+      <div class="text-center text-[11px] text-slate-400 pt-4 border-t border-slate-100 flex items-center justify-center gap-1.5">
         <span>ملكية وتطوير :</span>
-        <strong class="text-indigo-600 dark:text-indigo-400 font-bold inline-flex items-center gap-1">
+        <strong class="text-purple-700 font-bold inline-flex items-center gap-1">
           <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
-          Soul Media
+          سول ميديا - Soul Media
         </strong>
       </div>
-
     </div>
+
+    <!-- الجانب الأيسر: اللوحة الفنية وبطاقة الدعوة الفاخرة المطابقة للتصميم -->
+    <div class="split-login-art">
+      <div class="split-art-card">
+        
+        <!-- بطاقة الدعوة ثلاثية الأبعاد الفاخرة كما في التصميم تماماً -->
+        <div class="art-invitation-book">
+          <div class="flex items-center justify-between text-purple-300 text-[10px]">
+            <span>Save the date</span>
+            <i class="fa-solid fa-sparkles"></i>
+          </div>
+
+          <div class="space-y-1.5 text-center my-auto">
+            <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+              <i class="fa-regular fa-envelope text-xs"></i>
+            </div>
+            <h4 class="font-serif text-sm tracking-wider font-bold text-white">بطاقة دعوة فاخرة</h4>
+            <div class="w-12 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent mx-auto"></div>
+            <p class="text-[9px] text-purple-200">سول ميديا للدعوات</p>
+          </div>
+
+          <div class="flex items-center justify-between text-[9px] text-purple-300 border-t border-purple-500/20 pt-2">
+            <span>VIP Invitation</span>
+            <i class="fa-solid fa-qrcode text-xs"></i>
+          </div>
+        </div>
+
+        <!-- العبارة الملهمة المعتمدة في التصميم -->
+        <h3 class="text-xl sm:text-2xl font-black text-white leading-snug drop-shadow-sm">
+          كل مناسبة تستحق دعوة تليق بها <span class="text-rose-300">♥</span>
+        </h3>
+        <p class="text-xs text-purple-100 mt-2 font-medium">تصاميم راقية، مشاركة ذكية، وتحضير فوري عبر الباركود المشفر</p>
+      </div>
+    </div>
+
   </div>
 
   <!-- ===================================================
-       واجهة التطبيق الرئيسية (Main App View - تظهر بعد تسجيل الدخول)
+       2. واجهة التطبيق الرئيسية (Main App Container)
        =================================================== -->
   <div id="main-app-container" class="hidden min-h-screen flex">
     
-    <!-- 1. القائمة الجانبية اليمنى (Right Sidebar) -->
-    <aside id="app-sidebar" class="sidebar-container dark:bg-[#110d1d] dark:border-[#241d3b]">
+    <!-- 1. القائمة الجانبية (Sidebar) -->
+    <aside id="app-sidebar" class="sidebar-container">
       
       <div>
-        <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-[#241d3b] flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-xl bg-black border border-purple-500/30 text-white flex items-center justify-center p-1.5 flex-shrink-0 shadow-md shadow-purple-950/30">
+        <!-- ترويسة القائمة مع شعار سول ميديا -->
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center p-2 flex-shrink-0 shadow-sm">
               <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-full h-full object-contain">
             </div>
             <div>
               <div class="flex items-center gap-1.5">
-                <h1 class="font-black text-indigo-600 dark:text-indigo-400 text-sm leading-tight">Soul Media</h1>
-                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800/40">دعوات</span>
+                <h1 class="font-black text-purple-700 text-sm leading-tight">سول ميديا</h1>
+                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold">SOUL</span>
               </div>
-              <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">منصة الدعوات الإلكترونية</p>
+              <p class="text-[11px] text-slate-400 mt-0.5 font-medium">منصة الدعوات الإلكترونية</p>
             </div>
           </div>
           
-          <button id="btn-close-sidebar" class="lg:hidden w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition" title="إغلاق القائمة">
+          <button id="btn-close-sidebar" class="lg:hidden w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition" title="إغلاق القائمة">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <!-- بطاقة المستخدم الحالية -->
-        <div class="p-4 border-b border-slate-100 dark:border-[#241d3b] flex items-center gap-3 bg-slate-50/50 dark:bg-[#191428]">
-          <div id="user-avatar-circle" class="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-700 to-purple-500 text-white flex items-center justify-center font-bold text-base shadow-sm border border-purple-400/20">
-            خر
-          </div>
-          <div>
-            <h3 id="sidebar-user-name" class="font-bold text-slate-800 dark:text-slate-100 text-sm">اسم المستخدم</h3>
-            <span id="sidebar-user-role" class="text-[11px] text-slate-400 dark:text-slate-400 font-medium">منشئ دعوات</span>
-          </div>
-        </div>
-
-        <!-- روابط التنقل -->
-        <div class="p-3 space-y-1">
-          <span class="px-3 py-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">الرئيسية</span>
-          
-          <a id="nav-invitations" class="nav-link active">
+        <!-- روابط التنقل المعتمدة في التصميم -->
+        <div class="p-3.5 space-y-1">
+          <a id="nav-dashboard" class="nav-link active">
             <i class="fa-solid fa-house text-sm w-4"></i>
+            <span>الرئيسية</span>
+          </a>
+
+          <a id="nav-invitations" class="nav-link">
+            <i class="fa-solid fa-envelope-open-text text-sm w-4"></i>
             <span>دعواتي</span>
           </a>
 
@@ -216,19 +242,34 @@
             <i class="fa-solid fa-arrow-right-arrow-left text-sm w-4"></i>
             <span>تحويل دعوات</span>
           </a>
+
+          <a id="nav-events" class="nav-link">
+            <i class="fa-regular fa-calendar-days text-sm w-4"></i>
+            <span>إدارة الفعاليات</span>
+          </a>
+
+          <a id="nav-users" class="nav-link">
+            <i class="fa-solid fa-users-gear text-sm w-4"></i>
+            <span>إدارة المستخدمين</span>
+          </a>
+
+          <a id="nav-settings" class="nav-link">
+            <i class="fa-solid fa-gear text-sm w-4"></i>
+            <span>الإعدادات</span>
+          </a>
         </div>
       </div>
 
-      <!-- أسفل القائمة -->
-      <div class="p-4 border-t border-slate-100 dark:border-[#241d3b] space-y-3">
-        <button id="btn-logout-sidebar" class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 text-xs font-bold transition w-full py-1.5">
+      <!-- أسفل القائمة: تسجيل الخروج والشعار -->
+      <div class="p-4 border-t border-slate-100 space-y-3">
+        <button id="btn-logout-sidebar" class="flex items-center gap-2 text-slate-500 hover:text-rose-600 text-xs font-bold transition w-full py-1.5 cursor-pointer">
           <i class="fa-solid fa-arrow-right-from-bracket rotate-180"></i>
           <span>تسجيل الخروج</span>
         </button>
 
-        <div class="text-[10px] text-slate-400 dark:text-slate-500 text-center pt-2 border-t border-slate-50 dark:border-[#241d3b] flex items-center justify-center gap-1.5">
-          <span>ملكية وتطوير :</span>
-          <strong class="text-indigo-600 dark:text-indigo-400 font-bold inline-flex items-center gap-1">
+        <div class="text-[10px] text-slate-400 text-center pt-2 border-t border-slate-50 flex items-center justify-center gap-1.5">
+          <span>تطوير :</span>
+          <strong class="text-purple-600 font-bold inline-flex items-center gap-1">
             <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
             Soul Media
           </strong>
@@ -237,462 +278,988 @@
 
     </aside>
 
-    <!-- خلفية معتمة للهواتف عند فتح القائمة -->
+    <!-- خلفية معتمة للهواتف -->
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
     <!-- 2. مساحة المحتوى الرئيسية -->
     <div class="main-content-wrapper flex-1 w-full overflow-x-hidden">
       
-      <!-- الشريط العلوي -->
-      <header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-        <div class="flex items-center gap-2 sm:gap-3">
-          <button id="btn-mobile-menu" class="lg:hidden w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition hover:bg-slate-200 dark:hover:bg-slate-700" title="فتح القائمة">
+      <!-- الشريط العلوي (Top Header) المطابق للتصميم -->
+      <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+        
+        <!-- اليمين: زر القائمة للهاتف + شريط البحث -->
+        <div class="flex items-center gap-3 flex-1 max-w-md">
+          <button id="btn-mobile-menu" class="lg:hidden w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs transition hover:bg-slate-200" title="فتح القائمة">
             <i class="fa-solid fa-bars"></i>
           </button>
 
-          <span id="header-real-date" class="hidden md:inline-block text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">Sunday, 13 September 2026</span>
-
-          <!-- زر الدخول للوحة الأدمن إن كان المستخدم مشرفاً -->
-          <a id="admin-panel-link" href="admin.html" class="hidden px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-user-shield"></i>
-            <span class="hidden xs:inline sm:inline">لوحة الأدمن</span>
-          </a>
+          <!-- شريط البحث السريع في الهيدر -->
+          <div class="relative flex-1 hidden sm:block">
+            <input type="text" id="header-search-input" placeholder="ابحث عن دعوة..." class="w-full pl-4 pr-9 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-purple-600 transition">
+            <i class="fa-solid fa-magnifying-glass absolute top-2.5 right-3 text-slate-400 text-xs pointer-events-none"></i>
+          </div>
         </div>
 
-        <div>
-          <h2 id="current-view-title" class="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 truncate">قائمة الدعوات</h2>
+        <!-- اليسار: بطاقة المستخدم والصورة الرمزية -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5 pl-2">
+            <div id="user-avatar-circle" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-700 to-purple-500 text-white flex items-center justify-center font-bold text-xs shadow-xs border border-purple-300/30">
+              أح
+            </div>
+            <div class="text-right hidden xs:block">
+              <h3 id="sidebar-user-name" class="font-bold text-slate-800 text-xs leading-tight">أحمد محمد علي</h3>
+              <span id="sidebar-user-role" class="text-[10px] text-purple-600 font-semibold">مستخدم عادي</span>
+            </div>
+          </div>
         </div>
+
       </header>
 
-      <!-- محتوى الشاشات -->
-      <main class="p-3.5 sm:p-6 max-w-7xl mx-auto w-full space-y-6">
+      <!-- الحاوية الديناميكية لجميع الشاشات -->
+      <main class="p-3.5 sm:p-6 max-w-7xl mx-auto w-full space-y-6 pb-20 lg:pb-6">
 
         <!-- ===================================================
-             الواجهة 1: "دعواتي"
+             الشاشة 2: لوحة التحكم الرئيسية (View Dashboard)
+             مطابقة تماماً للشاشة رقم 2 في لوحة التصميم
              =================================================== -->
-        <section id="view-invitations" class="space-y-6">
+        <section id="view-dashboard" class="space-y-6">
           
-          <!-- كرت إحصائيات الدعوات والـ 30 دعوة -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-end gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
-              <span>إحصائيات الدعوات حسب الفعالية</span>
-              <i class="fa-solid fa-chart-pie text-indigo-500"></i>
+          <!-- بنر الترحيب الزهري الفاخر -->
+          <div class="welcome-banner-soul">
+            <div class="floral-accent-pattern">
+              <i class="fa-solid fa-seedling"></i>
             </div>
-
-            <div class="event-stat-card dark:bg-slate-900 dark:border-slate-800">
-              <div class="event-header-gradient px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-bold shadow-sm">
-                <span class="text-xs sm:text-sm font-black tracking-wide">حفل التخرج 2026</span>
-                <span class="font-mono text-[10px] sm:text-[11px] opacity-95 bg-white/20 px-2.5 py-1 rounded-lg">2026-09-06 00:00:00</span>
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
+                  مرحباً بك مجدداً <span id="banner-user-name" class="text-purple-700">أحمد محمد علي</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">خذ نظرة سريعة على إحصائياتك اليوم وإدارة دعوات مناسباتك</p>
               </div>
 
-              <div class="p-4 sm:p-6 space-y-4">
-                <!-- أشرطة التقدم للكوتا: العادية و VIP -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <!-- كوتا عادية -->
-                  <div class="space-y-1.5 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                    <div class="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-bold">
-                      <span id="stat-regular-ratio" class="font-mono text-indigo-600 dark:text-indigo-400 font-black">0 / 30</span>
-                      <span class="text-slate-500"><i class="fa-solid fa-ticket text-indigo-500 ml-1"></i>دعوات عادية</span>
-                    </div>
-                    <div class="progress-track-red">
-                      <div id="stat-regular-bar" class="progress-fill-red" style="width: 0%;"></div>
-                    </div>
-                  </div>
-
-                  <!-- كوتا VIP -->
-                  <div class="space-y-1.5 bg-amber-50/60 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-100 dark:border-amber-900/40">
-                    <div class="flex justify-between text-xs text-amber-900 dark:text-amber-200 font-bold">
-                      <span id="stat-vip-ratio" class="font-mono text-amber-600 dark:text-amber-400 font-black">0 / 0</span>
-                      <span class="text-amber-700 dark:text-amber-400"><i class="fa-solid fa-crown text-amber-500 ml-1"></i>دعوات VIP</span>
-                    </div>
-                    <div class="h-2 w-full bg-amber-200/50 dark:bg-amber-950/60 rounded-full overflow-hidden">
-                      <div id="stat-vip-bar" class="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-300" style="width: 0%;"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- صناديق الإحصائيات -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
-                  <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-regular" class="block font-black text-lg sm:text-xl text-slate-900 dark:text-white font-mono">0</span>
-                    <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">عادية منشأة</span>
-                  </div>
-                  <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-vip" class="block font-black text-lg sm:text-xl text-amber-600 dark:text-amber-400 font-mono">0</span>
-                    <span class="text-[10px] sm:text-[11px] text-amber-600/80 dark:text-amber-400/80 font-medium">VIP منشأة</span>
-                  </div>
-                  <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-used" class="block font-black text-lg sm:text-xl text-rose-600 dark:text-rose-400 font-mono">0</span>
-                    <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">المستخدمة</span>
-                  </div>
-                  <div class="stat-mini-box dark:bg-slate-800/60 dark:border-slate-700/60">
-                    <span id="stat-total-unused" class="block font-black text-lg sm:text-xl text-emerald-600 dark:text-emerald-400 font-mono">0</span>
-                    <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">المتبقية</span>
-                  </div>
-                </div>
-
-                <!-- التفصيل الرياضي للكوتا في الأسفل -->
-                <div class="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800 gap-2">
-                  <div class="flex items-center gap-2">
-                    <span id="stat-remaining-badge" class="px-3 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/50 text-[11px]">
-                      المتبقي: 0 دعوة
-                    </span>
-                    <span id="stat-base-quota-text" class="text-[10px] sm:text-[11px] text-slate-400">الرصيد المخصص من الإدارة</span>
-                  </div>
-
-                  <div id="stat-formula-text" class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                    الكوتا معتمدة
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <!-- أزرار الإجراءات وعنوان "دعواتي" -->
-          <div class="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-2">
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button id="btn-goto-transfer" class="btn-warning-modern flex-1 sm:flex-initial justify-center text-xs py-2.5 px-3">
-                <i class="fa-solid fa-arrow-right-arrow-left text-xs"></i>
-                <span>تحويل دعوات</span>
-              </button>
-
-              <button id="btn-goto-create" class="btn-primary-modern flex-1 sm:flex-initial justify-center text-xs py-2.5 px-3">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span>إنشاء دعوة جديدة</span>
-              </button>
-            </div>
-
-            <h3 class="text-lg sm:text-xl font-black text-slate-800 dark:text-white">دعواتي</h3>
-          </div>
-
-          <!-- شريط البحث والفرز -->
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
-            <div class="flex gap-2">
-              <button class="w-10 sm:w-11 h-10 sm:h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-indigo-500/25 transition">
-                <i class="fa-solid fa-magnifying-glass text-sm"></i>
-              </button>
-              <input type="text" id="filter-search-input" placeholder="بحث بالاسم، الهاتف، الرقم..." class="flex-1 px-3 sm:px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white focus:bg-white focus:outline-none">
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-              <div class="relative">
-                <select id="filter-event-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 appearance-none pr-8">
-                  <option value="الكل">جميع المناسبات والفعاليات</option>
-                  <option value="wedding">💍 حفلات الزواج والأفراح</option>
-                  <option value="private">✨ المناسبات والاحتفالات الخاصة</option>
-                  <option value="graduation">🎓 حفلات التخرج</option>
+              <!-- تصفية الفترة والتقويم -->
+              <div class="flex items-center gap-2 bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-purple-200/60 shadow-xs">
+                <i class="fa-regular fa-calendar text-purple-600 text-xs"></i>
+                <select id="dashboard-period-select" class="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                  <option value="month">هذا الشهر</option>
+                  <option value="year">هذا العام</option>
+                  <option value="all">كافة الفترات</option>
                 </select>
-                <i class="fa-regular fa-calendar absolute top-3.5 left-3 text-slate-400 text-xs pointer-events-none"></i>
-              </div>
-
-              <div class="relative">
-                <select id="filter-status-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 appearance-none pr-8">
-                  <option value="الكل">جميع الحالات</option>
-                  <option value="صالحة">صالحة</option>
-                  <option value="مستخدمة">مستخدمة</option>
-                </select>
-                <i class="fa-solid fa-chevron-down absolute top-3.5 left-3 text-slate-400 text-xs pointer-events-none"></i>
               </div>
             </div>
           </div>
 
-          <!-- جدول بطاقات الدعوات الحقيقية -->
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-            <div class="table-responsive-wrapper">
-              <table class="w-full text-right text-xs whitespace-nowrap">
-                <thead class="bg-slate-50/90 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="py-3.5 px-4 font-bold">رقم الدعوة</th>
-                    <th class="py-3.5 px-4 font-bold">اسم المدعو</th>
-                    <th class="py-3.5 px-4 font-bold">رقم الهاتف</th>
-                    <th class="py-3.5 px-4 font-bold">الداعي</th>
-                    <th class="py-3.5 px-4 font-bold">المناسبة والفعالية</th>
-                    <th class="py-3.5 px-4 font-bold">عدد الأشخاص</th>
-                    <th class="py-3.5 px-4 font-bold">النوع</th>
-                    <th class="py-3.5 px-4 font-bold">الحالة</th>
-                    <th class="py-3.5 px-4 font-bold text-center">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody id="invitations-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  <!-- يتم تعبئة صفوف الدعوات بواسطة app.js -->
-                </tbody>
-              </table>
+          <!-- صف بطاقات الإحصائيات الـ 5 المعتمدة في التصميم -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            
+            <!-- 1. إجمالي الدعوات -->
+            <div class="stat-card-soul stat-card-purple">
+              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                <span>إجمالي الدعوات</span>
+                <span class="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-envelopes-bulk"></i></span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span id="dash-stat-total" class="text-2xl font-black text-slate-900 font-mono">200</span>
+                <span class="text-[10px] text-purple-700 font-bold bg-purple-50 px-1.5 py-0.5 rounded">دعوة</span>
+              </div>
             </div>
+
+            <!-- 2. دعوات مقبولة -->
+            <div class="stat-card-soul stat-card-green">
+              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                <span>دعوات مقبولة</span>
+                <span class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-circle-check"></i></span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span id="dash-stat-accepted" class="text-2xl font-black text-emerald-600 font-mono">160</span>
+                <span class="text-[10px] text-slate-400 font-medium">من أصل 200</span>
+              </div>
+            </div>
+
+            <!-- 3. دعوات قيد الانتظار -->
+            <div class="stat-card-soul stat-card-blue">
+              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                <span>قيد الانتظار</span>
+                <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-clock"></i></span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span id="dash-stat-pending" class="text-2xl font-black text-indigo-600 font-mono">20</span>
+                <span class="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">دعوة</span>
+              </div>
+            </div>
+
+            <!-- 4. الدعوات المعتذرة -->
+            <div class="stat-card-soul stat-card-amber">
+              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                <span>الدعوات المعتذرة</span>
+                <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-user-xmark"></i></span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span id="dash-stat-declined" class="text-2xl font-black text-amber-600 font-mono">80</span>
+                <span class="text-[10px] text-slate-400 font-medium">معتذر</span>
+              </div>
+            </div>
+
+            <!-- 5. الدعوات المتبقية -->
+            <div class="stat-card-soul stat-card-cyan col-span-2 sm:col-span-1">
+              <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                <span>الدعوات المتبقية</span>
+                <span class="w-6 h-6 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-ticket"></i></span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span id="dash-stat-remaining" class="text-2xl font-black text-cyan-600 font-mono">120</span>
+                <span class="text-[10px] text-cyan-700 font-bold bg-cyan-50 px-1.5 py-0.5 rounded">رصيد متاح</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- القسم التحليلي السفلي: الرسم البياني الدائري + آخر الدعوات المرسلة -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            
+            <!-- الرسم البياني الدائري لنسبة الحضور والإنجاز (40%) -->
+            <div class="lg:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-slate-800 text-sm">معدل استجابة المدعوين</h3>
+                <span class="text-[11px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-lg">إحصائيات حية</span>
+              </div>
+
+              <div class="flex flex-col items-center justify-center my-3">
+                <div class="donut-chart-container">
+                  <svg class="donut-chart-svg" viewBox="0 0 100 100">
+                    <circle class="donut-chart-track" cx="50" cy="50" r="40"></circle>
+                    <circle id="dash-donut-circle" class="donut-chart-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="150.72"></circle>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="dash-donut-percent" class="text-2xl font-black text-slate-900 font-mono">40%</span>
+                    <span class="text-[10px] text-slate-400 font-semibold">نسبة الحضور</span>
+                  </div>
+                </div>
+
+                <!-- مفتاح الألوان التوضيحي -->
+                <div class="flex items-center justify-center gap-4 text-xs font-semibold mt-4 text-slate-600">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
+                    <span class="text-[11px]">المقبولة</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    <span class="text-[11px]">قيد الانتظار</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <span class="text-[11px]">المعتذرة</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>تحديث تلقائي</span>
+                <button onclick="renderDashboardData()" class="text-purple-600 hover:text-purple-700 font-bold text-xs"><i class="fa-solid fa-arrows-rotate ml-1"></i>تحديث</button>
+              </div>
+            </div>
+
+            <!-- بطاقة آخر الدعوات المرسلة -->
+            <div class="lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-paper-plane text-purple-600 text-xs"></i>
+                  <h3 class="font-bold text-slate-800 text-sm">آخر الدعوات المرسلة</h3>
+                </div>
+                <button id="btn-dash-view-all-invs" class="text-xs text-purple-600 hover:text-purple-700 font-bold flex items-center gap-1">
+                  <span>عرض الكل</span>
+                  <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                </button>
+              </div>
+
+              <!-- قائمة آخر الدعوات مع أشرطة التقدم -->
+              <div id="dash-recent-invitations-list" class="space-y-3.5">
+                <!-- يتم التعبئة بواسطة app.js -->
+              </div>
+
+              <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>عدد الدعوات المعروضة: 4</span>
+                <button id="btn-dash-quick-create" class="text-purple-600 font-bold text-xs hover:underline">+ إصدار دعوة جديدة</button>
+              </div>
+            </div>
+
+          </div>
+
         </section>
 
         <!-- ===================================================
-             الواجهة 2: "تعديل بيانات الدعوة"
+             الشاشة 3: صفحة "دعواتي" (View My Invitations)
+             مطابقة تماماً للشاشة رقم 3 وشبكة الكروت
              =================================================== -->
-        <section id="view-edit" class="hidden max-w-4xl mx-auto space-y-4">
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <h3 class="text-base font-black text-slate-900 dark:text-white mb-6 text-center border-b border-slate-100 dark:border-slate-800 pb-4">
-              تعديل بيانات الدعوة
-            </h3>
+        <section id="view-invitations" class="hidden space-y-6">
+          
+          <!-- الترويسة والأزرار الرئيسية -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900">دعواتي</h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">استعراض وإدارة ومشاركة بطاقات الدعوة لكافة مناسباتك</p>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button id="btn-goto-transfer" class="btn-secondary-soul text-xs py-2.5">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>تحويل دعوات</span>
+              </button>
+
+              <button id="btn-goto-create" class="btn-primary-soul text-xs py-2.5">
+                <i class="fa-solid fa-plus"></i>
+                <span>إنشاء دعوة جديدة</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- شريط التصفية والبحث المطابق للشاشة رقم 3 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs space-y-3">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+              
+              <!-- حقل البحث بالاسم أو الهاتف -->
+              <div class="relative flex-1">
+                <input type="text" id="filter-search-input" placeholder="ابحث باسم المدعو، رقم الجوال، أو رقم الدعوة..." class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-purple-600 transition">
+                <i class="fa-solid fa-magnifying-glass absolute top-3.5 right-3.5 text-slate-400 text-xs pointer-events-none"></i>
+              </div>
+
+              <!-- القوائم المنسدلة الثلاث كما في التصميم -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-shrink-0">
+                <!-- تصفية الفعاليات -->
+                <select id="filter-event-select" class="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-600 cursor-pointer">
+                  <option value="الكل">جميع الفعاليات</option>
+                </select>
+
+                <!-- تصفية نوع الدعوة -->
+                <select id="filter-type-select" class="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-600 cursor-pointer">
+                  <option value="الكل">جميع الأنواع</option>
+                  <option value="عادية">عادية</option>
+                  <option value="VIP">VIP</option>
+                </select>
+
+                <!-- تصفية الحالات -->
+                <select id="filter-status-select" class="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-600 cursor-pointer">
+                  <option value="الكل">جميع الحالات</option>
+                  <option value="مقبولة">نشطة / مقبولة</option>
+                  <option value="قيد الانتظار">قيد الانتظار</option>
+                  <option value="معتذر">معتذر</option>
+                  <option value="مستخدمة">مستخدمة</option>
+                </select>
+              </div>
+
+              <!-- زر التبديل بين عرض البطاقات وعرض الجدول -->
+              <div class="flex items-center justify-end gap-1 border-t md:border-t-0 md:border-r border-slate-100 pt-2 md:pt-0 md:pr-3">
+                <button id="btn-view-mode-grid" class="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-xs transition font-bold" title="عرض شبكة البطاقات">
+                  <i class="fa-solid fa-grip"></i>
+                </button>
+                <button id="btn-view-mode-table" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs transition" title="عرض الجدول">
+                  <i class="fa-solid fa-list-ul"></i>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- شبكة بطاقات الدعوات (Cards Grid View) المطابقة للشاشة رقم 3 -->
+          <div id="invitations-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- يتم تعبئتها ديناميكياً بواسطة app.js -->
+          </div>
+
+          <!-- جدول الدعوات التفصيلي (Table View) -->
+          <div id="invitations-table-container" class="hidden bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+            <div class="table-responsive-wrapper">
+              <table class="table-modern">
+                <thead>
+                  <tr>
+                    <th>رقم الدعوة</th>
+                    <th>اسم المدعو</th>
+                    <th>رقم الجوال</th>
+                    <th>المناسبة</th>
+                    <th>المقاعد</th>
+                    <th>النوع</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="invitations-table-body">
+                  <!-- يتم تعبئتها بواسطة app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- الحالة الفارغة المعتمدة (Empty State - الشاشة 12) -->
+          <div id="invitations-empty-state" class="empty-state-card hidden">
+            <div class="floating-envelope-icon">
+              <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h3 class="text-lg font-black text-slate-900 mb-1">لا توجد دعوات بعد</h3>
+            <p class="text-xs text-slate-500 mb-6">ابدأ بإنشاء دعوتك الأولى الآن وشاركها مع ضيوفك الكرام بكل سهولة</p>
+            <button id="btn-empty-create" class="btn-primary-soul text-xs py-3 px-6 shadow-md">
+              <i class="fa-solid fa-plus"></i>
+              <span>إنشاء دعوة جديدة</span>
+            </button>
+          </div>
+
+        </section>
+
+        <!-- ===================================================
+             الشاشة 4: إنشاء دعوة جديدة (View Create Invitation)
+             معالج الخطوات + المعاينة الحية الفورية للبطاقة
+             =================================================== -->
+        <section id="view-create" class="hidden space-y-6">
+          
+          <!-- الترويسة وشريط الخطوات -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">إنشاء دعوة جديدة</h2>
+                <p class="text-xs text-slate-500 font-medium">أدخل بيانات المناسبة والمدعو وشاهد البطاقة تتولد لحظياً</p>
+              </div>
+              <button id="btn-back-from-create" class="text-xs text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-right"></i>
+                <span>العودة للدعوات</span>
+              </button>
+            </div>
+
+            <!-- شريط الخطوات المعتمد في التصميم -->
+            <div class="wizard-stepper max-w-xl mx-auto">
+              <div class="step-item active" id="step-node-1">
+                <div class="step-bubble">1</div>
+                <span class="step-title">تفاصيل المناسبة</span>
+              </div>
+              <div class="step-item" id="step-node-2">
+                <div class="step-bubble">2</div>
+                <span class="step-title">بيانات المدعو</span>
+              </div>
+              <div class="step-item" id="step-node-3">
+                <div class="step-bubble">3</div>
+                <span class="step-title">معاينة البطاقة</span>
+              </div>
+              <div class="step-item" id="step-node-4">
+                <div class="step-bubble">4</div>
+                <span class="step-title">تأكيد ونشر</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- التقسيم المتوازن: النموذج في اليمين والمعاينة الحية في اليسار -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- نموذج إدخال البيانات -->
+            <div class="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
+              
+              <form id="create-invite-form" class="space-y-4">
+                
+                <!-- 1. تفاصيل المناسبة -->
+                <div class="border-b border-slate-100 pb-4 space-y-4">
+                  <h4 class="text-xs font-black text-purple-700 flex items-center gap-1.5">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>تفاصيل المناسبة</span>
+                  </h4>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">نوع المناسبة *</label>
+                      <select id="field-create-event-type" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-bold outline-none focus:border-purple-600 transition">
+                        <option value="wedding">💍 حفل زفاف / زواج</option>
+                        <option value="graduation">🎓 حفل تخرج</option>
+                        <option value="birthday">🎂 عيد ميلاد</option>
+                        <option value="private">✨ مناسبة خاصة VIP</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المناسبة *</label>
+                      <input type="text" id="field-create-event" required placeholder="مثال: حفل زفاف أحمد & سارة" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition">
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">تاريخ المناسبة</label>
+                      <input type="date" id="field-create-date" value="2026-10-15" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition font-mono">
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">وقت المناسبة</label>
+                      <input type="time" id="field-create-time" value="20:00" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition font-mono">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. معلومات المدعو -->
+                <div class="border-b border-slate-100 pb-4 space-y-4">
+                  <h4 class="text-xs font-black text-purple-700 flex items-center gap-1.5">
+                    <i class="fa-regular fa-user"></i>
+                    <span>معلومات المدعو</span>
+                  </h4>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المدعو الكريم *</label>
+                      <input type="text" id="field-create-guest" required placeholder="أدخل اسم الضيف الكريم" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition">
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">رقم الجوال (واتساب) *</label>
+                      <input type="tel" id="field-create-phone" required placeholder="0501234567" dir="ltr" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 text-right outline-none focus:border-purple-600 transition font-mono">
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">نوع الدعوة</label>
+                      <select id="field-create-type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition">
+                        <option value="عادية">عادية</option>
+                        <option value="VIP">VIP</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">عدد المقاعد</label>
+                      <input type="number" id="field-create-people-count" min="1" max="10" value="1" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition font-mono">
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم الداعي</label>
+                      <input type="text" id="field-create-grad-name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-800 outline-none font-bold" readonly>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">ملاحظات خاصة بالدعوة (اختياري)</label>
+                    <textarea id="field-create-notes" rows="2" placeholder="مثال: نتشرف بحضوركم الكريم..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition"></textarea>
+                  </div>
+                </div>
+
+                <!-- زر الإصدار -->
+                <div class="pt-2 flex items-center gap-3">
+                  <button type="submit" id="btn-submit-create-invite" class="btn-primary-soul flex-1 py-3 text-xs shadow-md">
+                    <i class="fa-solid fa-plus ml-1.5"></i>
+                    <span>إصدار ونشر الدعوة الآن</span>
+                  </button>
+                  <button type="button" id="btn-cancel-create" class="btn-secondary-soul py-3 text-xs">
+                    إلغاء
+                  </button>
+                </div>
+
+              </form>
+            </div>
+
+            <!-- المعاينة الحية الفورية للبطاقة (Live Invitation Card Preview) -->
+            <div class="lg:col-span-5 flex flex-col items-center">
+              <div class="w-full max-w-xs space-y-3">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
+                  <span>معاينة البطاقة الحية</span>
+                  <span class="text-purple-600 flex items-center gap-1 text-[11px]"><i class="fa-solid fa-bolt"></i> تحديث فوري</span>
+                </div>
+
+                <!-- البطاقة الفاخرة المعتمدة في التصميم -->
+                <div id="live-card-container" class="live-invitation-preview-card">
+                  <div class="card-floral-tl"></div>
+                  <div class="card-floral-br"></div>
+
+                  <!-- ترويسة البطاقة -->
+                  <div class="space-y-1">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+                      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 object-contain">
+                    </div>
+                    <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
+                  </div>
+
+                  <!-- جسم البطاقة المتغير لحظياً -->
+                  <div class="space-y-2 py-2">
+                    <h3 id="preview-event-name" class="font-serif text-base sm:text-lg font-black text-white leading-tight">دعوة زفاف مبارك</h3>
+                    <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
+                    <p class="text-[11px] text-purple-200">يتشرف الداعي بدعوة الكريم:</p>
+                    <h4 id="preview-guest-name" class="text-sm font-black text-amber-200 font-mono">اسم المدعو الكريم</h4>
+                    <span id="preview-badge-type" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">دعوة عادية</span>
+                  </div>
+
+                  <!-- تفاصيل الزمان والباركود التوضيحي -->
+                  <div class="pt-2 border-t border-purple-400/20 space-y-2">
+                    <div class="flex items-center justify-between text-[10px] text-purple-200 px-2 font-mono">
+                      <span id="preview-event-date"><i class="fa-regular fa-calendar ml-1"></i>2026-10-15</span>
+                      <span id="preview-event-time"><i class="fa-regular fa-clock ml-1"></i>20:00</span>
+                    </div>
+
+                    <!-- باركود QR تجريبي فوري -->
+                    <div class="w-20 h-20 bg-white p-1 rounded-xl mx-auto flex items-center justify-center shadow-md">
+                      <div id="preview-qr-box"></div>
+                    </div>
+                    <span class="text-[9px] text-purple-300 block font-mono">مسح الباركود عند البوابة</span>
+                  </div>
+                </div>
+
+                <p class="text-[11px] text-slate-400 text-center">تظهر البطاقة بهذا الشكل الأنيق للضيف مع رابط مخصص</p>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ===================================================
+             الشاشة 5: تعديل الدعوة (View Edit Invitation)
+             =================================================== -->
+        <section id="view-edit" class="hidden space-y-6">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs max-w-3xl mx-auto space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 class="text-base font-black text-slate-900">تعديل بيانات الدعوة</h2>
+              <button id="btn-cancel-edit" class="text-xs text-slate-500 hover:text-slate-800 font-bold">إلغاء</button>
+            </div>
 
             <form id="edit-invite-form" class="space-y-4">
               <input type="hidden" id="edit-inv-id">
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المدعو</label>
-                  <input type="text" id="edit-field-guest" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المدعو</label>
+                  <input type="text" id="edit-field-guest" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">رقم الهاتف</label>
-                  <input type="tel" id="edit-field-phone" required dir="ltr" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs text-right">
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label id="edit-host-label" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم الداعي</label>
-                  <input type="text" id="edit-field-grad-name" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">عدد الأشخاص</label>
-                  <input type="number" id="edit-field-people-count" min="1" max="10" value="1" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">رقم الهاتف</label>
+                  <input type="tel" id="edit-field-phone" required dir="ltr" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 text-right outline-none focus:border-purple-600 font-mono">
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">نوع المناسبة</label>
-                  <select id="edit-field-event-type" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                    <option value="wedding">💍 حفل زواج</option>
-                    <option value="private">✨ مناسبة خاصة</option>
-                    <option value="graduation">🎓 حفل تخرج</option>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المناسبة</label>
+                  <input type="text" id="edit-field-event" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">نوع الدعوة</label>
+                  <select id="edit-field-type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
+                    <option value="عادية">عادية</option>
+                    <option value="VIP">VIP</option>
                   </select>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الفعالية</label>
-                  <input type="text" id="edit-field-event" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">عدد المقاعد</label>
+                  <input type="number" id="edit-field-people-count" min="1" max="10" value="1" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 font-mono">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">ملاحظات</label>
+                <textarea id="edit-field-notes" rows="2" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600"></textarea>
+              </div>
+
+              <div class="flex items-center gap-3 pt-3">
+                <button type="submit" class="btn-primary-soul flex-1 py-3 text-xs shadow-md">
+                  <i class="fa-regular fa-floppy-disk ml-1"></i>
+                  <span>حفظ التعديلات</span>
+                </button>
+                <button type="button" id="btn-delete-from-edit" class="px-4 py-3 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold border border-rose-200 transition">
+                  <i class="fa-regular fa-trash-can ml-1"></i>
+                  <span>حذف الدعوة</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ===================================================
+             الشاشة 6: تفاصيل الدعوة والمشاركة (View Details)
+             مطابقة تماماً للشاشة رقم 6 في التصميم المعتمد
+             =================================================== -->
+        <section id="view-details" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <button id="btn-back-from-details" class="btn-secondary-soul text-xs py-2 px-3.5">
+              <i class="fa-solid fa-arrow-right"></i>
+              <span>العودة إلى دعواتي</span>
+            </button>
+            <h2 class="text-base font-black text-slate-900">تفاصيل الدعوة الرسمية</h2>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- الجانب الأيمن: بطاقة الدعوة الفاخرة مع باركود الدخول والتحميل -->
+            <div class="lg:col-span-5 flex flex-col items-center">
+              <div class="w-full max-w-sm space-y-3">
+                <div id="details-card-preview" class="live-invitation-preview-card shadow-xl">
+                  <div class="card-floral-tl"></div>
+                  <div class="card-floral-br"></div>
+
+                  <div class="space-y-1">
+                    <div class="w-9 h-9 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+                      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-5 h-5 object-contain">
+                    </div>
+                    <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
+                  </div>
+
+                  <div class="space-y-2 py-3">
+                    <h3 id="details-card-event" class="font-serif text-lg font-black text-white leading-tight">حفل زفاف مبارك</h3>
+                    <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
+                    <p class="text-[11px] text-purple-200">نتشرف بدعوة الأستاذ / الأستاذة:</p>
+                    <h4 id="details-card-guest" class="text-base font-black text-amber-200 font-mono">اسم المدعو</h4>
+                    <span id="details-card-type-badge" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">VIP</span>
+                  </div>
+
+                  <!-- الباركود الرسمي للدخول -->
+                  <div class="pt-3 border-t border-purple-400/20 space-y-2">
+                    <div id="details-qrcode-render" class="w-24 h-24 bg-white p-1.5 rounded-xl mx-auto flex items-center justify-center shadow-lg"></div>
+                    <span id="details-card-code" class="text-[10px] text-purple-200 font-mono tracking-wider block">INV-2026-101</span>
+                  </div>
                 </div>
 
-                <div id="edit-field-type-container">
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">نوع الدعوة</label>
-                  <select id="edit-field-type" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
+                <!-- أزرار الإجراءات على البطاقة -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                  <button id="btn-download-qr-image" class="btn-secondary-soul text-xs py-2.5 justify-center">
+                    <i class="fa-solid fa-download"></i>
+                    <span>تحميل QR</span>
+                  </button>
+                  <a id="btn-open-ticket-link" href="#" target="_blank" class="btn-primary-soul text-xs py-2.5 justify-center">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>فتح التذكرة</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- الجانب الأيسر: جدول البيانات المفصل وأزرار المشاركة المعتمدة في التصميم -->
+            <div class="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-5">
+              
+              <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold block mb-1">المناسبة</span>
+                  <h3 id="details-field-event" class="text-base font-black text-slate-900">حفل زفاف أحمد & سارة</h3>
+                </div>
+                <span id="details-field-status-badge" class="badge-pill badge-pill-green">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>مقبولة / نشطة</span>
+                </span>
+              </div>
+
+              <!-- شبكة التفاصيل -->
+              <div class="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">اسم المدعو</span>
+                  <strong id="details-field-guest" class="text-slate-900 font-bold text-sm">سارة عبد الله</strong>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">رقم الجوال</span>
+                  <strong id="details-field-phone" class="text-slate-900 font-mono font-bold text-sm" dir="ltr">+966 501234567</strong>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">نوع الدعوة</span>
+                  <strong id="details-field-type" class="text-purple-700 font-bold">دعوة عادية</strong>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">عدد المقاعد المخصصة</span>
+                  <strong id="details-field-seats" class="text-slate-900 font-bold font-mono">1 شخص</strong>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">تاريخ الإنشاء</span>
+                  <strong id="details-field-created" class="text-slate-700 font-mono text-[11px]">2026-09-20 18:30</strong>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block font-semibold mb-1">اسم الداعي</span>
+                  <strong id="details-field-host" class="text-slate-900 font-bold">أحمد محمد علي</strong>
+                </div>
+              </div>
+
+              <!-- قسم مشاركة الدعوة (واتساب، منصة X، نسخ الرابط) المطابق للتصميم -->
+              <div class="pt-4 border-t border-slate-100 space-y-3">
+                <span class="text-xs font-bold text-slate-700 block">مشاركة الدعوة مع الضيف:</span>
+                
+                <div class="flex items-center gap-2">
+                  <input type="text" id="details-share-url-field" readonly class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-mono dir-ltr select-all">
+                  <button id="btn-details-copy-url" class="btn-secondary-soul text-xs py-2.5 px-4 font-bold" title="نسخ الرابط">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>نسخ</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                  <a id="btn-details-whatsapp" href="#" target="_blank" class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span>إرسال عبر واتساب</span>
+                  </a>
+
+                  <a id="btn-details-twitter" href="#" target="_blank" class="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition">
+                    <i class="fa-brands fa-x-twitter text-sm"></i>
+                    <span>مشاركة عبر X</span>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ===================================================
+             الشاشات 7 و 8: تحويل الدعوات وسجل التحويلات (View Transfer)
+             مطابقة تماماً للشاشتين 7 و 8 في لوحة التصميم
+             =================================================== -->
+        <section id="view-transfer" class="hidden space-y-6">
+          
+          <!-- القسم 7: بطاقة تحويل الدعوات -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs max-w-3xl mx-auto space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-black text-slate-900">تحويل دعوات</h2>
+                  <p class="text-[11px] text-slate-400">تحويل رصيد من كوتا الدعوات لمستخدم آخر أو فعالية</p>
+                </div>
+              </div>
+
+              <span id="transfer-avail-badge" class="badge-pill badge-pill-purple font-mono">
+                الرصيد المتاح: 120 دعوة
+              </span>
+            </div>
+
+            <form id="transfer-form" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">اختيار الفعالية</label>
+                  <select id="transfer-event-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
+                    <option value="حفل زفاف أحمد & سارة">حفل زفاف أحمد & سارة</option>
+                    <option value="حفل التخرج 2026">حفل التخرج 2026</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">نوع الدعوة</label>
+                  <select id="transfer-type-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
                     <option value="عادية">عادية</option>
                     <option value="VIP">VIP</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">ملاحظات</label>
-                <textarea id="edit-field-notes" rows="3" placeholder="أية ملاحظات خاصة بالدعوة" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:bg-white focus:outline-none"></textarea>
-              </div>
-
-              <div class="flex items-center gap-3 pt-3 flex-wrap sm:flex-nowrap">
-                <button type="submit" class="btn-primary-modern flex-1 justify-center py-3">
-                  <i class="fa-regular fa-floppy-disk"></i>
-                  <span>حفظ التغييرات</span>
-                </button>
-
-                <button type="button" id="btn-delete-from-edit" class="px-5 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-800 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                  <i class="fa-regular fa-trash-can"></i>
-                  <span>حذف الدعوة</span>
-                </button>
-
-                <button type="button" id="btn-cancel-edit" class="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition">
-                  <span>إلغاء</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- ===================================================
-             الواجهة 3: "إنشاء دعوة جديدة"
-             =================================================== -->
-        <section id="view-create" class="hidden max-w-3xl mx-auto">
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <h3 class="text-base font-black text-slate-900 dark:text-white mb-6 text-center border-b border-slate-100 dark:border-slate-800 pb-4">
-              إدخال بيانات الدعوة والمدعو
-            </h3>
-
-            <!-- تنبيه نفاد الكوتا بالكامل -->
-            <div id="create-quota-exhausted-banner" class="hidden mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
-              <i class="fa-solid fa-triangle-exclamation text-base mt-0.5 text-rose-600 dark:text-rose-400 flex-shrink-0"></i>
-              <div>
-                <strong class="block font-bold mb-1">عذراً، لقد استنفذت كامل رصيدك من الدعوات المسموحة!</strong>
-                <p class="text-rose-700/80 dark:text-rose-300/80 leading-relaxed">لا يمكنك إنشاء دعوات جديدة حالياً بسبب انتهاء رصيدك (0 متبقي). يمكنك حذف أي دعوة سابقة لاسترجاع رصيدها، أو التواصل مع المشرف لزيادة كوتا حسابك.</p>
-              </div>
-            </div>
-
-            <!-- تنبيه نفاد نوع محدد من الدعوات -->
-            <div id="create-type-quota-warning" class="hidden mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
-              <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400"></i>
-              <span id="create-type-quota-warning-text"></span>
-            </div>
-
-            <form id="create-invite-form" class="space-y-5">
+              <!-- عداد الدعوات مع أزرار + و - كما في التصميم -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>نوع المناسبة *</span>
-                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/50">تلقائي من حسابك</span>
-                  </label>
-                  <select id="field-create-event-type" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs font-bold">
-                    <option value="wedding">💍 حفل زواج / زفاف</option>
-                    <option value="private">✨ مناسبة خاصة / احتفال VIP</option>
-                    <option value="graduation">🎓 حفل تخرج</option>
-                  </select>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">عدد الدعوات للتحويل</label>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btn-transfer-minus" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-sm transition">-</button>
+                    <input type="number" id="transfer-count-input" min="1" max="100" value="5" class="w-20 text-center py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 font-mono outline-none">
+                    <button type="button" id="btn-transfer-plus" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-sm transition">+</button>
+                  </div>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>اختر الفعالية / المناسبة *</span>
-                    <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800/50">المناسبة المحددة</span>
-                  </label>
-                  <select id="field-create-event" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                    <!-- يتم التعبئة ديناميكياً بواسطة app.js -->
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">المستلم (البريد أو اسم المستخدم)</label>
+                  <select id="transfer-recipient-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
+                    <!-- يتم التعبئة بواسطة app.js -->
                   </select>
                 </div>
               </div>
 
-              <div id="field-create-type-wrapper">
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">نوع الدعوة *</label>
-                <select id="field-create-type" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                  <option value="عادية">دعوة عادية</option>
-                  <option value="VIP">دعوة VIP</option>
-                </select>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المدعو *</label>
-                  <input type="text" id="field-create-guest" required placeholder="أدخل اسم المدعو الثلاثي" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">رقم الهاتف (SMS / WhatsApp)</label>
-                  <input type="tel" id="field-create-phone" required placeholder="مثال: 0501234567" dir="ltr" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs text-right">
-                </div>
-              </div>
-
               <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                  <span id="field-create-host-label">اسم العريس / الداعي</span>
-                  <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">تلقائي من حسابك</span>
-                </label>
-                <input type="text" id="field-create-grad-name" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">ملاحظات إضافية (اختياري)</label>
-                <textarea id="field-create-notes" rows="3" placeholder="أية ملاحظات خاصة بالدعوة" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs"></textarea>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">ملاحظات التحويل</label>
+                <input type="text" id="transfer-notes" placeholder="أضف أي ملاحظات خاصة بالتحويل..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
               </div>
 
               <div class="pt-2">
-                <button type="submit" id="btn-submit-create-invite" class="btn-primary-modern w-full justify-center py-3">
-                  إنشاء الدعوة
+                <button type="submit" class="btn-primary-soul w-full py-3.5 text-xs shadow-md">
+                  <i class="fa-solid fa-arrow-right-arrow-left ml-1"></i>
+                  <span>مراجعة والتحويل</span>
                 </button>
               </div>
             </form>
           </div>
+
+          <!-- القسم 8: جدول سجل التحويلات المطابق للشاشة رقم 8 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-purple-600 text-xs"></i>
+                <h3 class="text-sm font-bold text-slate-900">سجل التحويلات</h3>
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium">العمليات السابقة</span>
+            </div>
+
+            <div class="table-responsive-wrapper">
+              <table class="table-modern">
+                <thead>
+                  <tr>
+                    <th>المعرف</th>
+                    <th>المستلم</th>
+                    <th>الفعالية</th>
+                    <th>التاريخ</th>
+                    <th>الكمية</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="transfers-table-body">
+                  <!-- يتم التعبئة بواسطة app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </section>
 
         <!-- ===================================================
-             الواجهة 4: "تحويل الدعوات"
+             الشاشة 9: إدارة الفعاليات (View Events Management)
+             مطابقة تماماً للشاشة رقم 9 في التصميم المعتمد
              =================================================== -->
-        <section id="view-transfer" class="hidden space-y-6">
-          <div class="flex items-center justify-between">
-            <button id="btn-back-to-invitations" class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
-              <i class="fa-solid fa-arrow-right"></i>
-              <span>العودة للدعوات</span>
-            </button>
-            <h2 class="text-lg font-black text-slate-800 dark:text-white">تحويل الدعوات لمستخدم آخر</h2>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">الفعالية</label>
-              <select id="transfer-event-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                <option value="حفل التخرج 2026">حفل التخرج 2026</option>
-              </select>
+        <section id="view-events" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900">إدارة الفعاليات</h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">متابعة الفعاليات، التواريخ، وحصص المقاعد واستخدام الكوتا</p>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">المستخدم المستقبل</label>
-              <select id="transfer-recipient-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs">
-                <!-- يتم تعبئتها بواسطة JS -->
-              </select>
-            </div>
-
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">إحصائياتك في هذه الفعالية</label>
-              <div class="grid grid-cols-2 gap-2">
-                <div class="p-2.5 bg-indigo-50/60 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50 text-center">
-                  <span class="text-[11px] text-slate-500 dark:text-slate-400 block">عادية متاحة</span>
-                  <span id="stat-regular-avail" class="text-xl font-bold text-indigo-700 dark:text-indigo-400">0</span>
-                </div>
-                <div class="p-2.5 bg-amber-50/60 dark:bg-amber-950/40 rounded-xl border border-amber-100 dark:border-amber-900/50 text-center">
-                  <span class="text-[11px] text-slate-500 dark:text-slate-400 block">VIP متاحة</span>
-                  <span id="stat-vip-avail" class="text-xl font-bold text-amber-700 dark:text-amber-400">0</span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">نوع الدعوة للتحويل</label>
-                  <select id="transfer-type-select" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                    <option value="عادية">دعوة عادية</option>
-                    <option value="VIP">دعوة VIP</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">العدد المراد تحويله</label>
-                  <input type="number" id="transfer-count-input" min="1" max="30" value="1" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">ملاحظات (اختياري)</label>
-              <textarea id="transfer-notes" rows="3" placeholder="أضف ملاحظة على التحويل..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs"></textarea>
-            </div>
-          </div>
-
-          <div>
-            <button id="btn-submit-transfer" class="btn-primary-modern w-full sm:w-auto justify-center px-8 py-3 text-xs">
-              <i class="fa-solid fa-arrow-right-arrow-left"></i>
-              <span>تحويل الدعوات</span>
+            <button id="btn-add-new-event" class="btn-primary-soul text-xs py-2.5">
+              <i class="fa-solid fa-plus"></i>
+              <span>+ إضافة فعالية جديدة</span>
             </button>
           </div>
 
-          <div class="space-y-3 pt-4">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
-              <h3 class="font-bold text-slate-800 dark:text-white text-sm">سجل التحويلات</h3>
-            </div>
-            <div id="transfers-log-container" class="space-y-2.5">
-              <!-- يتم تعبئة السجلات بواسطة app.js -->
+          <!-- جدول الفعاليات المطابق للتصميم -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+            <div class="table-responsive-wrapper">
+              <table class="table-modern">
+                <thead>
+                  <tr>
+                    <th>الفعالية</th>
+                    <th>التاريخ</th>
+                    <th>المدعوون</th>
+                    <th>المستخدمة</th>
+                    <th>المتبقية</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="events-table-body">
+                  <!-- يتم التعبئة بواسطة app.js -->
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
 
-        <!-- فوتر الواجهة الرئيسية وحقوق الملكية -->
-        <footer class="py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800/80 mt-8">
-          نظام الدعوات الإلكترونية | ملكية : <strong class="text-amber-500 dark:text-amber-400 font-bold">Soul Media</strong>
+        <!-- ===================================================
+             الشاشة 10: إدارة المستخدمين (View Users Management)
+             مطابقة تماماً للشاشة رقم 10 في التصميم المعتمد
+             =================================================== -->
+        <section id="view-users" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900">إدارة المستخدمين</h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">التحكم في حسابات المستخدمين، الصلاحيات، وكوتا الدعوات المسموحة</p>
+            </div>
+
+            <button id="btn-add-new-user" class="btn-primary-soul text-xs py-2.5">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>+ إضافة مستخدم جديد</span>
+            </button>
+          </div>
+
+          <!-- جدول المستخدمين المطابق للتصميم -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+            <div class="table-responsive-wrapper">
+              <table class="table-modern">
+                <thead>
+                  <tr>
+                    <th>اسم المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الصلاحيات</th>
+                    <th>الكوتا المخصصة</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <!-- يتم التعبئة بواسطة app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================
+             الشاشة 11: الإعدادات (View Settings)
+             =================================================== -->
+        <section id="view-settings" class="hidden space-y-6 max-w-4xl mx-auto">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+              <h2 class="text-lg font-black text-slate-900">إعدادات الحساب والنظام</h2>
+              <p class="text-xs text-slate-500 mt-1">تخصيص ملفك الشخصي وهوية البطاقات ومظهر المنصة</p>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="text-xs font-bold text-purple-700">الملف الشخصي</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">الاسم المعروض</label>
+                  <input type="text" id="settings-name-input" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">البريد الإلكتروني</label>
+                  <input type="email" id="settings-email-input" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none font-mono">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 space-y-4">
+              <h4 class="text-xs font-bold text-purple-700">المظهر العام</h4>
+              <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
+                <div>
+                  <span class="text-xs font-bold text-slate-800 block">الوضع الداكن المريح (Dark Mode)</span>
+                  <span class="text-[11px] text-slate-400">التبديل بين الواجهة الفاتحة اللافندر والوضع الليلي</span>
+                </div>
+                <button id="btn-toggle-dark-mode" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-100 transition">
+                  <i class="fa-solid fa-moon ml-1"></i> تبديل المظهر
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-3">
+              <button id="btn-save-settings" class="btn-primary-soul text-xs py-2.5 px-6">
+                حفظ الإعدادات
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- فوتر الواجهة وحقوق الملكية -->
+        <footer class="py-6 text-center text-xs text-slate-400 border-t border-slate-200/60 mt-12 flex items-center justify-center gap-1.5">
+          <span>نظام الدعوات الإلكترونية | ملكية وتطوير :</span>
+          <strong class="text-purple-700 font-bold inline-flex items-center gap-1">
+            <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
+            Soul Media
+          </strong>
         </footer>
 
       </main>
 
     </div>
 
-    <!-- شريط التنقل السفلي للهواتف الذكية -->
+    <!-- ===================================================
+         شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav)
+         مطابق تماماً لنسخة الجوال في الشاشة رقم 11
+         =================================================== -->
     <nav class="mobile-bottom-nav">
-      <a id="mobile-nav-invitations" class="bottom-nav-item active">
+      <a id="mobile-nav-dashboard" class="bottom-nav-item active">
         <i class="fa-solid fa-house"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a id="mobile-nav-invitations" class="bottom-nav-item">
+        <i class="fa-solid fa-envelope-open-text"></i>
         <span>دعواتي</span>
       </a>
       <a id="mobile-nav-create" class="bottom-nav-item">
         <i class="fa-solid fa-circle-plus"></i>
-        <span>إنشاء دعوة</span>
+        <span>إنشاء</span>
       </a>
       <a id="mobile-nav-transfer" class="bottom-nav-item">
         <i class="fa-solid fa-arrow-right-arrow-left"></i>
@@ -702,38 +1269,40 @@
 
   </div>
 
-  <!-- مودال المشاركة -->
-  <div id="share-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
-    <div class="bg-white dark:bg-slate-900 max-w-sm w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
-        <h4 class="font-bold text-slate-800 dark:text-white text-sm">مشاركة رابط الدعوة</h4>
-        <button id="close-share-modal" class="text-slate-400 hover:text-slate-600">
+  <!-- مودال تعديل الكوتا للمستخدم -->
+  <div id="quota-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white max-w-md w-full rounded-2xl p-6 border border-slate-200 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h4 class="font-bold text-slate-800 text-sm">تعديل كوتا المستخدم</h4>
+        <button id="close-quota-modal" class="text-slate-400 hover:text-slate-600">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-
-      <p id="share-guest-title" class="text-xs text-slate-600 dark:text-slate-300 mb-3 font-semibold"></p>
-
-      <div class="space-y-2.5">
-        <input type="text" id="share-url-field" readonly class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 dir-ltr">
-        
-        <button id="btn-copy-share-url" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition">
-          <i class="fa-regular fa-copy"></i>
-          <span>نسخ الرابط</span>
-        </button>
-
-        <a id="btn-wa-direct-send" href="#" target="_blank" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/20">
-          <i class="fa-brands fa-whatsapp text-sm"></i>
-          <span>إرسال عبر واتساب</span>
-        </a>
-      </div>
+      <form id="quota-form" class="space-y-4">
+        <input type="hidden" id="quota-user-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">المستخدم</label>
+          <input type="text" id="quota-user-name" readonly class="w-full px-3.5 py-2 rounded-xl bg-slate-100 text-xs text-slate-600 font-bold outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">كوتا عادية</label>
+            <input type="number" id="quota-reg-input" min="0" max="9999" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">كوتا VIP</label>
+            <input type="number" id="quota-vip-input" min="0" max="999" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary-soul w-full py-2.5 text-xs">حفظ الكوتا</button>
+      </form>
     </div>
   </div>
 
   <!-- ملفات الجافاسكربت -->
-  <script src="assets/js/notifications.js?v=4.1"></script>
-  <script src="assets/js/supabaseClient.js?v=4.1"></script>
-  <script src="assets/js/store.js?v=4.1"></script>
-  <script src="assets/js/app.js?v=4.1"></script>
+  <script src="assets/js/notifications.js?v=5.0"></script>
+  <script src="assets/js/supabaseClient.js?v=5.0"></script>
+  <script src="assets/js/store.js?v=5.0"></script>
+  <script src="assets/js/app.js?v=5.0"></script>
 </body>
 </html>

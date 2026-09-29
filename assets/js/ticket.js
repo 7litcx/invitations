@@ -54,7 +54,7 @@ function renderTicket(invitation) {
     const guestEl = document.getElementById('wedding-guest-name');
     const codeEl = document.getElementById('wedding-ticket-code');
 
-    if (hostEl) hostEl.textContent = invitation.graduateName || 'أهل العرس الكرام';
+    if (hostEl) hostEl.textContent = invitation.hostName || invitation.graduateName || 'أحمد محمد علي';
     if (guestEl) guestEl.textContent = invitation.guestName;
     if (codeEl) codeEl.textContent = invitation.id;
 
@@ -84,7 +84,7 @@ function renderTicket(invitation) {
     const codeEl = document.getElementById('private-ticket-code');
 
     if (titleEl) titleEl.textContent = invitation.event || 'مناسبة خاصة واحتفال VIP';
-    if (hostEl) hostEl.textContent = invitation.graduateName || 'صاحب الدعوة الكريمة';
+    if (hostEl) hostEl.textContent = invitation.hostName || invitation.graduateName || 'أحمد محمد علي';
     if (guestEl) guestEl.textContent = invitation.guestName;
     if (codeEl) codeEl.textContent = invitation.id;
 
@@ -130,7 +130,7 @@ function renderTicket(invitation) {
 
   // البيانات المشتركة في كرت التفاصيل
   const gradNameEl = document.getElementById('ticket-grad-name');
-  if (gradNameEl) gradNameEl.textContent = invitation.graduateName || '-';
+  if (gradNameEl) gradNameEl.textContent = invitation.hostName || invitation.graduateName || '-';
 
   const eventNameEl = document.getElementById('ticket-event-name');
   if (eventNameEl) eventNameEl.textContent = invitation.event || (eventType === 'wedding' ? 'حفل زواج مبارك' : 'حفل التخرج 2026');

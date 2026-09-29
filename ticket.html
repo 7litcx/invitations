@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بطاقة الدعوة الرسمية | نظام الدعوات الإلكترونية | Soul Media</title>
+  <title>بطاقة الدعوة الرسمية | سول ميديا Soul Media</title>
   
-  <meta name="theme-color" content="#08060d">
-  <meta name="color-scheme" content="dark">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://invitations.soulmediaa.com/ticket.html">
   <meta property="og:title" content="بطاقة الدعوة الرسمية | Soul Media">
   <meta property="og:description" content="بطاقة دعوة دخول إلكترونية خاصة ومؤكدة عبر منصة Soul Media">
-  <meta property="og:image" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
-  <meta property="og:image:secure_url" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://invitations.soulmediaa.com/assets/images/og_image.png?v=4">
+  <meta property="og:image" content="assets/images/og_image.png">
   
   <link rel="icon" type="image/png" href="assets/images/favicon.png">
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
   
-  <!-- خطوط عربية -->
+  <!-- خط عربي رسمي -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -34,57 +26,31 @@
       theme: {
         extend: {
           colors: {
-            indigo: {
-              50: '#f9f7fc',
-              100: '#f1edfa',
-              200: '#e4dbf4',
-              300: '#d1c2ec',
-              400: '#bda6e3',
-              500: '#a890d8',
-              600: '#a890d8',
-              700: '#9072c9',
-              800: '#7855b8',
-              900: '#62429b',
-              950: '#3b2563',
-            },
-            purple: {
-              50: '#f9f7fc',
-              100: '#f1edfa',
-              200: '#e4dbf4',
-              300: '#d1c2ec',
-              400: '#bda6e3',
-              500: '#a890d8',
-              600: '#a890d8',
-              700: '#9072c9',
-              800: '#7855b8',
-              900: '#62429b',
-              950: '#3b2563',
-            },
             soul: {
-              purple: '#a890d8',
-              bright: '#bda6e3',
-              light: '#f1edfa',
-              dark: '#08060d',
-              card: '#110d1d',
-              border: '#241d3b'
+              50: '#f8f7fd',
+              100: '#f3f0fa',
+              500: '#7047eb',
+              600: '#6035d8',
+              700: '#5026c4'
             }
           }
         }
       }
     }
   </script>
+
   <!-- أيقونات FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- مكتبة عميل Supabase الرسمية -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- مكتبة QRCode.js محلية وسحابية -->
+  <!-- مكتبة QRCode.js -->
   <script src="assets/js/qrcode.min.js"></script>
   <script>
     if (typeof QRCode === 'undefined') {
       document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
     }
   </script>
-  <!-- مكتبة html2canvas لحفظ الدعوة كصورة -->
+  <!-- مكتبة html2canvas -->
   <script src="assets/js/html2canvas.min.js"></script>
   <script>
     if (typeof html2canvas === 'undefined') {
@@ -96,82 +62,26 @@
   <link rel="stylesheet" href="assets/css/system.css">
 
   <style>
-    /* بطاقة التخرج المطابقة للتصميم المعتمد تماماً */
     .card-royal-wrapper {
       position: relative;
       width: 100%;
-      max-width: 440px;
-      aspect-ratio: 582 / 1024;
-      background-size: 100% 100%;
-      background-position: center;
-      background-repeat: no-repeat;
-      box-shadow: 0 20px 45px -10px rgba(74, 4, 18, 0.4), 0 10px 20px -5px rgba(0, 0, 0, 0.2);
-      border-radius: 24px;
+      max-width: 380px;
+      aspect-ratio: 1 / 1.5;
+      background: linear-gradient(145deg, #171126 0%, #291945 50%, #171126 100%);
+      box-shadow: 0 20px 45px -10px rgba(112, 71, 235, 0.35), 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+      border-radius: 1.5rem;
       overflow: hidden;
       margin: 0 auto;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    /* نص اسم الضيف داخل الإطار المذهب في الصورة */
-    .guest-gold-box-text {
+    .card-wedding-inner-border {
       position: absolute;
-      top: 73.2%;
-      left: 14%;
-      right: 14%;
-      height: 6%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-weight: 800;
-      font-size: clamp(0.85rem, 3.8vw, 1.12rem);
-      color: #700f1c;
-      font-family: 'Cairo', sans-serif;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      z-index: 10;
-    }
-
-    /* موضع الباركود المخصص الممسوح ضوئياً متطابق بدقة في قلب الزوايا المذهبة */
-    .qr-scanner-box {
-      position: absolute;
-      top: 89%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: clamp(92px, 26vw, 110px);
-      height: clamp(92px, 26vw, 110px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      padding: 4px;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.22);
-      z-index: 10;
-    }
-
-    .qr-scanner-box img, .qr-scanner-box canvas {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: contain;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: pixelated;
-    }
-
-    .ticket-code-label {
-      position: absolute;
-      top: 96%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.65rem;
-      font-family: monospace;
-      font-weight: 800;
-      color: #700f1c;
-      letter-spacing: 0.08em;
-      background-color: rgba(255, 255, 255, 0.9);
-      padding: 1px 6px;
-      border-radius: 4px;
-      z-index: 10;
+      inset: 12px;
+      border: 1px solid rgba(216, 180, 254, 0.3);
+      border-radius: 1.15rem;
+      pointer-events: none;
     }
 
     @media print {
@@ -185,27 +95,26 @@
       .card-royal-wrapper {
         box-shadow: none !important;
         max-width: 100% !important;
-        width: 100% !important;
       }
     }
   </style>
 </head>
-<body class="bg-slate-900 min-h-screen flex flex-col justify-between py-6 px-4 text-slate-100">
+<body class="bg-[#f8f7fd] min-h-screen flex flex-col justify-between py-6 px-4 text-slate-800">
 
   <!-- حالة التحميل -->
   <div id="ticket-loading" class="max-w-md mx-auto my-auto text-center py-16">
-    <div class="w-14 h-14 border-4 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mx-auto mb-4"></div>
-    <p class="text-amber-200 font-bold text-sm">جاري جلب بيانات بطاقة الدعوة والباركود...</p>
+    <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-purple-700 font-bold text-sm">جاري جلب بيانات بطاقة الدعوة والباركود...</p>
   </div>
 
-  <!-- حالة الخطأ إن لم توجد -->
-  <div id="ticket-error" class="max-w-md mx-auto my-auto bg-slate-800 p-8 rounded-3xl border border-red-500/30 text-center shadow-2xl hidden">
-    <div class="w-14 h-14 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl mx-auto mb-3">
+  <!-- حالة الخطأ -->
+  <div id="ticket-error" class="max-w-md mx-auto my-auto bg-white p-8 rounded-3xl border border-rose-200 text-center shadow-lg hidden">
+    <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-2xl mx-auto mb-3">
       <i class="fa-solid fa-triangle-exclamation"></i>
     </div>
-    <h2 class="font-bold text-white text-base mb-1">تعذر العثور على الدعوة</h2>
-    <p id="error-text" class="text-xs text-slate-400 mb-6"></p>
-    <a href="index.html" class="inline-block px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition">
+    <h2 class="font-bold text-slate-900 text-base mb-1">تعذر العثور على الدعوة</h2>
+    <p id="error-text" class="text-xs text-slate-500 mb-6"></p>
+    <a href="index.html" class="inline-block px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition">
       العودة لبوابة الدعوات
     </a>
   </div>
@@ -213,193 +122,176 @@
   <!-- محتوى بطاقة التذكرة الرسمية -->
   <main id="ticket-content" class="max-w-md mx-auto w-full hidden">
     
-    <!-- شريط الأزرار العلوي (يختفي عند الطباعة) -->
+    <!-- شريط الأزرار العلوي -->
     <div class="flex items-center justify-between mb-4 no-print">
-      <a href="index.html" class="text-xs font-bold text-slate-200 hover:text-white flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 px-3.5 py-2.5 rounded-xl border border-purple-900/40 shadow-sm transition">
+      <a href="index.html" class="text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-2 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs transition">
         <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 object-contain">
-        <span>بوابة الدعوات</span>
+        <span>بوابة سول ميديا</span>
       </a>
 
       <div class="flex items-center gap-2">
-        <button id="btn-ticket-copy" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+        <button id="btn-ticket-copy" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold shadow-xs flex items-center gap-1.5 transition">
           <i class="fa-regular fa-copy"></i>
           <span>نسخ الرابط</span>
         </button>
-        <button id="btn-ticket-save-image" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-700/25 flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+        <button id="btn-ticket-save-image" class="btn-primary-soul text-xs py-2.5 px-4 shadow-sm">
           <i class="fa-solid fa-image"></i>
           <span>حفظ كصورة</span>
         </button>
       </div>
     </div>
 
-    <!-- شارة حالة التذكرة والنوع -->
-    <div class="mb-3 flex items-center justify-between no-print bg-slate-800/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-700/60">
-      <div id="ticket-type-badge-container"></div>
-      <div id="ticket-status-badge"></div>
+    <!-- شارة حالة التذكرة -->
+    <div class="mb-3 flex items-center justify-between no-print bg-white px-4 py-2.5 rounded-2xl border border-slate-200/80 shadow-xs">
+      <div id="ticket-type-badge-container">
+        <span class="badge-pill badge-pill-purple font-mono">دعوة رسمية معتمدة</span>
+      </div>
+      <div id="ticket-status-badge">
+        <span class="badge-pill badge-pill-green"><i class="fa-solid fa-circle-check"></i>صالحة للدخول</span>
+      </div>
     </div>
 
-    <!-- بطاقة الدعوة الفاخرة بالتصميم المعتمد حسب المناسبة -->
-    <div id="ticket-visual-card" class="card-royal-wrapper border border-amber-500/20">
+    <!-- بطاقة الدعوة الفاخرة بالتصميم المعتمد لـ Soul Media -->
+    <div id="ticket-visual-card" class="card-royal-wrapper">
       
-      <!-- 1. قالب حفل الزفاف الملكي (Royal Wedding Card Layout) -->
-      <div id="wedding-card-layout" class="hidden w-full h-full flex flex-col justify-between p-5 sm:p-6 relative text-center bg-gradient-to-b from-[#0a1f15] via-[#0f3323] to-[#07170f] text-amber-100 select-none overflow-hidden">
-        <!-- إطار زخرفي مذهب داخلي -->
+      <!-- 1. قالب حفل الزفاف والمناسبات الملكية لـ Soul Media -->
+      <div id="wedding-card-layout" class="w-full h-full flex flex-col justify-between p-6 relative text-center select-none overflow-hidden">
         <div class="card-wedding-inner-border"></div>
 
-        <!-- رأس بطاقة الزفاف -->
-        <div class="relative z-10 pt-2 space-y-2">
-          <div class="text-[11px] sm:text-xs text-amber-300/90 font-serif tracking-wide">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-          <div class="flex items-center justify-center gap-2 text-amber-400 text-xl sm:text-2xl my-1">
-            <span class="inline-block animate-pulse">💍</span>
+        <!-- رأس بطاقة الدعوة -->
+        <div class="relative z-10 pt-1 space-y-1.5">
+          <div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+            <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-5 h-5 object-contain">
           </div>
-          <div class="text-[10px] sm:text-xs text-amber-200/90 font-bold px-4 leading-relaxed font-serif">
+          <span class="text-[9px] uppercase tracking-widest text-purple-300 block font-mono font-bold">SOUL MEDIA</span>
+          <div class="text-[10px] text-amber-200 font-serif leading-relaxed pt-1">
             ﴿ بَارَكَ اللَّهُ لَهُمَا وَبَارَكَ عَلَيْهِمَا وَجَمَعَ بَيْنَهُمَا فِي خَيْرٍ ﴾
           </div>
-          <div class="inline-block px-4 py-1 rounded-full bg-amber-500/10 border border-amber-400/40 text-amber-300 font-extrabold text-xs tracking-wider">
+          <div class="inline-block px-3 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-200 font-bold text-[11px]">
             دعوة حفل زفاف مبارك
           </div>
         </div>
 
-        <!-- متن الدعوة واسم الداعي -->
-        <div class="relative z-10 my-auto py-3 space-y-2.5">
-          <p class="text-[11px] sm:text-xs text-slate-300">يتشرف الداعي الكريـم</p>
-          <div id="wedding-host-name" class="text-base sm:text-lg font-black text-amber-300 tracking-wide"></div>
-          <p class="text-[11px] sm:text-xs text-slate-300 px-2 leading-relaxed">
+        <!-- متن الدعوة واسم الداعي والضيف -->
+        <div class="relative z-10 my-auto py-2 space-y-2">
+          <p class="text-[11px] text-slate-300">يتشرف الداعي الكريم</p>
+          <div id="wedding-host-name" class="text-base font-black text-amber-300 tracking-wide">أحمد محمد علي</div>
+          <p class="text-[11px] text-slate-300 px-2 leading-relaxed">
             بدعوة كريم خلقكم لمشاركتنا فرحة العمر وتناول طعام العشاء
           </p>
 
-          <!-- شريط اسم الضيف المذهب -->
-          <div class="mt-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 border border-amber-400/60 shadow-lg backdrop-blur-sm">
-            <span class="block text-[10px] text-amber-200/80 mb-0.5">المكرم / المكرمة:</span>
-            <div id="wedding-guest-name" class="text-sm sm:text-base font-black text-amber-100 truncate px-2"></div>
-          </div>
-        </div>
-
-        <!-- أسفل الكرت: الباركود وكود الدعوة -->
-        <div class="relative z-10 pb-1 flex flex-col items-center">
-          <div class="p-2 bg-white rounded-xl shadow-xl shadow-black/50 border border-amber-400/60 mb-2">
-            <div id="wedding-qrcode-slot" class="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"></div>
-          </div>
-          <div class="inline-block px-3 py-0.5 rounded-md bg-black/60 border border-amber-400/40 text-[10px] sm:text-[11px] font-mono font-bold text-amber-300">
-            <span id="wedding-ticket-code"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. قالب المناسبة الخاصة (VIP Private Occasion Card Layout) -->
-      <div id="private-card-layout" class="hidden w-full h-full flex flex-col justify-between p-5 sm:p-6 relative text-center bg-gradient-to-b from-[#0e0a19] via-[#1a1130] to-[#090611] text-purple-100 select-none overflow-hidden">
-        <!-- إطار زخرفي داخلي للمناسبات الخاصة -->
-        <div class="card-private-inner-border"></div>
-
-        <!-- رأس بطاقة المناسبة الخاصة -->
-        <div class="relative z-10 pt-2 space-y-2">
-          <div class="flex items-center justify-center gap-1 text-purple-400 text-2xl my-1">
-            <span>✨</span>
-          </div>
-          <div class="inline-block px-4 py-1 rounded-full bg-purple-500/15 border border-purple-400/40 text-purple-200 font-extrabold text-xs tracking-wider uppercase">
-            VIP Special Invitation | دعوة خاصة
-          </div>
-          <div id="private-event-title" class="text-sm sm:text-base font-black text-amber-300 mt-1"></div>
-        </div>
-
-        <!-- متن المناسبة الخاصة -->
-        <div class="relative z-10 my-auto py-3 space-y-2.5">
-          <p class="text-[11px] sm:text-xs text-slate-300">يسرنا ويشرفنا دعوتكم بدعوة كريمة من:</p>
-          <div id="private-host-name" class="text-base sm:text-lg font-black text-purple-200 tracking-wide"></div>
-          <p class="text-[11px] sm:text-xs text-slate-300 px-3 leading-relaxed">
-            لحضور ومشاركتنا هذه المناسبة الخاصة والاحتفال بحضوركم الرفيع
-          </p>
-
           <!-- شريط اسم الضيف -->
-          <div class="mt-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-purple-600/20 via-purple-500/30 to-purple-600/20 border border-purple-400/50 shadow-lg backdrop-blur-sm">
-            <span class="block text-[10px] text-purple-200/80 mb-0.5">المكرم / المكرمة:</span>
-            <div id="private-guest-name" class="text-sm sm:text-base font-black text-white truncate px-2"></div>
+          <div class="mt-2 p-2.5 rounded-xl bg-purple-500/20 border border-purple-400/50 shadow-md backdrop-blur-xs">
+            <span class="block text-[10px] text-purple-200 mb-0.5">المكرم / المكرمة:</span>
+            <div id="wedding-guest-name" class="text-sm font-black text-white font-mono truncate px-1">سارة عبد الله</div>
           </div>
         </div>
 
         <!-- أسفل الكرت: الباركود وكود الدعوة -->
         <div class="relative z-10 pb-1 flex flex-col items-center">
-          <div class="p-2 bg-white rounded-xl shadow-xl shadow-black/50 border border-purple-400/60 mb-2">
-            <div id="private-qrcode-slot" class="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"></div>
+          <div class="p-2 bg-white rounded-xl shadow-lg border border-purple-400/40 mb-1.5">
+            <div id="wedding-qrcode-slot" class="w-24 h-24 flex items-center justify-center"></div>
           </div>
-          <div class="inline-block px-3 py-0.5 rounded-md bg-black/60 border border-purple-400/40 text-[10px] sm:text-[11px] font-mono font-bold text-purple-200">
-            <span id="private-ticket-code"></span>
+          <div class="inline-block px-3 py-0.5 rounded-md bg-black/60 border border-purple-400/40 text-[10px] font-mono font-bold text-purple-200">
+            <span id="wedding-ticket-code">INV-2026-101</span>
           </div>
         </div>
       </div>
 
-      <!-- 3. قالب حفل التخرج (Graduation Card Layout) -->
-      <div id="graduation-card-layout" class="w-full h-full relative">
-        <!-- اسم الضيف الكريم في المستطيل المذهب -->
-        <div id="ticket-guest-name" class="guest-gold-box-text"></div>
-
-        <!-- باركود QR الذكي المخصص -->
-        <div class="qr-scanner-box">
-          <div id="ticket-qrcode-container"></div>
+      <!-- 2. قالب المناسبة الخاصة -->
+      <div id="private-card-layout" class="hidden w-full h-full flex flex-col justify-between p-6 relative text-center select-none overflow-hidden">
+        <div class="card-wedding-inner-border"></div>
+        <div class="relative z-10 pt-1 space-y-1.5">
+          <span class="text-2xl">✨</span>
+          <div class="inline-block px-3 py-0.5 rounded-full bg-purple-500/20 text-purple-200 text-[11px] font-bold">
+            VIP Special Invitation
+          </div>
+          <div id="private-event-title" class="text-sm font-black text-amber-300">مناسبة خاصة واحتفال VIP</div>
         </div>
+        <div class="relative z-10 my-auto py-2 space-y-2">
+          <p class="text-[11px] text-slate-300">يسرنا ويشرفنا دعوتكم بدعوة كريمة من:</p>
+          <div id="private-host-name" class="text-base font-black text-white">أحمد محمد علي</div>
+          <div class="p-2.5 rounded-xl bg-purple-500/20 border border-purple-400/50">
+            <span class="block text-[10px] text-purple-200 mb-0.5">المكرم / المكرمة:</span>
+            <div id="private-guest-name" class="text-sm font-black text-amber-200 font-mono">ضيف كريم</div>
+          </div>
+        </div>
+        <div class="relative z-10 pb-1 flex flex-col items-center">
+          <div class="p-2 bg-white rounded-xl shadow-lg border border-purple-400/40 mb-1.5">
+            <div id="private-qrcode-slot" class="w-24 h-24 flex items-center justify-center"></div>
+          </div>
+          <span id="private-ticket-code" class="text-[10px] font-mono text-purple-200">INV-2026-105</span>
+        </div>
+      </div>
 
-        <!-- رقم الدعوة المكتوب -->
-        <div id="ticket-code" class="ticket-code-label"></div>
+      <!-- 3. قالب حفل التخرج -->
+      <div id="graduation-card-layout" class="hidden w-full h-full flex flex-col justify-between p-6 relative text-center select-none overflow-hidden">
+        <div class="card-wedding-inner-border"></div>
+        <div class="relative z-10 pt-1 space-y-1.5">
+          <span class="text-2xl">🎓</span>
+          <div class="inline-block px-3 py-0.5 rounded-full bg-purple-500/20 text-purple-200 text-[11px] font-bold">
+            حفل التخرج 2026
+          </div>
+          <h4 class="text-sm font-black text-white">دعوة حضور حفل التخرج الرسمي</h4>
+        </div>
+        <div class="relative z-10 my-auto py-2 space-y-2">
+          <p class="text-[11px] text-slate-300">يتشرف الخريج بدعوتكم:</p>
+          <div id="ticket-guest-name" class="text-sm font-black text-amber-200 font-mono">سعادة الضيف الكريم</div>
+        </div>
+        <div class="relative z-10 pb-1 flex flex-col items-center">
+          <div class="p-2 bg-white rounded-xl shadow-lg border border-purple-400/40 mb-1.5">
+            <div id="ticket-qrcode-container" class="w-24 h-24 flex items-center justify-center"></div>
+          </div>
+          <span id="ticket-code" class="text-[10px] font-mono text-purple-200">INV-2026-103</span>
+        </div>
       </div>
 
     </div>
 
-    <!-- بيانات تفصيلية إضافية للضيف والتحقق -->
-    <div class="mt-4 bg-slate-800/80 border border-slate-700 rounded-2xl p-4 space-y-2.5 text-xs text-slate-300 no-print">
-      <div class="flex items-center justify-between py-1 border-b border-slate-700/60">
+    <!-- بيانات تفصيلية إضافية للضيف -->
+    <div class="mt-4 bg-white border border-slate-200/80 rounded-2xl p-4 space-y-2.5 text-xs text-slate-700 shadow-xs no-print">
+      <div class="flex items-center justify-between py-1 border-b border-slate-100">
         <span class="text-slate-400" id="ticket-host-label">الداعي:</span>
-        <strong id="ticket-grad-name" class="text-white font-bold">-</strong>
+        <strong id="ticket-grad-name" class="text-slate-900 font-bold">-</strong>
       </div>
-      <div class="flex items-center justify-between py-1 border-b border-slate-700/60">
+      <div class="flex items-center justify-between py-1 border-b border-slate-100">
         <span class="text-slate-400">نوع المناسبة:</span>
-        <span id="ticket-category-badge" class="font-bold">-</span>
+        <span id="ticket-category-badge" class="font-bold text-purple-700">-</span>
       </div>
-      <div class="flex items-center justify-between py-1 border-b border-slate-700/60">
+      <div class="flex items-center justify-between py-1 border-b border-slate-100">
         <span class="text-slate-400">الفعالية:</span>
-        <span id="ticket-event-name" class="text-slate-200 font-semibold">-</span>
+        <span id="ticket-event-name" class="text-slate-800 font-semibold">-</span>
       </div>
-      <div class="flex items-center justify-between py-1 border-b border-slate-700/60">
+      <div class="flex items-center justify-between py-1 border-b border-slate-100">
         <span class="text-slate-400">عدد الأشخاص:</span>
-        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">1 شخص</span>
+        <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">1 شخص</span>
       </div>
       <div class="flex items-center justify-between py-1">
         <span class="text-slate-400">القاعة ووقت الحضور:</span>
-        <span id="ticket-venue-time" class="text-amber-300 font-bold">قصر الاحتفالات - 8 مساءً</span>
+        <span id="ticket-venue-time" class="text-purple-700 font-bold">قصر الأفراح الملكي - 8:00 مساءً</span>
       </div>
     </div>
 
     <!-- زر واتساب المباشر -->
     <div class="mt-4 no-print">
-      <button id="btn-ticket-whatsapp" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition active:scale-[0.99]">
+      <button id="btn-ticket-whatsapp" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition">
         <i class="fa-brands fa-whatsapp text-lg"></i>
         <span>مشاركة هذه الدعوة عبر واتساب</span>
       </button>
     </div>
 
-    <!-- تذييل التذكرة وحقوق الملكية -->
+    <!-- تذييل التذكرة -->
     <div class="mt-4 text-center text-xs text-slate-400 no-print flex items-center justify-center gap-1.5">
-      <span>ملكية وتطوير :</span>
-      <strong class="text-indigo-400 font-bold inline-flex items-center gap-1">
-        <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
-        Soul Media
-      </strong>
+      <span>مدعوم بواسطة :</span>
+      <strong class="text-purple-700 font-bold">Soul Media</strong>
     </div>
 
   </main>
 
-  <!-- فوتر خارجي -->
-  <footer class="text-center text-[11px] text-slate-400 py-3 no-print flex items-center justify-center gap-1.5">
-    <span>نظام الدعوات الإلكترونية المعتمد - حفل التخرج 2026 | تطوير :</span>
-    <strong class="text-indigo-400 font-bold inline-flex items-center gap-1">
-      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-3.5 h-3.5 inline-block">
-      Soul Media
-    </strong>
-  </footer>
-
-  <!-- ملفات السكربت -->
-  <script src="assets/js/notifications.js"></script>
-  <script src="assets/js/supabaseClient.js"></script>
-  <script src="assets/js/store.js"></script>
-  <script src="assets/js/ticket.js"></script>
+  <!-- ملفات الجافاسكربت -->
+  <script src="assets/js/notifications.js?v=5.0"></script>
+  <script src="assets/js/supabaseClient.js?v=5.0"></script>
+  <script src="assets/js/store.js?v=5.0"></script>
+  <script src="assets/js/ticket.js?v=5.0"></script>
 </body>
 </html>

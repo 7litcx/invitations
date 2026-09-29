@@ -158,29 +158,224 @@ function getEventsList() {
   return DEFAULT_EVENTS;
 }
 
-// الحساب المبدئي الوحيد للمشرف لتسجيل الدخول والبدء بإنشاء المستخدمين
-const INITIAL_ADMIN = {
-  id: 'admin_root',
-  username: 'admin',
-  password: 'admin123',
-  name: 'مشرف النظام',
-  initials: 'مش',
-  major: 'إدارة الحفل',
-  role: 'admin',
-  regularQuota: 999,
-  vipQuota: 999
-};
+// الحسابات المبدئية للنظام مطابقة للتصميم المعتمد لـ Soul Media
+const INITIAL_USERS = [
+  {
+    id: 'admin_root',
+    username: 'admin',
+    password: 'admin123',
+    email: 'admin@soulmediaa.com',
+    name: 'أحمد محمد علي',
+    initials: 'أح',
+    major: 'إدارة الحفل',
+    role: 'admin',
+    regularQuota: 999,
+    vipQuota: 999,
+    status: 'نشط'
+  },
+  {
+    id: 'usr_ahmed',
+    username: 'ahmed',
+    password: '123456',
+    email: 'ahmed@example.com',
+    name: 'أحمد محمد علي',
+    initials: 'أح',
+    major: 'حفل زفاف',
+    role: 'user',
+    regularQuota: 200,
+    vipQuota: 20,
+    event: 'حفل زفاف أحمد & سارة',
+    eventType: 'wedding',
+    status: 'نشط'
+  },
+  {
+    id: 'usr_grad',
+    username: 'user1',
+    password: '123456',
+    email: 'user1@example.com',
+    name: 'تخرج',
+    initials: 'تخ',
+    major: 'حفل تخرج',
+    role: 'user',
+    regularQuota: 50,
+    vipQuota: 5,
+    event: 'حفل التخرج 2026',
+    eventType: 'graduation',
+    status: 'نشط'
+  },
+  {
+    id: 'usr_malik',
+    username: 'user2',
+    password: '123456',
+    email: 'user2@example.com',
+    name: 'عبد الملك',
+    initials: 'عب',
+    major: 'منظم فعاليات',
+    role: 'organizer',
+    regularQuota: 100,
+    vipQuota: 10,
+    event: 'عيد ميلاد',
+    eventType: 'birthday',
+    status: 'نشط'
+  },
+  {
+    id: 'usr_family',
+    username: 'user3',
+    password: '123456',
+    email: 'user3@example.com',
+    name: 'مناسبة عائلية',
+    initials: 'من',
+    major: 'مناسبة خاصة',
+    role: 'user',
+    regularQuota: 40,
+    vipQuota: 5,
+    event: 'مناسبة خاصة VIP',
+    eventType: 'private',
+    status: 'نشط'
+  }
+];
 
-// تهيئة التخزين النظيف بدون أي بيانات وهمية
+const INITIAL_ADMIN = INITIAL_USERS[0];
+
+// نماذج دعوات افتراضية تطابق الشاشات المعروضة في لوحة التصميم
+const SAMPLE_INVITATIONS = [
+  {
+    id: 'INV-2026-101',
+    code: 'INV-2026-101',
+    guestName: 'سارة عبد الله',
+    guestPhone: '0501234567',
+    event: 'حفل زفاف أحمد & سارة',
+    eventType: 'wedding',
+    type: 'عادية',
+    peopleCount: 2,
+    hostName: 'أحمد محمد علي',
+    status: 'صالحة',
+    invitationState: 'مقبولة',
+    isUsed: false,
+    createdAt: '2026-09-20 18:30:00',
+    notes: 'طاولة العائلة الكريمة',
+    theme: 'wedding'
+  },
+  {
+    id: 'INV-2026-102',
+    code: 'INV-2026-102',
+    guestName: 'محمد خالد العتيبي',
+    guestPhone: '0551234567',
+    event: 'حفل زفاف أحمد & سارة',
+    eventType: 'wedding',
+    type: 'VIP',
+    peopleCount: 1,
+    hostName: 'أحمد محمد علي',
+    status: 'صالحة',
+    invitationState: 'مقبولة',
+    isUsed: false,
+    createdAt: '2026-09-22 19:00:00',
+    notes: 'مقعد VIP أمامي',
+    theme: 'wedding'
+  },
+  {
+    id: 'INV-2026-103',
+    code: 'INV-2026-103',
+    guestName: 'د. إبراهيم السالم',
+    guestPhone: '0541234567',
+    event: 'حفل التخرج 2026',
+    eventType: 'graduation',
+    type: 'VIP',
+    peopleCount: 1,
+    hostName: 'أحمد محمد علي',
+    status: 'صالحة',
+    invitationState: 'قيد الانتظار',
+    isUsed: false,
+    createdAt: '2026-09-25 14:15:00',
+    notes: 'منصة أعضاء هيئة التدريس',
+    theme: 'graduation'
+  },
+  {
+    id: 'INV-2026-104',
+    code: 'INV-2026-104',
+    guestName: 'عبد العزيز الراجحي',
+    guestPhone: '0561234567',
+    event: 'عيد ميلاد',
+    eventType: 'birthday',
+    type: 'عادية',
+    peopleCount: 1,
+    hostName: 'أحمد محمد علي',
+    status: 'صالحة',
+    invitationState: 'معتذر',
+    isUsed: false,
+    createdAt: '2026-09-26 16:40:00',
+    notes: 'اعتذر لظروف السفر',
+    theme: 'birthday'
+  },
+  {
+    id: 'INV-2026-105',
+    code: 'INV-2026-105',
+    guestName: 'فيصل المطيري',
+    guestPhone: '0581234567',
+    event: 'مناسبة خاصة VIP',
+    eventType: 'private',
+    type: 'عادية',
+    peopleCount: 1,
+    hostName: 'أحمد محمد علي',
+    status: 'صالحة',
+    invitationState: 'مقبولة',
+    isUsed: false,
+    createdAt: '2026-09-27 20:10:00',
+    notes: 'دعوة خاصة',
+    theme: 'private'
+  }
+];
+
+const SAMPLE_TRANSFERS = [
+  {
+    id: 'TRF-881',
+    senderId: 'usr_ahmed',
+    senderName: 'أحمد محمد علي',
+    recipientId: 'usr_grad',
+    recipientName: 'تخرج',
+    recipientEmail: 'user1@example.com',
+    event: 'حفل التخرج 2026',
+    count: 5,
+    type: 'عادية',
+    status: 'مكتملة',
+    createdAt: '2026-09-20',
+    notes: 'تحويل كوتا لحفل التخرج'
+  },
+  {
+    id: 'TRF-882',
+    senderId: 'usr_ahmed',
+    senderName: 'أحمد محمد علي',
+    recipientId: 'usr_malik',
+    recipientName: 'عبد الملك',
+    recipientEmail: 'user2@example.com',
+    event: 'حفل زفاف أحمد & سارة',
+    count: 2,
+    type: 'VIP',
+    status: 'مكتملة',
+    createdAt: '2026-09-22',
+    notes: 'دعوات ضيوف الشرف'
+  }
+];
+
+// تهيئة التخزين النظيف مع بيانات العرض المعتمدة
 function initStore() {
-  if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([INITIAL_ADMIN]));
+  if (!localStorage.getItem(STORAGE_KEYS.USERS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]').length === 0) {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
+  } else {
+    // التأكد من توفر حساب أحمد التجريبي في قائمة المستخدمين
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+    if (!existing.some(u => u.username === 'ahmed')) {
+      existing.push(INITIAL_USERS[1]);
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(existing));
+    }
   }
-  if (!localStorage.getItem(STORAGE_KEYS.INVITATIONS)) {
-    localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify([]));
+
+  if (!localStorage.getItem(STORAGE_KEYS.INVITATIONS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.INVITATIONS) || '[]').length === 0) {
+    localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(SAMPLE_INVITATIONS));
   }
-  if (!localStorage.getItem(STORAGE_KEYS.TRANSFERS)) {
-    localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify([]));
+
+  if (!localStorage.getItem(STORAGE_KEYS.TRANSFERS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSFERS) || '[]').length === 0) {
+    localStorage.setItem(STORAGE_KEYS.TRANSFERS, JSON.stringify(SAMPLE_TRANSFERS));
   }
 }
 
@@ -937,6 +1132,18 @@ async function createInvitation(userId, data) {
   localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
 
   return { success: true, invitation: newInv };
+}
+
+function saveInvitation(inv) {
+  const all = getInvitations();
+  const idx = all.findIndex(i => i.id === inv.id || i.code === inv.id);
+  if (idx !== -1) {
+    all[idx] = { ...all[idx], ...inv };
+  } else {
+    all.unshift(inv);
+  }
+  localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
+  return { success: true, invitation: inv };
 }
 
 async function updateInvitation(id, updatedData) {

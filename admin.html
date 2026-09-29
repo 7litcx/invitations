@@ -83,33 +83,38 @@
   <!-- التنسيقات العصرية والوضع الليلي -->
   <link rel="stylesheet" href="assets/css/system.css">
 </head>
-<body class="bg-slate-50 dark:bg-[#08060d] min-h-screen text-slate-800 dark:text-slate-100">
+<body class="bg-[#f8f7fd] min-h-screen text-slate-800">
 
-  <!-- الترويسة العلوية -->
-  <header class="bg-black border-b border-purple-900/40 text-white shadow-xl sticky top-0 z-30">
+  <!-- الترويسة العلوية لـ Soul Media -->
+  <header class="bg-white border-b border-slate-200/80 text-slate-900 shadow-xs sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-2.5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-4">
       
       <div class="flex items-center gap-2.5 sm:gap-3">
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-900 border border-purple-500/30 flex items-center justify-center p-1.5 flex-shrink-0 shadow-md">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center p-2 flex-shrink-0 shadow-xs">
           <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-full h-full object-contain">
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-sm sm:text-base font-black leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600/30 text-purple-300 border border-purple-500/30">Soul Media</span>
+            <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">لوحة تحكم المشرف (Admin Portal)</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700">Soul Media</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-purple-200/80 mt-0.5">إدارة حسابات الداعين والمستخدمين وتخصيص كوتا الدعوات العادية و VIP</p>
+          <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5">إدارة حسابات الداعين والمستخدمين وتخصيص كوتا الدعوات العادية و VIP</p>
         </div>
       </div>
 
-      <!-- أزرار الإجراءات: جنباً إلى جنب على الموبايل بتصميم مدمج وأنيق -->
+      <!-- أزرار الإجراءات -->
       <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <button id="btn-open-scanner" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer">
+        <a href="index.html" class="px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span>الرئيسية</span>
+        </a>
+
+        <button id="btn-open-scanner" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer">
           <i class="fa-solid fa-qrcode text-sm"></i>
           <span>مسح الباركود</span>
         </button>
 
-        <button id="btn-admin-logout" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer">
+        <button id="btn-admin-logout" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer">
           <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
           <span>تسجيل الخروج</span>
         </button>

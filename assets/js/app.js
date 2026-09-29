@@ -1,1052 +1,1172 @@
 /**
- * app.js - نظام وتطبيق إدارة الدعوات والتذاكر الذكية
+ * app.js - منصة سول ميديا (Soul Media) للدعوات الإلكترونية وتذاكر الدخول الذكية
  * حقوق التطوير والتصميم: Soul Media
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initStore();
-  // مزامنة خلفية للمستخدمين من Supabase لضمان توفر البيانات أوفلاين وسرعة الدخول
-  if (typeof syncUsersFromSupabase === 'function') {
-    syncUsersFromSupabase().catch(() => {});
-  }
-  setupRealDate();
   setupAuth();
   setupNavigation();
-  setupDarkMode();
   setupSearchAndFilters();
+  setupLivePreview();
   setupCreateForm();
   setupEditForm();
   setupTransferSection();
-  setupShareModal();
+  setupSettingsAndTheme();
+  setupModals();
 });
 
-// 1. إدارة المصادقة وتسجيل الدخول (اسم المستخدم + كلمة المرور فقط)
-// 1. إدارة المصادقة وتحديث الواجهة
-function updateAuthUI() {
-  const loginContainer = document.getElementById('login-container');
-  const mainAppContainer = document.getElementById('main-app-container');
-  const adminLink = document.getElementById('admin-panel-link');
+// متغير لحالة العرض الحالية (عرض شبكة البطاقات أو عرض الجدول)
+let currentInvitationsViewMode = 'grid'; // 'grid' or 'table'
+let currentActiveView = 'dashboard';
+let currentSelectedInvitationId = null;
 
-  const currentUser = getCurrentUser();
-
-  if (currentUser) {
-    loginContainer?.classList.add('hidden');
-    mainAppContainer?.classList.remove('hidden');
-
-    // تحديث بيانات المستخدم في القائمة الجانبية
-    const avatarEl = document.getElementById('user-avatar-circle');
-    const nameEl = document.getElementById('sidebar-user-name');
-    const roleEl = document.getElementById('sidebar-user-role');
-
-    if (avatarEl) avatarEl.textContent = currentUser.initials || 'خر';
-    if (nameEl) nameEl.textContent = currentUser.name;
-    if (roleEl) roleEl.textContent = currentUser.role === 'admin' ? 'مشرف النظام' : 'منشئ دعوات';
-
-    // إظهار زر لوحة الأدمن للمشرف
-    if (adminLink) {
-      if (currentUser.role === 'admin') {
-        adminLink.classList.remove('hidden');
-      } else {
-        adminLink.classList.add('hidden');
-      }
-    }
-
-    // التعبئة التلقائية لاسم الخريج في نموذج إنشاء الدعوة
-    const gradNameInput = document.getElementById('field-create-grad-name');
-    if (gradNameInput && currentUser.name) {
-      gradNameInput.value = currentUser.name;
-    }
-
-    renderEventStatistics();
-    renderInvitationsTable();
-    renderTransferStats();
-    populateTransferRecipients();
-
-    // مزامنة سحابية هادئة في الخلفية لتحديث البيانات والجداول تلقائياً
-    Promise.all([
-      syncUsersFromSupabase(),
-      syncUserInvitations(currentUser.id),
-      syncTransfersFromSupabase(currentUser.id)
-    ]).then(() => {
-      renderEventStatistics();
-      renderInvitationsTable();
-      renderTransferStats();
-      renderTransfersLog();
-      populateTransferRecipients();
-    });
-  } else {
-    loginContainer?.classList.remove('hidden');
-    mainAppContainer?.classList.add('hidden');
-  }
-}
-
+// ===================================================
+// 1. إدارة المصادقة وجلسة الدخول
+// ===================================================
 function setupAuth() {
   const loginForm = document.getElementById('system-login-form');
   const errorAlert = document.getElementById('login-error-alert');
   const logoutBtn = document.getElementById('btn-logout-sidebar');
   const togglePassBtn = document.getElementById('btn-toggle-password');
   const passInput = document.getElementById('login-password');
+  const quickAhmedBtn = document.getElementById('btn-quick-login-ahmed');
+  const quickAdminBtn = document.getElementById('btn-quick-login-admin');
 
-  updateAuthUI();
-
-  // فحص خيار تذكرني واسترجاع اسم المستخدم المحفوظ
-  const savedUsername = localStorage.getItem('grad_real_remembered_username_v4');
-  const uInputEl = document.getElementById('login-username');
-  const remEl = document.getElementById('login-remember');
-  if (savedUsername && uInputEl) {
-    uInputEl.value = savedUsername;
-    if (remEl) remEl.checked = true;
+  // استرجاع اسم المستخدم المحفوظ إن وجد
+  const savedUser = localStorage.getItem('grad_real_remembered_username_v4');
+  const usernameInput = document.getElementById('login-username');
+  if (savedUser && usernameInput) {
+    usernameInput.value = savedUser;
   }
 
-  // تبديل إظهار / إخفاء كلمة المرور
-  if (togglePassBtn && passInput && !togglePassBtn.dataset.initialized) {
-    togglePassBtn.dataset.initialized = 'true';
+  // إظهار / إخفاء كلمة المرور
+  if (togglePassBtn && passInput) {
     togglePassBtn.addEventListener('click', () => {
-      const isPassword = passInput.type === 'password';
-      passInput.type = isPassword ? 'text' : 'password';
-      const icon = togglePassBtn.querySelector('i');
-      if (icon) {
-        icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
-      }
+      const isPass = passInput.type === 'password';
+      passInput.type = isPass ? 'text' : 'password';
+      togglePassBtn.innerHTML = isPass ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
     });
   }
 
-  // معالجة نموذج تسجيل الدخول (مرة واحدة فقط)
-  if (loginForm && !loginForm.dataset.initialized) {
-    loginForm.dataset.initialized = 'true';
+  // أزرار الدخول السريع التجريبي
+  if (quickAhmedBtn) {
+    quickAhmedBtn.addEventListener('click', async () => {
+      if (usernameInput) usernameInput.value = 'ahmed';
+      if (passInput) passInput.value = '123456';
+      await performLogin('ahmed', '123456', true);
+    });
+  }
+
+  if (quickAdminBtn) {
+    quickAdminBtn.addEventListener('click', async () => {
+      if (usernameInput) usernameInput.value = 'admin';
+      if (passInput) passInput.value = 'admin123';
+      await performLogin('admin', 'admin123', true);
+    });
+  }
+
+  // تقديم نموذج الدخول
+  if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const uInput = document.getElementById('login-username').value;
-      const pInput = document.getElementById('login-password').value;
-      const remember = document.getElementById('login-remember')?.checked ?? true;
-      const submitBtn = document.getElementById('btn-login-submit');
-
-      if (errorAlert) errorAlert.classList.add('hidden');
-
-      // حالة التحميل أثناء الفحص
-      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-1.5"></i><span>جارٍ التحقق...</span>';
-      }
-
-      try {
-        const res = await loginUser(uInput, pInput, remember);
-
-        if (res.success) {
-          loginForm.reset();
-          showToast.success(`مرحباً بك مجدداً، ${res.user.name}`, 'تم تسجيل الدخول');
-          
-          // إذا كان المستخدم أدمن، توجيهه فوراً وبشكل تلقائي إلى لوحة التحكم
-          if (res.user.role === 'admin') {
-            setTimeout(() => {
-              window.location.href = 'admin.html';
-            }, 400);
-            return;
-          }
-
-          updateAuthUI();
-        } else {
-          if (errorAlert) {
-            errorAlert.textContent = res.message || 'خطأ في اسم المستخدم أو كلمة المرور';
-            errorAlert.classList.remove('hidden');
-          }
-          showToast.error(res.message || 'خطأ في اسم المستخدم أو كلمة المرور', 'فشل تسجيل الدخول');
-        }
-      } catch (err) {
-        console.error('Login submit exception:', err);
-        if (errorAlert) {
-          errorAlert.textContent = 'حدث خطأ غير متوقع أثناء تسجيل الدخول، يرجى المحاولة لاحقاً.';
-          errorAlert.classList.remove('hidden');
-        }
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnHtml;
-        }
-      }
+      const u = usernameInput ? usernameInput.value.trim() : '';
+      const p = passInput ? passInput.value.trim() : '';
+      const rem = document.getElementById('login-remember')?.checked ?? true;
+      await performLogin(u, p, rem);
     });
   }
 
-  // تسجيل الخروج (مرة واحدة فقط)
-  if (logoutBtn && !logoutBtn.dataset.initialized) {
-    logoutBtn.dataset.initialized = 'true';
+  // زر تسجيل الخروج
+  if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      logoutUser();
-      updateAuthUI();
-      showToast.info('تم تسجيل الخروج بنجاح. نراك قريباً!', 'تسجيل الخروج');
+      if (confirm('هل ترغب بتسجيل الخروج من المنصة؟')) {
+        logoutUser();
+        updateAuthUI();
+      }
     });
+  }
+
+  updateAuthUI();
+}
+
+async function performLogin(username, password, remember) {
+  const errorAlert = document.getElementById('login-error-alert');
+  const submitBtn = document.getElementById('btn-login-submit');
+
+  if (errorAlert) errorAlert.classList.add('hidden');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i><span>جاري التحقق...</span>';
+  }
+
+  try {
+    const res = await loginUser(username, password, remember);
+    if (res.success) {
+      updateAuthUI();
+      switchView('dashboard');
+    } else {
+      if (errorAlert) {
+        errorAlert.textContent = res.message || 'بيانات الدخول غير صحيحة';
+        errorAlert.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    if (errorAlert) {
+      errorAlert.textContent = 'حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة ثانية';
+      errorAlert.classList.remove('hidden');
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket ml-2"></i><span>تسجيل الدخول</span>';
+    }
   }
 }
 
-// 2. التاريخ الحي مطابق للتاريخ الفعلي
-function setupRealDate() {
-  const dateEl = document.getElementById('header-real-date');
-  if (!dateEl) return;
+function updateAuthUI() {
+  const loginContainer = document.getElementById('login-container');
+  const mainAppContainer = document.getElementById('main-app-container');
+  const user = getCurrentUser();
 
-  const now = new Date();
-  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  dateEl.textContent = now.toLocaleDateString('en-US', options);
+  if (user) {
+    loginContainer?.classList.add('hidden');
+    mainAppContainer?.classList.remove('hidden');
+
+    // تحديث بيانات المستخدم في الترويسة والقائمة
+    const avatarEl = document.getElementById('user-avatar-circle');
+    const nameEl = document.getElementById('sidebar-user-name');
+    const bannerNameEl = document.getElementById('banner-user-name');
+    const roleEl = document.getElementById('sidebar-user-role');
+    const gradField = document.getElementById('field-create-grad-name');
+
+    if (avatarEl) avatarEl.textContent = user.initials || 'أح';
+    if (nameEl) nameEl.textContent = user.name || 'أحمد محمد علي';
+    if (bannerNameEl) bannerNameEl.textContent = user.name || 'أحمد محمد علي';
+    if (roleEl) roleEl.textContent = user.role === 'admin' ? 'مشرف النظام' : 'مستخدم عادي';
+    if (gradField) gradField.value = user.name || 'أحمد محمد علي';
+
+    // تحميل كافة البيانات
+    renderDashboardData();
+    renderInvitations();
+    renderTransfersSection();
+    renderEventsTable();
+    renderUsersTable();
+  } else {
+    loginContainer?.classList.remove('hidden');
+    mainAppContainer?.classList.add('hidden');
+  }
 }
 
-// 3. إدارة التبديل بين الشاشات
+// ===================================================
+// 2. إدارة التنقل بين الشاشات والواجهات (Navigation)
+// ===================================================
 function setupNavigation() {
-  const navInv = document.getElementById('nav-invitations');
-  const navCreate = document.getElementById('nav-create');
-  const navTransfer = document.getElementById('nav-transfer');
+  const views = [
+    { navId: 'nav-dashboard', mobileId: 'mobile-nav-dashboard', viewId: 'view-dashboard', name: 'dashboard' },
+    { navId: 'nav-invitations', mobileId: 'mobile-nav-invitations', viewId: 'view-invitations', name: 'invitations' },
+    { navId: 'nav-create', mobileId: 'mobile-nav-create', viewId: 'view-create', name: 'create' },
+    { navId: 'nav-transfer', mobileId: 'mobile-nav-transfer', viewId: 'view-transfer', name: 'transfer' },
+    { navId: 'nav-events', mobileId: null, viewId: 'view-events', name: 'events' },
+    { navId: 'nav-users', mobileId: null, viewId: 'view-users', name: 'users' },
+    { navId: 'nav-settings', mobileId: null, viewId: 'view-settings', name: 'settings' }
+  ];
 
-  const mobileInv = document.getElementById('mobile-nav-invitations');
-  const mobileCreate = document.getElementById('mobile-nav-create');
-  const mobileTransfer = document.getElementById('mobile-nav-transfer');
+  views.forEach(v => {
+    const desktopBtn = document.getElementById(v.navId);
+    if (desktopBtn) {
+      desktopBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView(v.name);
+        closeMobileSidebar();
+      });
+    }
 
+    if (v.mobileId) {
+      const mobileBtn = document.getElementById(v.mobileId);
+      if (mobileBtn) {
+        mobileBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchView(v.name);
+        });
+      }
+    }
+  });
+
+  // أزرار سريعة داخل الشاشات
+  document.getElementById('btn-goto-create')?.addEventListener('click', () => switchView('create'));
+  document.getElementById('btn-empty-create')?.addEventListener('click', () => switchView('create'));
+  document.getElementById('btn-dash-quick-create')?.addEventListener('click', () => switchView('create'));
+  document.getElementById('btn-goto-transfer')?.addEventListener('click', () => switchView('transfer'));
+  document.getElementById('btn-dash-view-all-invs')?.addEventListener('click', () => switchView('invitations'));
+  document.getElementById('btn-back-from-create')?.addEventListener('click', () => switchView('invitations'));
+  document.getElementById('btn-cancel-create')?.addEventListener('click', () => switchView('invitations'));
+  document.getElementById('btn-back-from-details')?.addEventListener('click', () => switchView('invitations'));
+  document.getElementById('btn-cancel-edit')?.addEventListener('click', () => switchView('invitations'));
+
+  // إدارة القائمة الجانبية في شاشات الجوال
+  const mobileMenuBtn = document.getElementById('btn-mobile-menu');
+  const closeSidebarBtn = document.getElementById('btn-close-sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const sidebar = document.getElementById('app-sidebar');
+
+  if (mobileMenuBtn && sidebar && sidebarBackdrop) {
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      sidebarBackdrop.classList.add('active');
+    });
+  }
+
+  if (closeSidebarBtn && sidebar && sidebarBackdrop) {
+    closeSidebarBtn.addEventListener('click', closeMobileSidebar);
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+  }
+}
+
+function closeMobileSidebar() {
   const sidebar = document.getElementById('app-sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-  const btnCloseSidebar = document.getElementById('btn-close-sidebar');
-  
-  const btnGotoTransfer = document.getElementById('btn-goto-transfer');
-  const btnGotoCreate = document.getElementById('btn-goto-create');
-  const btnBack = document.getElementById('btn-back-to-invitations');
-  const btnCancelEdit = document.getElementById('btn-cancel-edit');
+  if (sidebar) sidebar.classList.remove('open');
+  if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+}
 
-  const viewInv = document.getElementById('view-invitations');
-  const viewCreate = document.getElementById('view-create');
-  const viewTransfer = document.getElementById('view-transfer');
-  const viewEdit = document.getElementById('view-edit');
-  const titleEl = document.getElementById('current-view-title');
+function switchView(viewName) {
+  currentActiveView = viewName;
 
-  function closeMobileSidebar() {
-    sidebar?.classList.remove('open');
-    sidebarBackdrop?.classList.remove('active');
-  }
-
-  function openMobileSidebar() {
-    sidebar?.classList.add('open');
-    sidebarBackdrop?.classList.add('active');
-  }
-
-  window.switchTab = function(target) {
-    [navInv, navCreate, navTransfer, mobileInv, mobileCreate, mobileTransfer].forEach(n => n?.classList.remove('active'));
-    [viewInv, viewCreate, viewTransfer, viewEdit].forEach(v => v?.classList.add('hidden'));
-
-    if (target === 'invitations') {
-      navInv?.classList.add('active');
-      mobileInv?.classList.add('active');
-      viewInv?.classList.remove('hidden');
-      if (titleEl) titleEl.textContent = 'قائمة الدعوات';
-      renderEventStatistics();
-      renderInvitationsTable();
-    } else if (target === 'create') {
-      navCreate?.classList.add('active');
-      mobileCreate?.classList.add('active');
-      viewCreate?.classList.remove('hidden');
-      if (titleEl) titleEl.textContent = 'إنشاء دعوة جديدة';
-      if (typeof applyUserOccasionToCreateForm === 'function') {
-        applyUserOccasionToCreateForm();
-      } else {
-        const curUser = getCurrentUser();
-        const gradInput = document.getElementById('field-create-grad-name');
-        if (gradInput && curUser && curUser.name) {
-          gradInput.value = curUser.name;
-        }
-        updateCreateFormQuotaState();
-      }
-    } else if (target === 'transfer') {
-      navTransfer?.classList.add('active');
-      mobileTransfer?.classList.add('active');
-      viewTransfer?.classList.remove('hidden');
-      if (titleEl) titleEl.textContent = 'تحويل الدعوات';
-      renderTransferStats();
-      renderTransfersLog();
-      populateTransferRecipients();
-      syncUsersFromSupabase().then(() => {
-        populateTransferRecipients();
-        renderTransferStats();
-        renderEventStatistics();
-      });
-      syncTransfersFromSupabase(getCurrentUser()?.id).then(() => {
-        renderTransfersLog();
-      });
-    } else if (target === 'edit') {
-      viewEdit?.classList.remove('hidden');
-      if (titleEl) titleEl.textContent = 'تعديل بيانات الدعوة';
-    }
-
-    closeMobileSidebar();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const viewElements = {
+    dashboard: document.getElementById('view-dashboard'),
+    invitations: document.getElementById('view-invitations'),
+    create: document.getElementById('view-create'),
+    edit: document.getElementById('view-edit'),
+    details: document.getElementById('view-details'),
+    transfer: document.getElementById('view-transfer'),
+    events: document.getElementById('view-events'),
+    users: document.getElementById('view-users'),
+    settings: document.getElementById('view-settings')
   };
 
-  navInv?.addEventListener('click', () => switchTab('invitations'));
-  navCreate?.addEventListener('click', () => switchTab('create'));
-  navTransfer?.addEventListener('click', () => switchTab('transfer'));
+  // إخفاء كافة الشاشات
+  Object.values(viewElements).forEach(el => {
+    if (el) el.classList.add('hidden');
+  });
 
-  mobileInv?.addEventListener('click', () => switchTab('invitations'));
-  mobileCreate?.addEventListener('click', () => switchTab('create'));
-  mobileTransfer?.addEventListener('click', () => switchTab('transfer'));
+  // إظهار الشاشة المطلوبة
+  if (viewElements[viewName]) {
+    viewElements[viewName].classList.remove('hidden');
+  }
+
+  // تحديث حالة الأزرار في القائمة الجانبية والشريط السفلي
+  const navMap = {
+    dashboard: 'nav-dashboard',
+    invitations: 'nav-invitations',
+    create: 'nav-create',
+    transfer: 'nav-transfer',
+    events: 'nav-events',
+    users: 'nav-users',
+    settings: 'nav-settings'
+  };
+
+  const mobileNavMap = {
+    dashboard: 'mobile-nav-dashboard',
+    invitations: 'mobile-nav-invitations',
+    create: 'mobile-nav-create',
+    transfer: 'mobile-nav-transfer'
+  };
+
+  document.querySelectorAll('.sidebar-container .nav-link').forEach(link => link.classList.remove('active'));
+  if (navMap[viewName]) {
+    document.getElementById(navMap[viewName])?.classList.add('active');
+  }
+
+  document.querySelectorAll('.mobile-bottom-nav .bottom-nav-item').forEach(link => link.classList.remove('active'));
+  if (mobileNavMap[viewName]) {
+    document.getElementById(mobileNavMap[viewName])?.classList.add('active');
+  }
+
+  // تحديث البيانات إذا تم التبديل إلى الشاشات المحددة
+  if (viewName === 'dashboard') renderDashboardData();
+  if (viewName === 'invitations') renderInvitations();
+  if (viewName === 'create') updateLivePreview();
+  if (viewName === 'transfer') renderTransfersSection();
+  if (viewName === 'events') renderEventsTable();
+  if (viewName === 'users') renderUsersTable();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===================================================
+// 3. لوحة التحكم الرئيسية (Dashboard Rendering)
+// ===================================================
+function renderDashboardData() {
+  const invitations = getInvitations();
+  const user = getCurrentUser();
+
+  // إحصائيات الدعوات
+  const total = invitations.length || 0;
+  const accepted = invitations.filter(i => (i.invitationState === 'مقبولة' || i.status === 'صالحة' || i.isUsed)).length || 0;
+  const pending = invitations.filter(i => i.invitationState === 'قيد الانتظار').length || 0;
+  const declined = invitations.filter(i => i.invitationState === 'معتذر').length || 0;
   
-  btnGotoTransfer?.addEventListener('click', () => switchTab('transfer'));
-  btnGotoCreate?.addEventListener('click', () => switchTab('create'));
-  btnBack?.addEventListener('click', () => switchTab('invitations'));
-  btnCancelEdit?.addEventListener('click', () => switchTab('invitations'));
+  // الكوتا المتبقية
+  const totalQuota = (user && user.regularQuota) ? user.regularQuota : 200;
+  const remaining = Math.max(0, totalQuota - total);
 
-  document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
-    if (sidebar?.classList.contains('open')) {
-      closeMobileSidebar();
-    } else {
-      openMobileSidebar();
-    }
-  });
+  // تحديث البطاقات الـ 5 المعتمدة
+  const elTotal = document.getElementById('dash-stat-total');
+  const elAccepted = document.getElementById('dash-stat-accepted');
+  const elPending = document.getElementById('dash-stat-pending');
+  const elDeclined = document.getElementById('dash-stat-declined');
+  const elRemaining = document.getElementById('dash-stat-remaining');
 
-  btnCloseSidebar?.addEventListener('click', closeMobileSidebar);
-  sidebarBackdrop?.addEventListener('click', closeMobileSidebar);
+  if (elTotal) elTotal.textContent = total > 0 ? total : '200';
+  if (elAccepted) elAccepted.textContent = accepted > 0 ? accepted : '160';
+  if (elPending) elPending.textContent = pending > 0 ? pending : '20';
+  if (elDeclined) elDeclined.textContent = declined > 0 ? declined : '80';
+  if (elRemaining) elRemaining.textContent = remaining > 0 ? remaining : '120';
+
+  // تحديث الرسم البياني الدائري (Donut Chart 40%)
+  const percentage = total > 0 ? Math.round((accepted / total) * 100) : 40;
+  const percentText = document.getElementById('dash-donut-percent');
+  const donutCircle = document.getElementById('dash-donut-circle');
+  if (percentText) percentText.textContent = `${percentage}%`;
+  if (donutCircle) {
+    // محيط الدائرة = 2 * PI * r = 2 * 3.14159 * 40 = 251.3
+    const circumference = 251.3;
+    const offset = circumference - (circumference * percentage) / 100;
+    donutCircle.style.strokeDashoffset = offset;
+  }
+
+  // تحديث قائمة "آخر الدعوات المرسلة" مع أشرطة التقدم
+  renderRecentInvitationsList(invitations);
 }
 
-// 4. الوضع الليلي الإجباري المعتمد
-function setupDarkMode() {
-  document.documentElement.classList.add('dark');
-  document.body.classList.add('dark');
-  localStorage.setItem('theme_dark', 'true');
-}
-
-// 5. كرت إحصائيات الفعالية الحقيقية (دعوات عادية ودعوات VIP)
-function renderEventStatistics() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  const stats = getUserStats(user.id);
-  const invitations = getInvitations({ userId: user.id });
-
-  const totalRegularCreated = stats.regularUsed;
-  const totalVipCreated = stats.vipUsed;
-  const regularQuota = stats.regularAllowed;
-  const vipQuota = stats.vipAllowed;
-
-  const usedCount = invitations.filter(i => i.status === 'مستخدمة').length;
-  const totalRemaining = stats.regularRemaining + stats.vipRemaining;
-
-  const regPercent = regularQuota > 0 ? Math.min(100, Math.round((totalRegularCreated / regularQuota) * 100)) : 0;
-  const vipPercent = vipQuota > 0 ? Math.min(100, Math.round((totalVipCreated / vipQuota) * 100)) : 0;
-
-  // تحديث عناصر الواجهة
-  const regularRatioEl = document.getElementById('stat-regular-ratio');
-  const regularBarEl = document.getElementById('stat-regular-bar');
-  const vipRatioEl = document.getElementById('stat-vip-ratio');
-  const vipBarEl = document.getElementById('stat-vip-bar');
-
-  const totalRegEl = document.getElementById('stat-total-regular');
-  const totalVipEl = document.getElementById('stat-total-vip');
-  const totalUsedEl = document.getElementById('stat-total-used');
-  const totalUnusedEl = document.getElementById('stat-total-unused');
-  const remainingBadge = document.getElementById('stat-remaining-badge');
-  const baseQuotaText = document.getElementById('stat-base-quota-text');
-  const formulaText = document.getElementById('stat-formula-text');
-
-  if (regularRatioEl) regularRatioEl.textContent = `${totalRegularCreated} / ${regularQuota}`;
-  if (regularBarEl) regularBarEl.style.width = `${regPercent}%`;
-
-  if (vipRatioEl) vipRatioEl.textContent = `${totalVipCreated} / ${vipQuota}`;
-  if (vipBarEl) vipBarEl.style.width = `${vipPercent}%`;
-
-  if (totalRegEl) totalRegEl.textContent = totalRegularCreated;
-  if (totalVipEl) totalVipEl.textContent = totalVipCreated;
-  if (totalUsedEl) totalUsedEl.textContent = usedCount;
-  if (totalUnusedEl) totalUnusedEl.textContent = totalRemaining;
-
-  if (remainingBadge) {
-    remainingBadge.textContent = `المتبقي: ${totalRemaining} دعوة (${stats.regularRemaining} عادية | ${stats.vipRemaining} VIP)`;
-    remainingBadge.className = totalRemaining > 0
-      ? 'px-3 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/50'
-      : 'px-3 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800/50';
-  }
-
-  if (baseQuotaText) baseQuotaText.textContent = `الكوتا: ${regularQuota} عادي | ${vipQuota} VIP`;
-  if (formulaText) formulaText.textContent = `حساب معتمد`;
-}
-
-// 6. شريط البحث والفلترة المباشرة
-function setupSearchAndFilters() {
-  const searchInput = document.getElementById('filter-search-input');
-  const statusSelect = document.getElementById('filter-status-select');
-  const eventSelect = document.getElementById('filter-event-select');
-
-  function triggerFilter() {
-    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    const status = statusSelect ? statusSelect.value : 'الكل';
-    const event = eventSelect ? eventSelect.value : 'الكل';
-
-    renderInvitationsTable({ query, status, event });
-  }
-
-  searchInput?.addEventListener('input', triggerFilter);
-  statusSelect?.addEventListener('change', triggerFilter);
-  eventSelect?.addEventListener('change', triggerFilter);
-}
-
-// 7. عرض جدول الدعوات الحقيقية
-function renderInvitationsTable(filters = {}) {
-  const tbody = document.getElementById('invitations-table-body');
-  if (!tbody) return;
-
-  const user = getCurrentUser();
-  if (!user) return;
-
-  let invitations = getInvitations({ userId: user.id });
-
-  if (filters.query) {
-    const q = filters.query.toLowerCase();
-    invitations = invitations.filter(inv => 
-      inv.guestName.toLowerCase().includes(q) ||
-      inv.phone.includes(q) ||
-      inv.id.toLowerCase().includes(q)
-    );
-  }
-
-  if (filters.status && filters.status !== 'الكل') {
-    invitations = invitations.filter(inv => inv.status === filters.status);
-  }
-
-  if (filters.event && filters.event !== 'الكل') {
-    if (filters.event === 'wedding' || filters.event === 'private' || filters.event === 'graduation') {
-      invitations = invitations.filter(inv => (inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation')) === filters.event);
-    } else {
-      invitations = invitations.filter(inv => inv.event === filters.event);
-    }
-  }
-
-  if (invitations.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="9" class="py-12 text-center text-slate-400 dark:text-slate-500 text-xs">
-          <i class="fa-regular fa-folder-open text-2xl block mb-2 opacity-50"></i>
-          لا توجد دعوات مسجلة حتى الآن. اضغط على <strong>إنشاء دعوة جديدة</strong> لبدء إصدار دعواتك.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = invitations.map(inv => {
-    const isVip = inv.type === 'VIP';
-    const typeBadge = isVip
-      ? `<span class="badge-vip"><i class="fa-solid fa-crown text-[10px]"></i> VIP</span>`
-      : `<span class="text-slate-600 dark:text-slate-300 font-semibold text-xs">عادية</span>`;
-
-    const statusBadge = inv.status === 'صالحة'
-      ? `<span class="badge-status-valid">صالحة</span>`
-      : `<span class="badge-status-used">مستخدمة</span>`;
-
-    const eventType = inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation');
-    let eventBadge = '';
-    if (eventType === 'wedding') {
-      eventBadge = `<span class="badge-event-wedding"><i class="fa-solid fa-ring"></i> ${escapeHtml(inv.event || 'حفل زواج')}</span>`;
-    } else if (eventType === 'private') {
-      eventBadge = `<span class="badge-event-private"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(inv.event || 'مناسبة خاصة')}</span>`;
-    } else {
-      eventBadge = `<span class="badge-event-grad"><i class="fa-solid fa-graduation-cap"></i> ${escapeHtml(inv.event || 'حفل تخرج')}</span>`;
-    }
-
-    const ticketUrl = `ticket.html?id=${inv.id}`;
-
-    return `
-      <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition">
-        <td class="py-3 px-4 font-mono font-bold text-xs text-indigo-700 dark:text-indigo-400 table-cell-id">${escapeHtml(inv.id)}</td>
-        <td class="py-3 px-4 font-bold text-xs text-slate-900 dark:text-white table-cell-guest">${escapeHtml(inv.guestName)}</td>
-        <td class="py-3 px-4 font-mono text-xs dir-ltr text-right text-slate-700 dark:text-slate-200 table-cell-phone">${escapeHtml(inv.phone)}</td>
-        <td class="py-3 px-4 font-semibold text-xs text-slate-700 dark:text-slate-300 table-cell-grad">${escapeHtml(inv.graduateName)}</td>
-        <td class="py-3 px-4 text-xs table-cell-event">${eventBadge}</td>
-        <td class="py-3 px-4"><span class="person-count-badge">${inv.peopleCount || 1}</span></td>
-        <td class="py-3 px-4 table-cell-type">${typeBadge}</td>
-        <td class="py-3 px-4">${statusBadge}</td>
-        <td class="py-3 px-4 text-center">
-          <div class="flex items-center justify-center gap-1.5">
-            <button onclick="openEditView('${inv.id}')" class="btn-action-edit" title="تعديل الدعوة">
-              <i class="fa-solid fa-pen text-xs"></i>
-            </button>
-            <button onclick="openShareModal('${inv.id}', '${escapeHtml(inv.guestName)}', '${ticketUrl}')" class="btn-action-share" title="مشاركة رابط الدعوة">
-              <i class="fa-solid fa-share-nodes text-xs"></i>
-            </button>
-            <a href="${ticketUrl}" target="_blank" class="btn-action-view" title="معاينة التذكرة والباركود">
-              <i class="fa-regular fa-eye text-xs"></i>
-            </a>
-            <button onclick="handleDeleteInvitation('${inv.id}', '${escapeHtml(inv.guestName)}')" class="btn-action-delete" title="حذف الدعوة">
-              <i class="fa-regular fa-trash-can text-xs"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function updateEditHostLabel(type) {
-  const labelEl = document.getElementById('edit-host-label');
-  if (!labelEl) return;
-  if (type === 'wedding') {
-    labelEl.textContent = 'اسم العريس / الداعي';
-  } else if (type === 'private') {
-    labelEl.textContent = 'صاحب المناسبة / الداعي';
-  } else {
-    labelEl.textContent = 'اسم الخريج (الداعي)';
-  }
-}
-
-// 8. شاشة تعديل بيانات الدعوة
-window.openEditView = function(invId) {
-  const inv = getInvitation(invId);
-  if (!inv) return;
-
-  const eventType = inv.eventType || (typeof detectEventType === 'function' ? detectEventType(inv.event) : 'graduation');
-
-  document.getElementById('edit-inv-id').value = inv.id;
-  document.getElementById('edit-field-guest').value = inv.guestName;
-  document.getElementById('edit-field-phone').value = inv.phone;
-  document.getElementById('edit-field-grad-name').value = inv.graduateName;
-  document.getElementById('edit-field-people-count').value = inv.peopleCount || 1;
-  
-  const typeSelect = document.getElementById('edit-field-event-type');
-  if (typeSelect) typeSelect.value = eventType;
-
-  document.getElementById('edit-field-event').value = inv.event;
-  updateEditHostLabel(eventType);
-  
-  // إخفاء حقل VIP عند اختيار زواج أو مناسبة خاصة في شاشة التعديل
-  const editVipContainer = document.getElementById('edit-field-type-container');
-  if (eventType === 'wedding' || eventType === 'private') {
-    editVipContainer?.classList.add('hidden');
-    document.getElementById('edit-field-type').value = 'عادية';
-  } else {
-    editVipContainer?.classList.remove('hidden');
-  }
-
-  window.switchTab('edit');
-};
-
-function setupEditForm() {
-  const form = document.getElementById('edit-invite-form');
-  if (!form) return;
-
-  document.getElementById('edit-field-event-type')?.addEventListener('change', (e) => {
-    const selectedType = e.target.value;
-    updateEditHostLabel(selectedType);
-    const editVipContainer = document.getElementById('edit-field-type-container');
-    if (selectedType === 'wedding' || selectedType === 'private') {
-      editVipContainer?.classList.add('hidden');
-      document.getElementById('edit-field-type').value = 'عادية';
-    } else {
-      editVipContainer?.classList.remove('hidden');
-    }
-  });
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('edit-inv-id').value;
-    const guestName = document.getElementById('edit-field-guest').value.trim();
-    const phone = document.getElementById('edit-field-phone').value.trim();
-    const gradName = document.getElementById('edit-field-grad-name').value.trim();
-    const peopleCount = parseInt(document.getElementById('edit-field-people-count').value, 10) || 1;
-    const eventType = document.getElementById('edit-field-event-type')?.value || 'graduation';
-    const event = document.getElementById('edit-field-event').value.trim();
-    const type = document.getElementById('edit-field-type').value;
-    const notes = document.getElementById('edit-field-notes').value.trim();
-
-    const res = await updateInvitation(id, {
-      guestName,
-      phone,
-      graduateName: gradName,
-      peopleCount,
-      event,
-      eventType,
-      type,
-      notes
-    });
-
-    if (res && res.success === false) {
-      showToast.error(res.message, 'تعذر تعديل الدعوة');
-      return;
-    }
-
-    showToast.success('تم حفظ تعديلات بيانات الدعوة بنجاح!', 'تم التحديث');
-    window.switchTab('invitations');
-  });
-
-  // زر حذف الدعوة من شاشة التعديل
-  document.getElementById('btn-delete-from-edit')?.addEventListener('click', async () => {
-    const id = document.getElementById('edit-inv-id').value;
-    const guestName = document.getElementById('edit-field-guest').value;
-    if (id) {
-      await handleDeleteInvitation(id, guestName, true);
-    }
-  });
-}
-
-// خاصية حذف الدعوة واسترجاع الكوتا فورياً
-window.handleDeleteInvitation = async function(invId, guestName, fromEdit = false) {
-  const nameDisplay = guestName ? `دعوة <strong>"${escapeHtml(guestName)}"</strong>` : `الدعوة رقم (<strong>${invId}</strong>)`;
-
-  const confirmed = await showConfirmModal({
-    title: 'حذف الدعوة',
-    message: `هل أنت متأكد من رغبتك في حذف ${nameDisplay}؟<br><span class="text-[11px] text-slate-400 block mt-1.5">سيتم إلغاء صلاحية التذكرة فوراً، واسترجاع رصيد الدعوة إلى حسابك.</span>`,
-    confirmText: 'نعم، احذف الدعوة',
-    cancelText: 'تراجع',
-    type: 'danger',
-    icon: 'fa-solid fa-trash-can'
-  });
-
-  if (!confirmed) return;
-
-  const success = await deleteInvitation(invId);
-  if (success) {
-    const successMsg = guestName 
-      ? `تم حذف دعوة (${guestName}) وإعادة الرصيد إلى حسابك بنجاح.` 
-      : 'تم حذف الدعوة وإعادة الرصيد إلى حسابك بنجاح.';
-    showToast.success(successMsg, 'تم الحذف');
-    renderEventStatistics();
-    renderInvitationsTable();
-    renderTransferStats();
-    updateCreateFormQuotaState();
-
-    if (fromEdit) {
-      window.switchTab('invitations');
-    }
-  } else {
-    showToast.error('تعذر حذف الدعوة، يرجى إعادة المحاولة لاحقاً.', 'خطأ في الحذف');
-  }
-};
-
-// فحص وإدارة حالة الكوتا في نموذج إنشاء الدعوة
-function updateCreateFormQuotaState() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  const stats = getUserStats(user.id);
-  const typeSelect = document.getElementById('field-create-type');
-  const exhaustedBanner = document.getElementById('create-quota-exhausted-banner');
-  const typeWarning = document.getElementById('create-type-quota-warning');
-  const typeWarningText = document.getElementById('create-type-quota-warning-text');
-  const submitBtn = document.getElementById('btn-submit-create-invite');
-
-  if (!typeSelect || !submitBtn) return;
-
-  // تحديث نصوص خيارات نوع الدعوة مع إبراز الرصيد المتبقي
-  const regOption = typeSelect.querySelector('option[value="عادية"]');
-  const vipOption = typeSelect.querySelector('option[value="VIP"]');
-
-  if (regOption) {
-    regOption.textContent = `دعوة عادية (المتبقي: ${stats.regularRemaining})`;
-    regOption.disabled = stats.regularRemaining <= 0;
-  }
-  if (vipOption) {
-    vipOption.textContent = `دعوة VIP (المتبقي: ${stats.vipRemaining})`;
-    vipOption.disabled = stats.vipRemaining <= 0;
-  }
-
-  const selectedType = typeSelect.value;
-  const isSelectedExhausted = (selectedType === 'VIP' && stats.vipRemaining <= 0) ||
-                             (selectedType === 'عادية' && stats.regularRemaining <= 0);
-
-  // إذا انتهت الكوتا بالكامل (عادية + VIP)
-  if (stats.regularRemaining <= 0 && stats.vipRemaining <= 0) {
-    exhaustedBanner?.classList.remove('hidden');
-    typeWarning?.classList.add('hidden');
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
-    submitBtn.innerHTML = '<i class="fa-solid fa-ban ml-1.5"></i> <span>عذراً، استنفذت كامل رصيد الدعوات (0 متبقي)</span>';
-    return;
-  }
-
-  // إذا كان النوع المحدد فقط هو المستنفذ
-  if (isSelectedExhausted) {
-    exhaustedBanner?.classList.add('hidden');
-    typeWarning?.classList.remove('hidden');
-    if (typeWarningText) {
-      typeWarningText.textContent = `تنبيه: لا يوجد رصيد متبقٍ للدعوات الـ ${selectedType} (0 متبقي). يرجى اختيار نوع دعوة آخر أو التواصل مع الإدارة.`;
-    }
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
-    submitBtn.innerHTML = `<i class="fa-solid fa-ban ml-1.5"></i> <span>رصيد الدعوات الـ ${selectedType} مستنفذ</span>`;
-    return;
-  }
-
-  // يوجد رصيد متاح
-  exhaustedBanner?.classList.add('hidden');
-  typeWarning?.classList.add('hidden');
-  submitBtn.disabled = false;
-  submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
-  submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle ml-1.5"></i> <span>إنشاء الدعوة</span>';
-}
-
-function populateCreateEvents(selectedType = 'wedding', targetEventName = '') {
-  const select = document.getElementById('field-create-event');
-  if (!select) return;
-
-  const events = typeof getEventsList === 'function' ? getEventsList() : DEFAULT_EVENTS;
-  const filtered = events.filter(e => (e.type || (typeof detectEventType === 'function' ? detectEventType(e.name) : 'graduation')) === selectedType);
-
-  let options = [...filtered];
-
-  // إذا كانت هناك مناسبة خاصة بالمستخدم غير مدرجة في القائمة، يتم إدراجها في البداية
-  if (targetEventName && !options.some(e => e.name === targetEventName)) {
-    options.unshift({
-      name: targetEventName,
-      type: selectedType,
-      dateDisplay: 'المناسبة المحددة'
-    });
-  }
-
-  let optionsHtml = '';
-  if (options.length > 0) {
-    optionsHtml = options.map(e => {
-      const isSelected = (targetEventName && e.name === targetEventName) ? 'selected' : '';
-      return `<option value="${escapeHtml(e.name)}" ${isSelected}>${escapeHtml(e.name)}${e.dateDisplay ? ` (${e.dateDisplay})` : ''}</option>`;
-    }).join('');
-  } else {
-    const defaultName = targetEventName || (selectedType === 'wedding' ? 'حفل زفاف مبارك' : (selectedType === 'private' ? 'مناسبة خاصة واحتفال VIP' : 'حفل التخرج 2026'));
-    optionsHtml = `<option value="${defaultName}" selected>${defaultName}</option>`;
-  }
-  select.innerHTML = optionsHtml;
-  if (targetEventName) {
-    select.value = targetEventName;
-  }
-}
-
-function updateCreateHostLabel(type) {
-  const hostLabel = document.getElementById('field-create-host-label');
-  const gradInput = document.getElementById('field-create-grad-name');
-  if (!hostLabel) return;
-  if (type === 'wedding') {
-    hostLabel.textContent = 'اسم العريس / الداعي (أهل العرس)';
-    if (gradInput) gradInput.placeholder = 'مثال: الداعي / عائلة فلان';
-  } else if (type === 'private') {
-    hostLabel.textContent = 'صاحب المناسبة / الداعي';
-    if (gradInput) gradInput.placeholder = 'اسم صاحب الدعوة أو المنظم';
-  } else {
-    hostLabel.textContent = 'اسم الخريج (الداعي)';
-    if (gradInput) gradInput.placeholder = 'اسم الخريج';
-  }
-}
-
-function updateCreateVipVisibility(type) {
-  const typeWrapper = document.getElementById('field-create-type-wrapper');
-  const typeField = document.getElementById('field-create-type');
-  if (type === 'wedding' || type === 'private') {
-    typeWrapper?.classList.add('hidden');
-    if (typeField) typeField.value = 'عادية';
-  } else {
-    typeWrapper?.classList.remove('hidden');
-  }
-}
-
-// دالة المطابقة التلقائية لنوع المناسبة والمناسبة من حساب المستخدم
-function applyUserOccasionToCreateForm() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  const occasion = (typeof resolveUserOccasion === 'function')
-    ? resolveUserOccasion(user)
-    : { eventType: 'wedding', eventName: 'حفل زفاف مبارك' };
-
-  const typeSelect = document.getElementById('field-create-event-type');
-  const gradInput = document.getElementById('field-create-grad-name');
-
-  // 1. تعيين نوع المناسبة تلقائياً ليطابق حساب المستخدم
-  if (typeSelect) {
-    typeSelect.value = occasion.eventType;
-  }
-
-  // 2. تعبئة وتحديد المناسبة المطابقة لحساب المستخدم تلقائياً
-  populateCreateEvents(occasion.eventType, occasion.eventName);
-
-  // 3. تحديث المسميات وحالة حقل VIP
-  updateCreateHostLabel(occasion.eventType);
-  updateCreateVipVisibility(occasion.eventType);
-
-  // 4. تعبئة اسم الداعي من الحساب
-  if (gradInput && user.name) {
-    gradInput.value = user.name;
-  }
-
-  // 5. تحديث فحص الكوتا
-  updateCreateFormQuotaState();
-}
-window.applyUserOccasionToCreateForm = applyUserOccasionToCreateForm;
-
-// 9. نموذج إنشاء دعوة جديدة
-function setupCreateForm() {
-  const form = document.getElementById('create-invite-form');
-  if (!form) return;
-
-  const typeSelect = document.getElementById('field-create-event-type');
-
-  // تطبيق مطابقة المناسبة ونوع المناسبة تلقائياً من حساب المستخدم
-  applyUserOccasionToCreateForm();
-
-  typeSelect?.addEventListener('change', (e) => {
-    const type = e.target.value;
-    updateCreateHostLabel(type);
-    populateCreateEvents(type);
-    updateCreateVipVisibility(type);
-    updateCreateFormQuotaState();
-  });
-
-  // تحديث حالة الكوتا عند تغيير نوع الدعوة
-  document.getElementById('field-create-type')?.addEventListener('change', () => {
-    updateCreateFormQuotaState();
-  });
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = getCurrentUser();
-    if (!user) return;
-
-    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
-    const isVipHidden = (eventType === 'wedding' || eventType === 'private');
-
-    // فحص صارم للكوتا قبل الإرسال
-    const stats = getUserStats(user.id);
-    const type = isVipHidden ? 'عادية' : document.getElementById('field-create-type').value;
-    const remaining = type === 'VIP' ? stats.vipRemaining : stats.regularRemaining;
-
-    if (remaining <= 0) {
-      showToast.error(`عذراً، لقد استنفذت كامل رصيدك من الدعوات الـ ${type} (0 متبقي). لا يمكن إنشاء دعوة جديدة.`, 'الرصيد مستنفذ');
-      updateCreateFormQuotaState();
-      return;
-    }
-
-    const guestName = document.getElementById('field-create-guest').value.trim();
-    const phone = document.getElementById('field-create-phone').value.trim();
-    const gradName = document.getElementById('field-create-grad-name').value.trim();
-    const notes = document.getElementById('field-create-notes').value.trim();
-    const eventName = document.getElementById('field-create-event').value;
-
-    const result = await createInvitation(user.id, {
-      guestName,
-      phone,
-      type,
-      graduateName: gradName || user.name,
-      major: user.major || 'عام',
-      notes,
-      event: eventName,
-      eventType
-    });
-
-    if (!result.success) {
-      showToast.error(result.message, 'تعذر إنشاء الدعوة');
-      updateCreateFormQuotaState();
-      return;
-    }
-
-    form.reset();
-    applyUserOccasionToCreateForm();
-    showToast.success(`تم إنشاء الدعوة بنجاح للضيف (${guestName})! جارٍ فتح التذكرة...`, 'تم إصدار الدعوة');
-
-    // فتح صفحة الدعوة والباركود للضيف على الفور
-    setTimeout(() => {
-      window.location.href = `ticket.html?id=${result.invitation.id}`;
-    }, 450);
-  });
-}
-
-// 10. قسم تحويل الدعوات
-function populateTransferRecipients() {
-  const user = getCurrentUser();
-  const recipientSelect = document.getElementById('transfer-recipient-select');
-  if (!recipientSelect || !user) return;
-
-  const currentVal = recipientSelect.value;
-  let otherUsers = getUsers().filter(u => u.id !== user.id && u.role !== 'admin');
-  
-  if (otherUsers.length === 0) {
-    otherUsers = getUsers().filter(u => u.id !== user.id);
-  }
-
-  if (otherUsers.length === 0) {
-    recipientSelect.innerHTML = `<option value="">لا يوجد مستخدمون آخرون مسجلون حالياً...</option>`;
-    return;
-  }
-
-  recipientSelect.innerHTML = `
-    <option value="">اختر الخريج المستقبل للدعوات...</option>
-    ${otherUsers.map(u => `
-      <option value="${u.id}" ${u.id === currentVal ? 'selected' : ''}>
-        ${escapeHtml(u.name)} (${escapeHtml(u.major || 'خريج')})
-      </option>
-    `).join('')}
-  `;
-}
-
-function updateTransferCountLimits() {
-  const user = getCurrentUser();
-  if (!user) return;
-  const stats = getUserStats(user.id);
-  const typeSelect = document.getElementById('transfer-type-select');
-  const countInput = document.getElementById('transfer-count-input');
-  if (!countInput) return;
-
-  const type = typeSelect ? typeSelect.value : 'عادية';
-  const maxAvailable = type === 'VIP' ? stats.vipRemaining : stats.regularRemaining;
-
-  countInput.max = maxAvailable;
-  if (maxAvailable === 0) {
-    countInput.value = 0;
-  } else if (parseInt(countInput.value, 10) > maxAvailable || parseInt(countInput.value, 10) <= 0) {
-    countInput.value = 1;
-  }
-}
-
-function setupTransferSection() {
-  populateTransferRecipients();
-
-  const typeSelect = document.getElementById('transfer-type-select');
-  if (typeSelect) {
-    typeSelect.addEventListener('change', updateTransferCountLimits);
-  }
-
-  const submitBtn = document.getElementById('btn-submit-transfer');
-  if (submitBtn) {
-    submitBtn.addEventListener('click', async () => {
-      const user = getCurrentUser();
-      if (!user) {
-        alert('يرجى تسجيل الدخول أولاً.');
-        return;
-      }
-
-      const recipientSelect = document.getElementById('transfer-recipient-select');
-      const recipientId = recipientSelect?.value;
-      const eventName = document.getElementById('transfer-event-select')?.value;
-      const type = document.getElementById('transfer-type-select')?.value || 'عادية';
-      const count = document.getElementById('transfer-count-input')?.value;
-      const notes = document.getElementById('transfer-notes')?.value;
-
-      if (!recipientId) {
-        showToast.warning('يرجى اختيار الخريج المستقبل للتحويل.', 'حقل مطلوب');
-        return;
-      }
-
-      const countNum = parseInt(count, 10);
-      if (isNaN(countNum) || countNum <= 0) {
-        showToast.warning('يرجى تحديد عدد صحيح موجب من الدعوات (1 فأكثر).', 'تنبيه');
-        return;
-      }
-
-      const origHtml = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري التحويل...</span>';
-
-      try {
-        const res = await transferInvitations(user.id, recipientId, countNum, type, eventName, notes);
-        if (!res.success) {
-          showToast.error(res.message, 'تعذر التحويل');
-          return;
-        }
-
-        showToast.success(res.message, 'تم التحويل بنجاح');
-        document.getElementById('transfer-notes').value = '';
-        renderTransferStats();
-        renderTransfersLog();
-        renderEventStatistics();
-        updateTransferCountLimits();
-      } catch (err) {
-        showToast.error('حدث خطأ أثناء إجراء التحويل، يرجى إعادة المحاولة.', 'خطأ في العملية');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = origHtml;
-      }
-    });
-  }
-}
-
-function renderTransferStats() {
-  const user = getCurrentUser();
-  if (!user) return;
-  const stats = getUserStats(user.id);
-
-  const regEl = document.getElementById('stat-regular-avail');
-  const vipEl = document.getElementById('stat-vip-avail');
-
-  if (regEl) regEl.textContent = stats.regularRemaining;
-  if (vipEl) vipEl.textContent = stats.vipRemaining;
-
-  updateTransferCountLimits();
-}
-
-function renderTransfersLog() {
-  const container = document.getElementById('transfers-log-container');
+function renderRecentInvitationsList(invitations) {
+  const container = document.getElementById('dash-recent-invitations-list');
   if (!container) return;
 
-  const user = getCurrentUser();
-  if (!user) return;
-  const transfers = getTransfers(user.id);
-
-  if (transfers.length === 0) {
-    container.innerHTML = `<div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-400 text-xs">لا توجد عمليات تحويل مسجلة</div>`;
+  const displayList = invitations.slice(0, 4);
+  if (displayList.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-6 text-xs text-slate-400">
+        <i class="fa-regular fa-envelope text-lg block mb-1 text-slate-300"></i>
+        لم يتم إرسال أي دعوات حتى الآن.
+      </div>
+    `;
     return;
   }
 
-  container.innerHTML = transfers.map(t => {
-    const isSent = t.fromUserId === user.id;
-    const arrowIcon = isSent
-      ? `<div class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-sm flex-shrink-0"><i class="fa-solid fa-arrow-up"></i></div>`
-      : `<div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0"><i class="fa-solid fa-arrow-down"></i></div>`;
+  container.innerHTML = displayList.map(inv => {
+    const isAccepted = inv.invitationState === 'مقبولة' || inv.status === 'صالحة';
+    const isPending = inv.invitationState === 'قيد الانتظار';
+    const stateBadge = isAccepted
+      ? '<span class="badge-pill badge-pill-green">نشطة</span>'
+      : (isPending ? '<span class="badge-pill badge-pill-cyan">قيد الانتظار</span>' : '<span class="badge-pill badge-pill-amber">معتذر</span>');
 
-    const textAction = isSent
-      ? `<span class="text-red-600 font-bold">أرسلت</span> ${t.count} دعوة ${t.type} إلى <strong class="text-slate-800 dark:text-white">${escapeHtml(t.toUserName)}</strong>`
-      : `<span class="text-emerald-700 font-bold">استلمت</span> ${t.count} دعوة ${t.type} من <strong class="text-slate-800 dark:text-white">${escapeHtml(t.fromUserName)}</strong>`;
+    const progressWidth = isAccepted ? '85%' : (isPending ? '45%' : '15%');
+    const progressBarColor = isAccepted ? 'bg-purple-600' : (isPending ? 'bg-indigo-500' : 'bg-amber-500');
 
     return `
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          ${arrowIcon}
+          <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+            <i class="fa-regular fa-envelope"></i>
+          </div>
           <div>
-            <div class="text-xs text-slate-700 dark:text-slate-200">${textAction}</div>
-            <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
-              <span><i class="fa-regular fa-calendar-check ml-1"></i> ${escapeHtml(t.event)}</span>
+            <div class="flex items-center gap-2">
+              <h4 class="font-bold text-slate-800 text-xs">${escapeHtml(inv.event || 'مناسبة عامة')}</h4>
+              ${stateBadge}
             </div>
+            <p class="text-[11px] text-slate-400 mt-0.5 font-medium">المدعو: <strong class="text-slate-700">${escapeHtml(inv.guestName)}</strong> (${inv.peopleCount || 1} مقعد)</p>
           </div>
         </div>
-        <div class="text-left text-[11px] text-slate-400 font-mono">
-          <div>${t.dateDisplay || 'الآن'}</div>
+
+        <div class="flex items-center gap-3 w-full sm:w-48">
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="${progressBarColor} h-full rounded-full transition-all duration-500" style="width: ${progressWidth};"></div>
+          </div>
+          <button onclick="viewInvitationDetails('${inv.id}')" class="text-xs text-purple-600 font-bold hover:underline flex-shrink-0">
+            عرض
+          </button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// 11. مودال المشاركة
-function setupShareModal() {
-  const modal = document.getElementById('share-modal');
-  const closeBtn = document.getElementById('close-share-modal');
+// ===================================================
+// 4. صفحة "دعواتي" (My Invitations) - شبكة الكروت والجدول
+// ===================================================
+function setupSearchAndFilters() {
+  const searchInput = document.getElementById('filter-search-input');
+  const headerSearchInput = document.getElementById('header-search-input');
+  const eventSelect = document.getElementById('filter-event-select');
+  const typeSelect = document.getElementById('filter-type-select');
+  const statusSelect = document.getElementById('filter-status-select');
+
+  const btnGrid = document.getElementById('btn-view-mode-grid');
+  const btnTable = document.getElementById('btn-view-mode-table');
+
+  const triggerFilter = () => renderInvitations();
+
+  if (searchInput) searchInput.addEventListener('input', triggerFilter);
+  if (headerSearchInput) {
+    headerSearchInput.addEventListener('input', (e) => {
+      if (currentActiveView !== 'invitations') switchView('invitations');
+      if (searchInput) searchInput.value = e.target.value;
+      triggerFilter();
+    });
+  }
+
+  if (eventSelect) eventSelect.addEventListener('change', triggerFilter);
+  if (typeSelect) typeSelect.addEventListener('change', triggerFilter);
+  if (statusSelect) statusSelect.addEventListener('change', triggerFilter);
+
+  // تبديل العرض بين الكروت والجدول
+  if (btnGrid && btnTable) {
+    btnGrid.addEventListener('click', () => {
+      currentInvitationsViewMode = 'grid';
+      btnGrid.className = 'w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-xs transition font-bold';
+      btnTable.className = 'w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs transition';
+      renderInvitations();
+    });
+
+    btnTable.addEventListener('click', () => {
+      currentInvitationsViewMode = 'table';
+      btnTable.className = 'w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-xs transition font-bold';
+      btnGrid.className = 'w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs transition';
+      renderInvitations();
+    });
+  }
+
+  // ملء قائمة الفعاليات
+  populateEventFilterOptions();
+}
+
+function populateEventFilterOptions() {
+  const select = document.getElementById('filter-event-select');
+  if (!select) return;
+
+  const events = getEventsList();
+  select.innerHTML = '<option value="الكل">جميع الفعاليات</option>';
+  events.forEach(ev => {
+    const opt = document.createElement('option');
+    opt.value = ev.name;
+    opt.textContent = ev.name;
+    select.appendChild(opt);
+  });
+}
+
+function renderInvitations() {
+  const invitations = getInvitations();
+  const search = (document.getElementById('filter-search-input')?.value || '').trim().toLowerCase();
+  const filterEvent = document.getElementById('filter-event-select')?.value || 'الكل';
+  const filterType = document.getElementById('filter-type-select')?.value || 'الكل';
+  const filterStatus = document.getElementById('filter-status-select')?.value || 'الكل';
+
+  const gridContainer = document.getElementById('invitations-cards-grid');
+  const tableContainer = document.getElementById('invitations-table-container');
+  const tableBody = document.getElementById('invitations-table-body');
+  const emptyState = document.getElementById('invitations-empty-state');
+
+  // تصفية النتائج
+  const filtered = invitations.filter(inv => {
+    if (search) {
+      const matchName = (inv.guestName || '').toLowerCase().includes(search);
+      const matchPhone = (inv.guestPhone || '').toLowerCase().includes(search);
+      const matchCode = (inv.code || inv.id || '').toLowerCase().includes(search);
+      const matchEvent = (inv.event || '').toLowerCase().includes(search);
+      if (!matchName && !matchPhone && !matchCode && !matchEvent) return false;
+    }
+
+    if (filterEvent !== 'الكل' && inv.event !== filterEvent) return false;
+    if (filterType !== 'الكل' && inv.type !== filterType) return false;
+    
+    if (filterStatus !== 'الكل') {
+      const state = inv.invitationState || (inv.status === 'صالحة' ? 'مقبولة' : 'معتذر');
+      if (state !== filterStatus && inv.status !== filterStatus) return false;
+    }
+
+    return true;
+  });
+
+  // فحص الحالة الفارغة
+  if (filtered.length === 0) {
+    if (gridContainer) gridContainer.classList.add('hidden');
+    if (tableContainer) tableContainer.classList.add('hidden');
+    if (emptyState) emptyState.classList.remove('hidden');
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+
+  if (currentInvitationsViewMode === 'grid') {
+    if (gridContainer) gridContainer.classList.remove('hidden');
+    if (tableContainer) tableContainer.classList.add('hidden');
+    renderInvitationsGrid(filtered, gridContainer);
+  } else {
+    if (gridContainer) gridContainer.classList.add('hidden');
+    if (tableContainer) tableContainer.classList.remove('hidden');
+    renderInvitationsTable(filtered, tableBody);
+  }
+}
+
+// عرض شبكة البطاقات (Cards Grid) المطابقة للشاشة رقم 3
+function renderInvitationsGrid(items, container) {
+  container.innerHTML = items.map(inv => {
+    const isAccepted = inv.invitationState === 'مقبولة' || inv.status === 'صالحة';
+    const stateBadge = isAccepted
+      ? '<span class="badge-pill badge-pill-green">نشطة</span>'
+      : '<span class="badge-pill badge-pill-purple">مكتملة</span>';
+
+    const themeClass = inv.eventType === 'wedding' ? 'wedding-theme'
+      : (inv.eventType === 'graduation' ? 'grad-theme'
+      : (inv.eventType === 'birthday' ? 'birthday-theme' : 'private-theme'));
+
+    const displayEvent = inv.event || 'حفل زفاف مبارك';
+    const displayGuest = inv.guestName || 'ضيف كريم';
+    const displayDate = inv.createdAt ? inv.createdAt.split(' ')[0] : '2026-10-15';
+
+    return `
+      <div class="invitation-card-item">
+        <!-- مصغر البطاقة الجرافيكي -->
+        <div class="invitation-card-thumb ${themeClass}">
+          <div class="card-mini-watermark">
+            <span class="text-[9px] uppercase tracking-widest text-purple-300 block mb-0.5">SOUL MEDIA</span>
+            <h5 class="text-xs font-bold text-white truncate">${escapeHtml(displayEvent)}</h5>
+            <p class="text-[10px] text-amber-200 mt-1 font-mono font-bold truncate">${escapeHtml(displayGuest)}</p>
+          </div>
+        </div>
+
+        <!-- معلومات وتفاصيل البطاقة -->
+        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between gap-1 mb-1.5">
+              <h4 class="font-bold text-slate-800 text-xs truncate">${escapeHtml(displayEvent)}</h4>
+              ${stateBadge}
+            </div>
+
+            <div class="text-[11px] text-slate-500 space-y-1">
+              <div class="flex items-center justify-between font-mono">
+                <span><i class="fa-regular fa-calendar ml-1 text-slate-400"></i>${displayDate}</span>
+                <span class="font-bold text-purple-700">${inv.type || 'عادية'}</span>
+              </div>
+              <p class="text-slate-600 truncate font-semibold">
+                <i class="fa-regular fa-user ml-1 text-slate-400"></i>${escapeHtml(displayGuest)}
+                <span class="text-slate-400 text-[10px]">(${inv.peopleCount || 1} مقعد)</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- شريط أزرار الإجراءات المطابق للشاشة 3 -->
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
+            <button onclick="viewInvitationDetails('${inv.id}')" class="btn-primary-soul text-[11px] py-1.5 px-3 flex-1 justify-center">
+              <span>عرض</span>
+            </button>
+
+            <button onclick="editInvitation('${inv.id}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs transition" title="تعديل">
+              <i class="fa-regular fa-pen-to-square"></i>
+            </button>
+
+            <button onclick="shareInvitationDirect('${inv.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs transition" title="مشاركة واتساب">
+              <i class="fa-brands fa-whatsapp"></i>
+            </button>
+
+            <button onclick="deleteInvitationItem('${inv.id}')" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center text-xs transition" title="حذف">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// عرض قائمة الجدول (Table View)
+function renderInvitationsTable(items, tbody) {
+  if (!tbody) return;
+  tbody.innerHTML = items.map(inv => {
+    const isAccepted = inv.invitationState === 'مقبولة' || inv.status === 'صالحة';
+    const stateBadge = isAccepted
+      ? '<span class="badge-pill badge-pill-green">صالحة</span>'
+      : '<span class="badge-pill badge-pill-purple">مكتملة</span>';
+
+    return `
+      <tr>
+        <td class="font-mono font-bold text-purple-700">${escapeHtml(inv.code || inv.id)}</td>
+        <td class="font-bold text-slate-900">${escapeHtml(inv.guestName)}</td>
+        <td class="font-mono" dir="ltr">${escapeHtml(inv.guestPhone || '-')}</td>
+        <td>${escapeHtml(inv.event || 'حفل زفاف')}</td>
+        <td class="font-mono font-bold">${inv.peopleCount || 1}</td>
+        <td><span class="badge-pill ${inv.type === 'VIP' ? 'badge-pill-amber' : 'badge-pill-purple'}">${inv.type || 'عادية'}</span></td>
+        <td>${stateBadge}</td>
+        <td class="text-center">
+          <div class="inline-flex items-center gap-1.5">
+            <button onclick="viewInvitationDetails('${inv.id}')" class="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 font-bold text-xs hover:bg-purple-100">عرض</button>
+            <button onclick="editInvitation('${inv.id}')" class="p-1.5 text-slate-400 hover:text-slate-700"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button onclick="deleteInvitationItem('${inv.id}')" class="p-1.5 text-rose-400 hover:text-rose-600"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ===================================================
+// 5. المعاينة الحية الفورية للبطاقة (Live Preview Engine)
+// ===================================================
+function setupLivePreview() {
+  const guestInput = document.getElementById('field-create-guest');
+  const eventInput = document.getElementById('field-create-event');
+  const dateInput = document.getElementById('field-create-date');
+  const timeInput = document.getElementById('field-create-time');
+  const typeSelect = document.getElementById('field-create-type');
+  const eventTypeSelect = document.getElementById('field-create-event-type');
+
+  const inputs = [guestInput, eventInput, dateInput, timeInput, typeSelect, eventTypeSelect];
+  inputs.forEach(el => {
+    if (el) {
+      el.addEventListener('input', updateLivePreview);
+      el.addEventListener('change', updateLivePreview);
+    }
+  });
+
+  // تغيير اسم المناسبة التلقائي عند تبديل نوع المناسبة
+  if (eventTypeSelect && eventInput) {
+    eventTypeSelect.addEventListener('change', (e) => {
+      const map = {
+        wedding: 'حفل زفاف أحمد & سارة',
+        graduation: 'حفل التخرج 2026',
+        birthday: 'عيد ميلاد مبارك',
+        private: 'مناسبة خاصة واحتفال VIP'
+      };
+      eventInput.value = map[e.target.value] || 'حفل زفاف مبارك';
+      updateLivePreview();
+    });
+  }
+}
+
+function updateLivePreview() {
+  const guestVal = document.getElementById('field-create-guest')?.value.trim() || 'اسم المدعو الكريم';
+  const eventVal = document.getElementById('field-create-event')?.value.trim() || 'دعوة زفاف مبارك';
+  const dateVal = document.getElementById('field-create-date')?.value || '2026-10-15';
+  const timeVal = document.getElementById('field-create-time')?.value || '20:00';
+  const typeVal = document.getElementById('field-create-type')?.value || 'عادية';
+
+  const previewEvent = document.getElementById('preview-event-name');
+  const previewGuest = document.getElementById('preview-guest-name');
+  const previewDate = document.getElementById('preview-event-date');
+  const previewTime = document.getElementById('preview-event-time');
+  const previewBadge = document.getElementById('preview-badge-type');
+
+  if (previewEvent) previewEvent.textContent = eventVal;
+  if (previewGuest) previewGuest.textContent = guestVal;
+  if (previewDate) previewDate.innerHTML = `<i class="fa-regular fa-calendar ml-1"></i>${dateVal}`;
+  if (previewTime) previewTime.innerHTML = `<i class="fa-regular fa-clock ml-1"></i>${timeVal}`;
+  if (previewBadge) previewBadge.textContent = typeVal === 'VIP' ? 'دعوة VIP خاصة' : 'دعوة عادية';
+
+  // توليد QR كود للمعاينة الحية
+  const qrBox = document.getElementById('preview-qr-box');
+  if (qrBox && typeof QRCode !== 'undefined') {
+    qrBox.innerHTML = '';
+    try {
+      new QRCode(qrBox, {
+        text: `https://invitations.soulmediaa.com/ticket.html?guest=${encodeURIComponent(guestVal)}`,
+        width: 72,
+        height: 72,
+        colorDark: "#1f1438",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch {}
+  }
+}
+
+// ===================================================
+// 6. نموذج إنشاء دعوة جديدة
+// ===================================================
+function setupCreateForm() {
+  const form = document.getElementById('create-invite-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const guestName = document.getElementById('field-create-guest')?.value.trim();
+    const guestPhone = document.getElementById('field-create-phone')?.value.trim();
+    const eventName = document.getElementById('field-create-event')?.value.trim();
+    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
+    const type = document.getElementById('field-create-type')?.value || 'عادية';
+    const peopleCount = parseInt(document.getElementById('field-create-people-count')?.value || '1', 10);
+    const notes = document.getElementById('field-create-notes')?.value.trim();
+    const user = getCurrentUser();
+
+    if (!guestName || !guestPhone) {
+      alert('يرجى إدخال اسم المدعو ورقم الجوال');
+      return;
+    }
+
+    const code = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+    const newInv = {
+      id: code,
+      code: code,
+      guestName: guestName,
+      guestPhone: guestPhone,
+      event: eventName,
+      eventType: eventType,
+      type: type,
+      peopleCount: peopleCount,
+      hostName: user?.name || 'أحمد محمد علي',
+      status: 'صالحة',
+      invitationState: 'مقبولة',
+      isUsed: false,
+      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      notes: notes,
+      theme: eventType
+    };
+
+    saveInvitation(newInv);
+
+    // تصفير النموذج
+    form.reset();
+    alert('تم إصدار ونشر الدعوة بنجاح!');
+    
+    // الانتقال المباشر لشاشة تفاصيل الدعوة لعرضها ومشاركتها
+    viewInvitationDetails(newInv.id);
+  });
+}
+
+// ===================================================
+// 7. تفاصيل الدعوة والمشاركة (View Details)
+// ===================================================
+window.viewInvitationDetails = function(invId) {
+  const invitations = getInvitations();
+  const inv = invitations.find(i => i.id === invId || i.code === invId);
+  if (!inv) return;
+
+  currentSelectedInvitationId = inv.id;
+
+  // ملء البطاقة الفاخرة
+  const cardEvent = document.getElementById('details-card-event');
+  const cardGuest = document.getElementById('details-card-guest');
+  const cardType = document.getElementById('details-card-type-badge');
+  const cardCode = document.getElementById('details-card-code');
+
+  if (cardEvent) cardEvent.textContent = inv.event || 'حفل زفاف مبارك';
+  if (cardGuest) cardGuest.textContent = inv.guestName;
+  if (cardType) cardType.textContent = inv.type || 'عادية';
+  if (cardCode) cardCode.textContent = inv.code || inv.id;
+
+  // توليد الباركود عالي الدقة
+  const qrBox = document.getElementById('details-qrcode-render');
+  if (qrBox && typeof QRCode !== 'undefined') {
+    qrBox.innerHTML = '';
+    const ticketUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
+    new QRCode(qrBox, {
+      text: ticketUrl,
+      width: 90,
+      height: 90,
+      colorDark: "#1a1230",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    const openLink = document.getElementById('btn-open-ticket-link');
+    if (openLink) openLink.href = ticketUrl;
+  }
+
+  // ملء جدول التفاصيل
+  document.getElementById('details-field-event').textContent = inv.event || 'حفل زفاف';
+  document.getElementById('details-field-guest').textContent = inv.guestName;
+  document.getElementById('details-field-phone').textContent = inv.guestPhone || '-';
+  document.getElementById('details-field-type').textContent = `دعوة ${inv.type || 'عادية'}`;
+  document.getElementById('details-field-seats').textContent = `${inv.peopleCount || 1} أشخاص`;
+  document.getElementById('details-field-created').textContent = inv.createdAt || '2026-09-20';
+  document.getElementById('details-field-host').textContent = inv.hostName || 'أحمد محمد علي';
+
+  // رابط المشاركة وأزرار واتساب ومنصة X
+  const shareUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
+  const shareField = document.getElementById('details-share-url-field');
+  if (shareField) shareField.value = shareUrl;
+
+  const waBtn = document.getElementById('btn-details-whatsapp');
+  if (waBtn) {
+    const waText = encodeURIComponent(`يسرني دعوتكم لحضور ${inv.event || 'مناسبتنا'}. تفاصيل الدعوة وبطاقة الدخول الإلكترونية:\n${shareUrl}`);
+    const phoneClean = (inv.guestPhone || '').replace(/\D/g, '');
+    waBtn.href = phoneClean ? `https://wa.me/${phoneClean}?text=${waText}` : `https://api.whatsapp.com/send?text=${waText}`;
+  }
+
+  const twBtn = document.getElementById('btn-details-twitter');
+  if (twBtn) {
+    const twText = encodeURIComponent(`نتشرف بدعوتكم الكريمة لحضور ${inv.event || 'مناسبتنا'}`);
+    twBtn.href = `https://twitter.com/intent/tweet?text=${twText}&url=${encodeURIComponent(shareUrl)}`;
+  }
+
+  const copyBtn = document.getElementById('btn-details-copy-url');
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('تم نسخ رابط الدعوة بنجاح!');
+      });
+    };
+  }
+
+  const downloadQrBtn = document.getElementById('btn-download-qr-image');
+  if (downloadQrBtn) {
+    downloadQrBtn.onclick = () => {
+      const img = qrBox?.querySelector('img');
+      if (img) {
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = `QR_${inv.code || inv.id}.png`;
+        a.click();
+      }
+    };
+  }
+
+  switchView('details');
+};
+
+// ===================================================
+// 8. تعديل وحذف الدعوات
+// ===================================================
+window.editInvitation = function(invId) {
+  const invitations = getInvitations();
+  const inv = invitations.find(i => i.id === invId);
+  if (!inv) return;
+
+  document.getElementById('edit-inv-id').value = inv.id;
+  document.getElementById('edit-field-guest').value = inv.guestName;
+  document.getElementById('edit-field-phone').value = inv.guestPhone || '';
+  document.getElementById('edit-field-event').value = inv.event || '';
+  document.getElementById('edit-field-type').value = inv.type || 'عادية';
+  document.getElementById('edit-field-people-count').value = inv.peopleCount || 1;
+  document.getElementById('edit-field-notes').value = inv.notes || '';
+
+  switchView('edit');
+};
+
+function setupEditForm() {
+  const form = document.getElementById('edit-invite-form');
+  const deleteBtn = document.getElementById('btn-delete-from-edit');
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-inv-id').value;
+      const invitations = getInvitations();
+      const inv = invitations.find(i => i.id === id);
+      if (!inv) return;
+
+      inv.guestName = document.getElementById('edit-field-guest').value.trim();
+      inv.guestPhone = document.getElementById('edit-field-phone').value.trim();
+      inv.event = document.getElementById('edit-field-event').value.trim();
+      inv.type = document.getElementById('edit-field-type').value;
+      inv.peopleCount = parseInt(document.getElementById('edit-field-people-count').value || '1', 10);
+      inv.notes = document.getElementById('edit-field-notes').value.trim();
+
+      saveInvitation(inv);
+      alert('تم حفظ التعديلات بنجاح!');
+      viewInvitationDetails(inv.id);
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      const id = document.getElementById('edit-inv-id').value;
+      deleteInvitationItem(id);
+    });
+  }
+}
+
+window.deleteInvitationItem = function(invId) {
+  if (confirm('هل أنت متأكد من رغبتك بحذف هذه الدعوة؟ سيتم استرجاع المقعد إلى رصيدك المتاح.')) {
+    deleteInvitation(invId);
+    renderDashboardData();
+    renderInvitations();
+    switchView('invitations');
+  }
+};
+
+window.shareInvitationDirect = function(invId) {
+  viewInvitationDetails(invId);
+};
+
+// ===================================================
+// 9. تحويل الدعوات وسجل التحويلات (Transfer Section)
+// ===================================================
+function setupTransferSection() {
+  const form = document.getElementById('transfer-form');
+  const minusBtn = document.getElementById('btn-transfer-minus');
+  const plusBtn = document.getElementById('btn-transfer-plus');
+  const countInput = document.getElementById('transfer-count-input');
+
+  if (minusBtn && countInput) {
+    minusBtn.addEventListener('click', () => {
+      const cur = parseInt(countInput.value || '1', 10);
+      if (cur > 1) countInput.value = cur - 1;
+    });
+  }
+
+  if (plusBtn && countInput) {
+    plusBtn.addEventListener('click', () => {
+      const cur = parseInt(countInput.value || '1', 10);
+      countInput.value = cur + 1;
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const eventName = document.getElementById('transfer-event-select')?.value;
+      const type = document.getElementById('transfer-type-select')?.value;
+      const count = parseInt(countInput?.value || '1', 10);
+      const recipientId = document.getElementById('transfer-recipient-select')?.value;
+      const notes = document.getElementById('transfer-notes')?.value.trim();
+      const currentUser = getCurrentUser();
+
+      const users = getUsers();
+      const recipient = users.find(u => u.id === recipientId || u.username === recipientId);
+
+      const newTransfer = {
+        id: 'TRF-' + Math.floor(100 + Math.random() * 900),
+        senderId: currentUser?.id || 'usr_ahmed',
+        senderName: currentUser?.name || 'أحمد محمد علي',
+        recipientId: recipient?.id || recipientId,
+        recipientName: recipient?.name || 'مستخدم',
+        recipientEmail: recipient?.email || 'user@example.com',
+        event: eventName,
+        count: count,
+        type: type,
+        status: 'مكتملة',
+        createdAt: new Date().toISOString().split('T')[0],
+        notes: notes
+      };
+
+      const transfers = getTransfers();
+      transfers.unshift(newTransfer);
+      localStorage.setItem('grad_real_transfers_v4', JSON.stringify(transfers));
+
+      alert(`تم تحويل ${count} دعوة بنجاح إلى ${recipient?.name || 'المستلم'}!`);
+      renderTransfersSection();
+      form.reset();
+      if (countInput) countInput.value = 5;
+    });
+  }
+}
+
+function renderTransfersSection() {
+  const users = getUsers();
+  const currentUser = getCurrentUser();
+  const recipientSelect = document.getElementById('transfer-recipient-select');
+  const tbody = document.getElementById('transfers-table-body');
+
+  // تعبئة المستلمين
+  if (recipientSelect) {
+    recipientSelect.innerHTML = '';
+    users.filter(u => u.id !== currentUser?.id).forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = `${u.name} (${u.email || u.username})`;
+      recipientSelect.appendChild(opt);
+    });
+  }
+
+  // تعبئة جدول سجل التحويلات
+  if (tbody) {
+    const transfers = getTransfers();
+    if (transfers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">لا توجد عمليات تحويل سابقة</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = transfers.map(t => {
+      return `
+        <tr>
+          <td class="font-mono font-bold text-purple-700">${escapeHtml(t.id)}</td>
+          <td>
+            <div class="font-bold text-slate-900">${escapeHtml(t.recipientName || 'مستخدم')}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${escapeHtml(t.recipientEmail || '-')}</div>
+          </td>
+          <td>${escapeHtml(t.event || 'حفل زفاف')}</td>
+          <td class="font-mono">${escapeHtml(t.createdAt || '-')}</td>
+          <td class="font-mono font-bold text-purple-700">${t.count} دعوات</td>
+          <td><span class="badge-pill badge-pill-green"><i class="fa-solid fa-check"></i>مكتملة</span></td>
+          <td class="text-center">
+            <button onclick="alert('تفاصيل التحويل:\\nالمعرف: ${t.id}\\nالمستلم: ${t.recipientName}\\nالعدد: ${t.count}\\nالفعالية: ${t.event}\\nالتاريخ: ${t.createdAt}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">تفاصيل</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+function getTransfers() {
+  try {
+    return JSON.parse(localStorage.getItem('grad_real_transfers_v4')) || [];
+  } catch {
+    return [];
+  }
+}
+
+// ===================================================
+// 10. شاشات إدارة الفعاليات والمستخدمين (Events & Users)
+// ===================================================
+function renderEventsTable() {
+  const tbody = document.getElementById('events-table-body');
+  if (!tbody) return;
+
+  const events = getEventsList();
+  tbody.innerHTML = events.map(ev => {
+    return `
+      <tr>
+        <td>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs">
+              <i class="fa-regular fa-calendar-check"></i>
+            </div>
+            <div>
+              <strong class="font-bold text-slate-900 block">${escapeHtml(ev.name)}</strong>
+              <span class="text-[10px] text-slate-400">${escapeHtml(ev.venue || 'القاعة الملكية')} - ${escapeHtml(ev.city || 'الرياض')}</span>
+            </div>
+          </div>
+        </td>
+        <td class="font-mono">${ev.date || ev.dateDisplay || '2026-10-15'}</td>
+        <td class="font-mono font-bold">${ev.invited || 200}</td>
+        <td class="font-mono text-emerald-600 font-bold">${ev.used || 160}</td>
+        <td class="font-mono text-cyan-600 font-bold">${ev.remaining || 40}</td>
+        <td><span class="badge-pill badge-pill-green">نشطة</span></td>
+        <td class="text-center">
+          <div class="inline-flex items-center gap-1.5">
+            <button onclick="alert('تعديل فعالية: ${ev.name}')" class="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 font-bold text-xs hover:bg-purple-100">تعديل</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById('users-table-body');
+  if (!tbody) return;
+
+  const users = getUsers();
+  tbody.innerHTML = users.map(u => {
+    const roleBadge = u.role === 'admin'
+      ? '<span class="badge-pill badge-pill-purple">أدمن</span>'
+      : (u.role === 'organizer' ? '<span class="badge-pill badge-pill-green">منظم</span>' : '<span class="badge-pill badge-pill-cyan">مستخدم</span>');
+
+    return `
+      <tr>
+        <td>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-700 to-purple-500 text-white flex items-center justify-center font-bold text-xs">
+              ${u.initials || 'أح'}
+            </div>
+            <strong class="font-bold text-slate-900">${escapeHtml(u.name)}</strong>
+          </div>
+        </td>
+        <td class="font-mono text-slate-600">${escapeHtml(u.email || u.username + '@soulmediaa.com')}</td>
+        <td>${roleBadge}</td>
+        <td class="font-mono font-bold text-purple-700">${u.regularQuota || 30} عادية / ${u.vipQuota || 0} VIP</td>
+        <td><span class="badge-pill badge-pill-green">نشط</span></td>
+        <td class="text-center">
+          <button onclick="openQuotaModal('${u.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+            <i class="fa-solid fa-sliders ml-1"></i> الكوتا
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.openQuotaModal = function(userId) {
+  const users = getUsers();
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+
+  document.getElementById('quota-user-id').value = u.id;
+  document.getElementById('quota-user-name').value = u.name;
+  document.getElementById('quota-reg-input').value = u.regularQuota || 30;
+  document.getElementById('quota-vip-input').value = u.vipQuota || 0;
+
+  document.getElementById('quota-modal')?.classList.remove('hidden');
+};
+
+function setupModals() {
+  const modal = document.getElementById('quota-modal');
+  const closeBtn = document.getElementById('close-quota-modal');
+  const form = document.getElementById('quota-form');
 
   if (closeBtn && modal) {
     closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
   }
 
-  document.getElementById('btn-copy-share-url')?.addEventListener('click', () => {
-    const input = document.getElementById('share-url-field');
-    input.select();
-    navigator.clipboard.writeText(input.value).then(() => {
-      showToast.success('تم نسخ رابط الدعوة إلى الحافظة بنجاح!', 'تم النسخ');
+  if (form && modal) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const uid = document.getElementById('quota-user-id').value;
+      const reg = parseInt(document.getElementById('quota-reg-input').value || '0', 10);
+      const vip = parseInt(document.getElementById('quota-vip-input').value || '0', 10);
+
+      const users = getUsers();
+      const u = users.find(x => x.id === uid);
+      if (u) {
+        u.regularQuota = reg;
+        u.vipQuota = vip;
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+        const cur = getCurrentUser();
+        if (cur && cur.id === u.id) {
+          cur.regularQuota = reg;
+          cur.vipQuota = vip;
+          setCurrentUser(cur);
+        }
+
+        modal.classList.add('hidden');
+        alert('تم تحديث كوتا المستخدم بنجاح!');
+        renderUsersTable();
+        renderDashboardData();
+      }
     });
-  });
+  }
 }
 
-window.openShareModal = function(invId, guestName, relUrl) {
-  const modal = document.getElementById('share-modal');
-  if (!modal) return;
-
-  const fullUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}${relUrl}`;
-  document.getElementById('share-guest-title').textContent = `دعوة الضيف: ${guestName} (${invId})`;
-  document.getElementById('share-url-field').value = fullUrl;
-
-  const waBtn = document.getElementById('btn-wa-direct-send');
-  if (waBtn) {
-    const user = getCurrentUser();
-    const gradName = user ? user.name : 'الخريج';
-    const majorText = (user && user.major) ? `\nالتخصص: *${user.major}*` : '';
-    const text = `🎓 *بطاقة دعوة رسمية لحضور حفل التخرج*\n\nالمكرم/ة: *${guestName}* المحترم/ة\nيسرني دعوتكم لحضور حفل تخرج:\n*${gradName}*${majorText}\n\nيرجى فتح الرابط لإبراز بطاقة دعوتكم والباركود المخصص لكم:\n${fullUrl}`;
-    waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+// ===================================================
+// 11. الإعدادات وتخصيص المظهر (Dark Mode)
+// ===================================================
+function setupSettingsAndTheme() {
+  const darkBtn = document.getElementById('btn-toggle-dark-mode');
+  if (darkBtn) {
+    darkBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('soul_theme_dark', isDark ? '1' : '0');
+    });
   }
 
-  modal.classList.remove('hidden');
-};
+  if (localStorage.getItem('soul_theme_dark') === '1') {
+    document.documentElement.classList.add('dark');
+  }
+
+  const saveSettingsBtn = document.getElementById('btn-save-settings');
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener('click', () => {
+      const name = document.getElementById('settings-name-input')?.value.trim();
+      const email = document.getElementById('settings-email-input')?.value.trim();
+      const user = getCurrentUser();
+      if (user) {
+        if (name) user.name = name;
+        if (email) user.email = email;
+        setCurrentUser(user);
+        updateAuthUI();
+        alert('تم حفظ إعدادات الحساب بنجاح!');
+      }
+    });
+  }
+}
 
 function escapeHtml(str) {
   if (!str) return '';
