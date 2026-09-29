@@ -36,16 +36,67 @@ function renderTicket(invitation) {
   const weddingLayout = document.getElementById('wedding-card-layout');
   const privateLayout = document.getElementById('private-card-layout');
   const gradLayout = document.getElementById('graduation-card-layout');
+  const customLayout = document.getElementById('custom-card-layout');
 
   // إخفاء كافة القوالب أولاً
   weddingLayout?.classList.add('hidden');
   privateLayout?.classList.add('hidden');
   gradLayout?.classList.add('hidden');
+  customLayout?.classList.add('hidden');
 
-  if (eventType === 'wedding') {
+  if (invitation.customDesign) {
+    // 🎨 قالب التصميم المخصص المرفوع
+    customLayout?.classList.remove('hidden');
+
+    if (visualCard) {
+      visualCard.classList.add('custom-card-active');
+      visualCard.style.backgroundImage = `url('${invitation.customDesign}')`;
+      visualCard.style.backgroundSize = 'cover';
+      visualCard.style.backgroundPosition = 'center';
+      visualCard.style.backgroundColor = 'transparent';
+    }
+
+    const textColor = invitation.customDesignTextColor || '#1e1b2e';
+    const guestPrefixEl = document.getElementById('ticket-custom-guest-prefix');
+    const guestEl = document.getElementById('ticket-custom-guest-name');
+    const dividerEl = document.getElementById('ticket-custom-divider');
+    const venueEl = document.getElementById('ticket-custom-venue');
+    const venueTextEl = document.getElementById('ticket-custom-venue-text');
+    const datetimeEl = document.getElementById('ticket-custom-datetime');
+    const dateEl = document.getElementById('ticket-custom-date');
+    const timeEl = document.getElementById('ticket-custom-time');
+    const codeEl = document.getElementById('ticket-custom-code');
+
+    if (guestPrefixEl) guestPrefixEl.style.color = textColor;
+    if (guestEl) {
+      guestEl.textContent = invitation.guestName;
+      guestEl.style.color = textColor;
+    }
+    if (dividerEl) dividerEl.style.backgroundColor = textColor;
+    if (venueEl) venueEl.style.color = textColor;
+    if (venueTextEl) venueTextEl.textContent = invitation.venue || 'قصر الأفراح الملكي';
+    if (datetimeEl) datetimeEl.style.color = textColor;
+    if (dateEl) dateEl.innerHTML = `<i class="fa-regular fa-calendar ml-1 opacity-80"></i>${invitation.date || '2026-10-15'}`;
+    if (timeEl) timeEl.innerHTML = `<i class="fa-regular fa-clock ml-1 opacity-80"></i>${invitation.time || '20:00'}`;
+    if (codeEl) codeEl.textContent = invitation.id;
+
+    // تفاصيل الجدول
+    const hostLabel = document.getElementById('ticket-host-label');
+    if (hostLabel) hostLabel.textContent = 'الداعي:';
+
+    const catBadge = document.getElementById('ticket-category-badge');
+    if (catBadge) {
+      catBadge.innerHTML = `<span class="badge-pill badge-pill-purple"><i class="fa-solid fa-palette"></i> تصميم خاص</span>`;
+    }
+
+    const venueTime = document.getElementById('ticket-venue-time');
+    if (venueTime) venueTime.textContent = `${invitation.venue || 'قصر الأفراح الملكي'} - ${invitation.time || '8:00 مساءً'}`;
+
+  } else if (eventType === 'wedding') {
     // 💍 قالب حفل الزفاف الملكي
     weddingLayout?.classList.remove('hidden');
     if (visualCard) {
+      visualCard.classList.remove('custom-card-active');
       visualCard.style.backgroundImage = 'none';
       visualCard.style.backgroundColor = '#0a1f15';
     }
@@ -68,12 +119,13 @@ function renderTicket(invitation) {
     }
 
     const venueTime = document.getElementById('ticket-venue-time');
-    if (venueTime) venueTime.textContent = 'قصر الأفراح الملكي - 8:00 مساءً';
+    if (venueTime) venueTime.textContent = `${invitation.venue || 'قصر الأفراح الملكي'} - ${invitation.time || '8:00 مساءً'}`;
 
   } else if (eventType === 'private') {
     // ✨ قالب المناسبة والاحتفال الخاص
     privateLayout?.classList.remove('hidden');
     if (visualCard) {
+      visualCard.classList.remove('custom-card-active');
       visualCard.style.backgroundImage = 'none';
       visualCard.style.backgroundColor = '#0e0a19';
     }
@@ -97,13 +149,14 @@ function renderTicket(invitation) {
     }
 
     const venueTime = document.getElementById('ticket-venue-time');
-    if (venueTime) venueTime.textContent = 'قاعة كبار الشخصيات VIP - 7:30 مساءً';
+    if (venueTime) venueTime.textContent = `${invitation.venue || 'قاعة كبار الشخصيات VIP'} - ${invitation.time || '7:30 مساءً'}`;
 
   } else {
     // 🎓 قالب حفل التخرج (الافتراضي القائم)
     gradLayout?.classList.remove('hidden');
 
     if (visualCard) {
+      visualCard.classList.remove('custom-card-active');
       const bgImage = isVip
         ? 'assets/images/ticket_template_vip.jpg'
         : 'assets/images/ticket_template_regular.jpg';
@@ -125,14 +178,7 @@ function renderTicket(invitation) {
     }
 
     const venueTime = document.getElementById('ticket-venue-time');
-    if (venueTime) venueTime.textContent = 'قاعة الاحتفالات الكبرى - 8:00 صباحاً';
-  }
-
-  // إذا كانت الدعوة تحتوي على تصميم خاص مرفوع
-  if (invitation.customDesign && visualCard) {
-    visualCard.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${invitation.customDesign}')`;
-    visualCard.style.backgroundSize = 'cover';
-    visualCard.style.backgroundPosition = 'center';
+    if (venueTime) venueTime.textContent = `${invitation.venue || 'قاعة الاحتفالات الكبرى'} - ${invitation.time || '8:00 صباحاً'}`;
   }
 
   // البيانات المشتركة في كرت التفاصيل
@@ -181,7 +227,9 @@ function generateTicketQR(invitation) {
   const eventType = invitation.eventType || (typeof detectEventType === 'function' ? detectEventType(invitation.event) : 'graduation');
 
   let container = null;
-  if (eventType === 'wedding') {
+  if (invitation.customDesign) {
+    container = document.getElementById('ticket-custom-qrcode-slot');
+  } else if (eventType === 'wedding') {
     container = document.getElementById('wedding-qrcode-slot');
   } else if (eventType === 'private') {
     container = document.getElementById('private-qrcode-slot');

@@ -246,6 +246,42 @@
         </div>
       </div>
 
+      <!-- 4. قالب التصميم المخصص المرفوع -->
+      <div id="custom-card-layout" class="hidden w-full h-full flex flex-col justify-between text-center select-none relative z-10 p-6">
+        <!-- مساحة علوية شفافة تترك رأس وتصميم بطاقة المستخدم ظاهرة تماماً وبنقاء فائق -->
+        <div class="h-28 sm:h-32 pointer-events-none"></div>
+
+        <!-- منطقة اسم المدعو الكريم بتنسيق ملكي فخم -->
+        <div class="my-auto py-2 space-y-2">
+          <span id="ticket-custom-guest-prefix" class="block text-xs font-bold opacity-90 transition-colors">المكرم / المكرمة:</span>
+          <h2 id="ticket-custom-guest-name" class="text-xl sm:text-2xl font-black font-serif tracking-wide transition-colors px-2">اسم المدعو</h2>
+          <div id="ticket-custom-divider" class="w-20 h-0.5 mx-auto rounded-full opacity-60"></div>
+        </div>
+
+        <!-- أسفل الكرت: المكان والزمان والباركود -->
+        <div class="space-y-2.5 pt-2">
+          <div class="space-y-1">
+            <div id="ticket-custom-venue" class="text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-location-dot opacity-80"></i>
+              <span id="ticket-custom-venue-text">قصر الأفراح الملكي</span>
+            </div>
+            <div id="ticket-custom-datetime" class="text-xs font-semibold font-mono transition-colors flex items-center justify-center gap-2">
+              <span id="ticket-custom-date"><i class="fa-regular fa-calendar ml-1 opacity-80"></i>2026-10-15</span>
+              <span>•</span>
+              <span id="ticket-custom-time"><i class="fa-regular fa-clock ml-1 opacity-80"></i>20:00</span>
+            </div>
+          </div>
+
+          <!-- باركود QR الرسمي للدخول -->
+          <div class="p-2.5 bg-white rounded-2xl shadow-lg border border-slate-200/60 inline-block mx-auto">
+            <div id="ticket-custom-qrcode-slot" class="w-24 h-24 flex items-center justify-center"></div>
+          </div>
+          <div>
+            <span id="ticket-custom-code" class="inline-block px-3.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-white/90 text-slate-800 shadow-xs border border-slate-200/60">INV-2026-101</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- بيانات تفصيلية إضافية للضيف -->

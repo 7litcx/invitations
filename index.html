@@ -675,7 +675,7 @@
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                     <div>
                       <label class="block text-xs font-bold text-slate-700 mb-1.5">تاريخ المناسبة</label>
                       <input type="date" id="field-create-date" value="2026-10-15" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition font-mono">
@@ -684,6 +684,11 @@
                     <div>
                       <label class="block text-xs font-bold text-slate-700 mb-1.5">وقت المناسبة</label>
                       <input type="time" id="field-create-time" value="20:00" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition font-mono">
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">مكان المناسبة / القاعة *</label>
+                      <input type="text" id="field-create-venue" required placeholder="مثال: قصر الأفراح الملكي" value="قصر الأفراح الملكي" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600 transition">
                     </div>
                   </div>
                 </div>
@@ -718,7 +723,7 @@
                   </div>
 
                   <!-- منطقة رفع الصورة المخصصة (تظهر عند اختيار رفع تصميم خاص) -->
-                  <div id="custom-design-upload-box" class="hidden space-y-2 pt-1">
+                  <div id="custom-design-upload-box" class="hidden space-y-3 pt-1">
                     <div id="dropzone-custom-design" class="border-2 border-dashed border-purple-300 hover:border-purple-600 rounded-2xl p-4 text-center bg-purple-50/30 hover:bg-purple-50/60 transition cursor-pointer relative">
                       <input type="file" id="field-custom-design-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                       
@@ -727,7 +732,7 @@
                           <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
                         <p class="text-xs font-bold text-slate-800">اضغط لاختيار صورة التصميم من جهازك أو اسحبها هنا</p>
-                        <span class="text-[10px] text-slate-500 block font-medium">PNG, JPG, JPEG, WebP - سيتم استخدام تصميمك كخلفية لبطاقة الدعوة والباركود</span>
+                        <span class="text-[10px] text-slate-500 block font-medium">PNG, JPG, JPEG, WebP - سيتم استخدام تصميمك مباشرة بكامل تفاصيله ووضوحه</span>
                       </div>
 
                       <!-- معاينة الصورة بعد الرفع -->
@@ -745,6 +750,39 @@
                           <i class="fa-regular fa-trash-can"></i>
                           <span>حذف الصورة</span>
                         </button>
+                      </div>
+                    </div>
+
+                    <!-- تحكم وتنسيق لون الخط ليتطابق مع خلفية التصميم المرفوع -->
+                    <div class="p-3 bg-purple-50/50 rounded-xl border border-purple-200/80 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                          <i class="fa-solid fa-palette text-purple-600"></i>
+                          <span>لون خط البيانات (ليتطابق مع تصميمك المرفوع):</span>
+                        </span>
+                        <span id="custom-design-color-label" class="text-[10px] font-mono font-bold text-purple-700 bg-white px-2 py-0.5 rounded-md border border-purple-200">#1e1b2e</span>
+                      </div>
+
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <button type="button" class="btn-color-preset active px-2.5 py-1.5 rounded-lg border-2 border-purple-600 bg-purple-50/80 text-xs font-bold text-slate-900 flex items-center gap-1.5 shadow-xs transition" data-color="#1e1b2e">
+                          <span class="w-3.5 h-3.5 rounded-full bg-[#1e1b2e] border border-slate-300 inline-block"></span>
+                          <span>كحلي داكن / أسود (للتصاميم الفاتحة والبيج)</span>
+                        </button>
+
+                        <button type="button" class="btn-color-preset px-2.5 py-1.5 rounded-lg border-2 border-slate-200 hover:border-purple-300 bg-white text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-xs transition" data-color="#b4833e">
+                          <span class="w-3.5 h-3.5 rounded-full bg-[#b4833e] inline-block"></span>
+                          <span>ذهبي ملكي</span>
+                        </button>
+
+                        <button type="button" class="btn-color-preset px-2.5 py-1.5 rounded-lg border-2 border-slate-200 hover:border-purple-300 bg-white text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-xs transition" data-color="#ffffff">
+                          <span class="w-3.5 h-3.5 rounded-full bg-white border border-slate-300 inline-block"></span>
+                          <span>أبيض ناصع (للتصاميم الداكنة)</span>
+                        </button>
+
+                        <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-2 border-slate-200 hover:border-purple-300 bg-white text-xs font-bold text-slate-600 cursor-pointer transition">
+                          <input type="color" id="field-custom-color-picker" value="#1e1b2e" class="w-4 h-4 rounded cursor-pointer border-0 p-0">
+                          <span>لون مخصص</span>
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -822,36 +860,81 @@
                   <div class="card-floral-tl"></div>
                   <div class="card-floral-br"></div>
 
-                  <!-- ترويسة البطاقة -->
-                  <div class="space-y-1">
-                    <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
-                      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 object-contain">
-                    </div>
-                    <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
-                  </div>
-
-                  <!-- جسم البطاقة المتغير لحظياً -->
-                  <div class="space-y-2 py-2">
-                    <h3 id="preview-event-name" class="font-serif text-base sm:text-lg font-black text-white leading-tight">دعوة زفاف مبارك</h3>
-                    <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
-                    <p class="text-[11px] text-purple-200">يتشرف الداعي بدعوة الكريم:</p>
-                    <h4 id="preview-guest-name" class="text-sm font-black text-amber-200 font-mono">اسم المدعو الكريم</h4>
-                    <span id="preview-badge-type" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">دعوة عادية</span>
-                  </div>
-
-                  <!-- تفاصيل الزمان والباركود التوضيحي -->
-                  <div class="pt-2 border-t border-purple-400/20 space-y-2">
-                    <div class="flex items-center justify-between text-[10px] text-purple-200 px-2 font-mono">
-                      <span id="preview-event-date"><i class="fa-regular fa-calendar ml-1"></i>2026-10-15</span>
-                      <span id="preview-event-time"><i class="fa-regular fa-clock ml-1"></i>20:00</span>
+                  <!-- 1. محتوى قالب سول ميديا المعتمد (الافتراضي) -->
+                  <div id="live-card-default-layout" class="w-full h-full flex flex-col justify-between">
+                    <!-- ترويسة البطاقة -->
+                    <div class="space-y-1">
+                      <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+                        <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-4 h-4 object-contain">
+                      </div>
+                      <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
                     </div>
 
-                    <!-- باركود QR تجريبي فوري -->
-                    <div class="w-20 h-20 bg-white p-1 rounded-xl mx-auto flex items-center justify-center shadow-md">
-                      <div id="preview-qr-box"></div>
+                    <!-- جسم البطاقة المتغير لحظياً -->
+                    <div class="space-y-2 py-2">
+                      <h3 id="preview-event-name" class="font-serif text-base sm:text-lg font-black text-white leading-tight">دعوة زفاف مبارك</h3>
+                      <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
+                      <p class="text-[11px] text-purple-200">يتشرف الداعي بدعوة الكريم:</p>
+                      <h4 id="preview-guest-name" class="text-sm font-black text-amber-200 font-mono">اسم المدعو الكريم</h4>
+                      <span id="preview-badge-type" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">دعوة عادية</span>
                     </div>
-                    <span class="text-[9px] text-purple-300 block font-mono">مسح الباركود عند البوابة</span>
+
+                    <!-- تفاصيل الزمان والمكان والباركود -->
+                    <div class="pt-2 border-t border-purple-400/20 space-y-2">
+                      <div class="space-y-0.5 text-[10px] text-purple-200 px-2 font-mono">
+                        <div id="preview-venue-default" class="text-[10px] text-purple-200 flex items-center justify-center gap-1 font-sans font-bold">
+                          <i class="fa-solid fa-location-dot text-purple-300"></i>
+                          <span id="preview-venue-default-text">قصر الأفراح الملكي</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                          <span id="preview-event-date"><i class="fa-regular fa-calendar ml-1"></i>2026-10-15</span>
+                          <span id="preview-event-time"><i class="fa-regular fa-clock ml-1"></i>20:00</span>
+                        </div>
+                      </div>
+
+                      <!-- باركود QR تجريبي فوري -->
+                      <div class="w-20 h-20 bg-white p-1 rounded-xl mx-auto flex items-center justify-center shadow-md">
+                        <div id="preview-qr-box"></div>
+                      </div>
+                      <span class="text-[9px] text-purple-300 block font-mono">مسح الباركود عند البوابة</span>
+                    </div>
                   </div>
+
+                  <!-- 2. محتوى التصميم المخصص المرفوع (يتطابق بنقاء مع تصميم المستخدم) -->
+                  <div id="live-card-custom-layout" class="hidden w-full h-full flex flex-col justify-between text-center select-none relative z-10 py-1">
+                    <!-- مساحة علوية شفافة تترك رأس وتصميم بطاقة المستخدم ظاهرة تماماً -->
+                    <div class="h-20 sm:h-24 pointer-events-none"></div>
+
+                    <!-- منطقة اسم المدعو الكريم بتنسيق ملكي فخم ولون مطابق -->
+                    <div class="my-auto py-2 space-y-1.5">
+                      <span id="custom-preview-guest-prefix" class="block text-[11px] font-bold opacity-90 transition-colors">المكرم / المكرمة:</span>
+                      <h4 id="custom-preview-guest-name" class="text-base sm:text-lg font-black tracking-wide font-serif transition-colors px-2 truncate">اسم المدعو الكريم</h4>
+                      <div id="custom-preview-divider" class="w-16 h-0.5 mx-auto rounded-full opacity-60 transition-colors" style="background-color: #1e1b2e;"></div>
+                    </div>
+
+                    <!-- أسفل البطاقة: المكان والزمان والباركود -->
+                    <div class="pt-2 space-y-2">
+                      <!-- المكان والزمان بتنسيق أنيق متطابق -->
+                      <div class="space-y-0.5 px-2">
+                        <div id="custom-preview-venue" class="text-[11px] font-bold transition-colors flex items-center justify-center gap-1">
+                          <i class="fa-solid fa-location-dot opacity-80"></i>
+                          <span id="custom-preview-venue-text">قصر الأفراح الملكي</span>
+                        </div>
+                        <div id="custom-preview-datetime" class="text-[10px] font-medium transition-colors font-mono flex items-center justify-center gap-2">
+                          <span id="custom-preview-date"><i class="fa-regular fa-calendar ml-1 opacity-80"></i>2026-10-15</span>
+                          <span>•</span>
+                          <span id="custom-preview-time"><i class="fa-regular fa-clock ml-1 opacity-80"></i>20:00</span>
+                        </div>
+                      </div>
+
+                      <!-- باركود QR ناصع ودقيق للمسح الفوري -->
+                      <div class="w-20 h-20 bg-white p-1 rounded-xl mx-auto flex items-center justify-center shadow-lg border border-slate-200/60">
+                        <div id="custom-preview-qr-box"></div>
+                      </div>
+                      <span id="custom-preview-code-tag" class="text-[9px] font-mono font-bold block transition-colors">مسح الباركود عند البوابة</span>
+                    </div>
+                  </div>
+
                 </div>
 
                 <p class="text-[11px] text-slate-400 text-center">تظهر البطاقة بهذا الشكل الأنيق للضيف مع رابط مخصص</p>
@@ -887,10 +970,15 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المناسبة</label>
                   <input type="text" id="edit-field-event" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">المكان / القاعة</label>
+                  <input type="text" id="edit-field-venue" placeholder="قصر الأفراح الملكي" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 outline-none focus:border-purple-600">
                 </div>
 
                 <div>
@@ -907,12 +995,12 @@
                 </div>
               </div>
 
-              <!-- خيار تعديل أو رفع تصميم مخصص -->
+              <!-- خيار تعديل أو رفع تصميم مخصص ولون الخط -->
               <div class="p-3.5 rounded-xl bg-purple-50/50 border border-purple-200/80 space-y-2.5">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
-                    <span>تصميم الدعوة المخصص</span>
+                    <span>تصميم الدعوة المخصص ولون الخط</span>
                   </span>
                   <span id="edit-design-badge" class="text-[10px] text-purple-700 font-semibold bg-white px-2 py-0.5 rounded border border-purple-200">القالب الافتراضي</span>
                 </div>
@@ -923,13 +1011,17 @@
                     <i class="fa-solid fa-cloud-arrow-up text-purple-600"></i>
                     <span id="edit-custom-design-label">تغيير / رفع صورة تصميم جديدة</span>
                   </label>
+                  <label class="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-purple-200 text-xs font-bold text-slate-700 cursor-pointer" title="لون الخط على التصميم">
+                    <input type="color" id="edit-custom-color-picker" value="#1e1b2e" class="w-5 h-5 rounded cursor-pointer border-0 p-0">
+                    <span class="text-[10px]">لون الخط</span>
+                  </label>
                   <button type="button" id="btn-edit-remove-custom-design" class="px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition hidden">
                     <i class="fa-regular fa-trash-can"></i>
                   </button>
                 </div>
                 <div id="edit-custom-design-preview" class="hidden flex items-center gap-2">
                   <img id="edit-custom-design-thumb" src="" class="w-12 h-16 object-cover rounded-lg border border-purple-200 shadow-xs">
-                  <span class="text-[10px] text-slate-500 font-medium">سيتم استخدام هذا التصميم المرفوع</span>
+                  <span class="text-[10px] text-slate-500 font-medium">سيتم استخدام هذا التصميم المرفوع بنقاء تام</span>
                 </div>
               </div>
 
@@ -974,26 +1066,64 @@
                   <div class="card-floral-tl"></div>
                   <div class="card-floral-br"></div>
 
-                  <div class="space-y-1">
-                    <div class="w-9 h-9 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
-                      <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-5 h-5 object-contain">
+                  <!-- 1. قالب سول ميديا المعتمد في شاشة التفاصيل -->
+                  <div id="details-card-default-layout" class="w-full h-full flex flex-col justify-between">
+                    <div class="space-y-1">
+                      <div class="w-9 h-9 rounded-full bg-purple-500/20 text-purple-300 mx-auto flex items-center justify-center border border-purple-400/30">
+                        <img src="assets/images/logo_icon.png" alt="Soul Media" class="w-5 h-5 object-contain">
+                      </div>
+                      <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
                     </div>
-                    <span class="text-[9px] uppercase tracking-widest text-purple-300 block">SOUL MEDIA</span>
+
+                    <div class="space-y-2 py-3">
+                      <h3 id="details-card-event" class="font-serif text-lg font-black text-white leading-tight">حفل زفاف مبارك</h3>
+                      <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
+                      <p class="text-[11px] text-purple-200">نتشرف بدعوة الأستاذ / الأستاذة:</p>
+                      <h4 id="details-card-guest" class="text-base font-black text-amber-200 font-mono">اسم المدعو</h4>
+                      <span id="details-card-type-badge" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">VIP</span>
+                    </div>
+
+                    <!-- الباركود الرسمي للدخول -->
+                    <div class="pt-3 border-t border-purple-400/20 space-y-2">
+                      <div id="details-qrcode-render" class="w-24 h-24 bg-white p-1.5 rounded-xl mx-auto flex items-center justify-center shadow-lg"></div>
+                      <span id="details-card-code" class="text-[10px] text-purple-200 font-mono tracking-wider block">INV-2026-101</span>
+                    </div>
                   </div>
 
-                  <div class="space-y-2 py-3">
-                    <h3 id="details-card-event" class="font-serif text-lg font-black text-white leading-tight">حفل زفاف مبارك</h3>
-                    <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-300 to-transparent mx-auto"></div>
-                    <p class="text-[11px] text-purple-200">نتشرف بدعوة الأستاذ / الأستاذة:</p>
-                    <h4 id="details-card-guest" class="text-base font-black text-amber-200 font-mono">اسم المدعو</h4>
-                    <span id="details-card-type-badge" class="inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-bold">VIP</span>
+                  <!-- 2. قالب التصميم المخصص المرفوع في شاشة التفاصيل -->
+                  <div id="details-card-custom-layout" class="hidden w-full h-full flex flex-col justify-between text-center select-none relative z-10 py-1">
+                    <!-- مساحة علوية شفافة تترك رأس وتصميم بطاقة المستخدم ظاهرة تماماً -->
+                    <div class="h-20 sm:h-24 pointer-events-none"></div>
+
+                    <!-- منطقة اسم المدعو الكريم -->
+                    <div class="my-auto py-2 space-y-1.5">
+                      <span id="details-custom-guest-prefix" class="block text-[11px] font-bold opacity-90 transition-colors">المكرم / المكرمة:</span>
+                      <h4 id="details-custom-guest" class="text-base sm:text-lg font-black tracking-wide font-serif transition-colors px-2 truncate">اسم المدعو الكريم</h4>
+                      <div id="details-custom-divider" class="w-16 h-0.5 mx-auto rounded-full opacity-60 transition-colors" style="background-color: #1e1b2e;"></div>
+                    </div>
+
+                    <!-- أسفل البطاقة: المكان والزمان والباركود -->
+                    <div class="pt-2 space-y-2">
+                      <div class="space-y-0.5 px-2">
+                        <div id="details-custom-venue" class="text-[11px] font-bold transition-colors flex items-center justify-center gap-1">
+                          <i class="fa-solid fa-location-dot opacity-80"></i>
+                          <span id="details-custom-venue-text">قصر الأفراح الملكي</span>
+                        </div>
+                        <div id="details-custom-datetime" class="text-[10px] font-medium transition-colors font-mono flex items-center justify-center gap-2">
+                          <span id="details-custom-date"><i class="fa-regular fa-calendar ml-1 opacity-80"></i>2026-10-15</span>
+                          <span>•</span>
+                          <span id="details-custom-time"><i class="fa-regular fa-clock ml-1 opacity-80"></i>20:00</span>
+                        </div>
+                      </div>
+
+                      <!-- باركود QR ناصع ودقيق -->
+                      <div class="w-24 h-24 bg-white p-1.5 rounded-xl mx-auto flex items-center justify-center shadow-lg border border-slate-200/60">
+                        <div id="details-custom-qrcode-slot"></div>
+                      </div>
+                      <span id="details-custom-code-tag" class="text-[10px] font-mono font-bold block transition-colors">مسح الباركود عند البوابة</span>
+                    </div>
                   </div>
 
-                  <!-- الباركود الرسمي للدخول -->
-                  <div class="pt-3 border-t border-purple-400/20 space-y-2">
-                    <div id="details-qrcode-render" class="w-24 h-24 bg-white p-1.5 rounded-xl mx-auto flex items-center justify-center shadow-lg"></div>
-                    <span id="details-card-code" class="text-[10px] text-purple-200 font-mono tracking-wider block">INV-2026-101</span>
-                  </div>
                 </div>
 
                 <!-- أزرار الإجراءات على البطاقة -->

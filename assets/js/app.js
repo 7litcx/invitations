@@ -622,9 +622,11 @@ function renderInvitationsTable(items, tbody) {
   }).join('');
 }
 
-// متغيرات حفظ تصميم الدعوة المخصص المرفوع
+// متغيرات حفظ وتنسيق تصميم الدعوة المخصص المرفوع
 let currentUploadedCustomDesign = null;
+let currentUploadedCustomColor = '#1e1b2e'; // الافتراضي: كحلي داكن/أسود فخم يتطابق تماماً مع كروت البيج والأبيض
 let editUploadedCustomDesign = null;
+let editUploadedCustomColor = '#1e1b2e';
 
 // ===================================================
 // 5. المعاينة الحية الفورية للبطاقة (Live Preview Engine)
@@ -634,6 +636,7 @@ function setupLivePreview() {
   const eventInput = document.getElementById('field-create-event');
   const dateInput = document.getElementById('field-create-date');
   const timeInput = document.getElementById('field-create-time');
+  const venueInput = document.getElementById('field-create-venue');
   const typeSelect = document.getElementById('field-create-type');
   const eventTypeSelect = document.getElementById('field-create-event-type');
 
@@ -646,7 +649,42 @@ function setupLivePreview() {
   const fileInput = document.getElementById('field-custom-design-file');
   const removeBtn = document.getElementById('btn-remove-custom-design');
 
-  const inputs = [guestInput, eventInput, dateInput, timeInput, typeSelect, eventTypeSelect];
+  // أزرار ألوان خط التصميم المخصص
+  const colorButtons = document.querySelectorAll('.btn-color-preset');
+  const customColorPicker = document.getElementById('field-custom-color-picker');
+  const customColorLabel = document.getElementById('custom-design-color-label');
+
+  if (colorButtons && colorButtons.length > 0) {
+    colorButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        colorButtons.forEach(b => {
+          b.classList.remove('active', 'border-purple-600', 'bg-purple-50/80');
+          b.classList.add('border-slate-200', 'bg-white');
+        });
+        btn.classList.add('active', 'border-purple-600', 'bg-purple-50/80');
+        btn.classList.remove('border-slate-200', 'bg-white');
+
+        currentUploadedCustomColor = btn.getAttribute('data-color') || '#1e1b2e';
+        if (customColorPicker) customColorPicker.value = currentUploadedCustomColor;
+        if (customColorLabel) customColorLabel.textContent = currentUploadedCustomColor;
+        updateLivePreview();
+      });
+    });
+  }
+
+  if (customColorPicker) {
+    customColorPicker.addEventListener('input', (e) => {
+      currentUploadedCustomColor = e.target.value;
+      if (customColorLabel) customColorLabel.textContent = currentUploadedCustomColor;
+      colorButtons.forEach(b => {
+        b.classList.remove('active', 'border-purple-600', 'bg-purple-50/80');
+        b.classList.add('border-slate-200', 'bg-white');
+      });
+      updateLivePreview();
+    });
+  }
+
+  const inputs = [guestInput, eventInput, dateInput, timeInput, venueInput, typeSelect, eventTypeSelect];
   inputs.forEach(el => {
     if (el) {
       el.addEventListener('input', updateLivePreview);
@@ -744,47 +782,104 @@ function updateLivePreview() {
   const eventVal = document.getElementById('field-create-event')?.value.trim() || 'دعوة زفاف مبارك';
   const dateVal = document.getElementById('field-create-date')?.value || '2026-10-15';
   const timeVal = document.getElementById('field-create-time')?.value || '20:00';
+  const venueVal = document.getElementById('field-create-venue')?.value.trim() || 'قصر الأفراح الملكي';
   const typeVal = document.getElementById('field-create-type')?.value || 'عادية';
 
-  const previewEvent = document.getElementById('preview-event-name');
-  const previewGuest = document.getElementById('preview-guest-name');
-  const previewDate = document.getElementById('preview-event-date');
-  const previewTime = document.getElementById('preview-event-time');
-  const previewBadge = document.getElementById('preview-badge-type');
   const liveCard = document.getElementById('live-card-container');
+  const defaultLayout = document.getElementById('live-card-default-layout');
+  const customLayout = document.getElementById('live-card-custom-layout');
 
-  if (previewEvent) previewEvent.textContent = eventVal;
-  if (previewGuest) previewGuest.textContent = guestVal;
-  if (previewDate) previewDate.innerHTML = `<i class="fa-regular fa-calendar ml-1"></i>${dateVal}`;
-  if (previewTime) previewTime.innerHTML = `<i class="fa-regular fa-clock ml-1"></i>${timeVal}`;
-  if (previewBadge) previewBadge.textContent = typeVal === 'VIP' ? 'دعوة VIP خاصة' : 'دعوة عادية';
-
-  // تحديث خلفية كرت المعاينة إذا تم رفع تصميم مخصص
-  if (liveCard) {
-    if (currentUploadedCustomDesign) {
-      liveCard.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${currentUploadedCustomDesign}')`;
+  // إذا تم رفع تصميم خاص
+  if (currentUploadedCustomDesign) {
+    if (liveCard) {
+      liveCard.classList.add('custom-card-active');
+      liveCard.style.backgroundImage = `url('${currentUploadedCustomDesign}')`;
       liveCard.style.backgroundSize = 'cover';
       liveCard.style.backgroundPosition = 'center';
-    } else {
+      liveCard.style.backgroundColor = 'transparent';
+    }
+    if (defaultLayout) defaultLayout.classList.add('hidden');
+    if (customLayout) customLayout.classList.remove('hidden');
+
+    // تطبيق لون الخط المختار وتنسيق البيانات بدقة
+    const textColor = currentUploadedCustomColor || '#1e1b2e';
+    const customGuest = document.getElementById('custom-preview-guest-name');
+    const customPrefix = document.getElementById('custom-preview-guest-prefix');
+    const customDivider = document.getElementById('custom-preview-divider');
+    const customVenue = document.getElementById('custom-preview-venue');
+    const customVenueText = document.getElementById('custom-preview-venue-text');
+    const customDate = document.getElementById('custom-preview-date');
+    const customTime = document.getElementById('custom-preview-time');
+    const customDatetime = document.getElementById('custom-preview-datetime');
+    const customCodeTag = document.getElementById('custom-preview-code-tag');
+
+    if (customGuest) {
+      customGuest.textContent = guestVal;
+      customGuest.style.color = textColor;
+    }
+    if (customPrefix) customPrefix.style.color = textColor;
+    if (customDivider) customDivider.style.backgroundColor = textColor;
+    if (customVenue) customVenue.style.color = textColor;
+    if (customVenueText) customVenueText.textContent = venueVal;
+    if (customDatetime) customDatetime.style.color = textColor;
+    if (customDate) customDate.innerHTML = `<i class="fa-regular fa-calendar ml-1 opacity-80"></i>${dateVal}`;
+    if (customTime) customTime.innerHTML = `<i class="fa-regular fa-clock ml-1 opacity-80"></i>${timeVal}`;
+    if (customCodeTag) customCodeTag.style.color = textColor;
+
+    // توليد QR كود للمعاينة الحية داخل حاوية التصميم المخصص
+    const customQrBox = document.getElementById('custom-preview-qr-box');
+    if (customQrBox && typeof QRCode !== 'undefined') {
+      customQrBox.innerHTML = '';
+      try {
+        new QRCode(customQrBox, {
+          text: `https://invitations.soulmediaa.com/ticket.html?guest=${encodeURIComponent(guestVal)}`,
+          width: 72,
+          height: 72,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch {}
+    }
+  } else {
+    // القالب الافتراضي لسول ميديا
+    if (liveCard) {
+      liveCard.classList.remove('custom-card-active');
       liveCard.style.backgroundImage = 'linear-gradient(145deg, #171126 0%, #261942 50%, #171126 100%)';
       liveCard.style.backgroundSize = 'auto';
     }
-  }
+    if (defaultLayout) defaultLayout.classList.remove('hidden');
+    if (customLayout) customLayout.classList.add('hidden');
 
-  // توليد QR كود للمعاينة الحية
-  const qrBox = document.getElementById('preview-qr-box');
-  if (qrBox && typeof QRCode !== 'undefined') {
-    qrBox.innerHTML = '';
-    try {
-      new QRCode(qrBox, {
-        text: `https://invitations.soulmediaa.com/ticket.html?guest=${encodeURIComponent(guestVal)}`,
-        width: 72,
-        height: 72,
-        colorDark: "#1f1438",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch {}
+    const previewEvent = document.getElementById('preview-event-name');
+    const previewGuest = document.getElementById('preview-guest-name');
+    const previewDate = document.getElementById('preview-event-date');
+    const previewTime = document.getElementById('preview-event-time');
+    const previewBadge = document.getElementById('preview-badge-type');
+    const previewVenueText = document.getElementById('preview-venue-default-text');
+
+    if (previewEvent) previewEvent.textContent = eventVal;
+    if (previewGuest) previewGuest.textContent = guestVal;
+    if (previewDate) previewDate.innerHTML = `<i class="fa-regular fa-calendar ml-1"></i>${dateVal}`;
+    if (previewTime) previewTime.innerHTML = `<i class="fa-regular fa-clock ml-1"></i>${timeVal}`;
+    if (previewBadge) previewBadge.textContent = typeVal === 'VIP' ? 'دعوة VIP خاصة' : 'دعوة عادية';
+    if (previewVenueText) previewVenueText.textContent = venueVal;
+
+    // توليد QR كود للقالب الافتراضي
+    const qrBox = document.getElementById('preview-qr-box');
+    if (qrBox && typeof QRCode !== 'undefined') {
+      qrBox.innerHTML = '';
+      try {
+        new QRCode(qrBox, {
+          text: `https://invitations.soulmediaa.com/ticket.html?guest=${encodeURIComponent(guestVal)}`,
+          width: 72,
+          height: 72,
+          colorDark: "#1f1438",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch {}
+    }
   }
 }
 
@@ -801,6 +896,9 @@ function setupCreateForm() {
     const guestPhone = document.getElementById('field-create-phone')?.value.trim();
     const eventName = document.getElementById('field-create-event')?.value.trim();
     const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
+    const dateVal = document.getElementById('field-create-date')?.value || '2026-10-15';
+    const timeVal = document.getElementById('field-create-time')?.value || '20:00';
+    const venueVal = document.getElementById('field-create-venue')?.value.trim() || 'قصر الأفراح الملكي';
     const type = document.getElementById('field-create-type')?.value || 'عادية';
     const peopleCount = parseInt(document.getElementById('field-create-people-count')?.value || '1', 10);
     const notes = document.getElementById('field-create-notes')?.value.trim();
@@ -819,6 +917,9 @@ function setupCreateForm() {
       guestPhone: guestPhone,
       event: eventName,
       eventType: eventType,
+      date: dateVal,
+      time: timeVal,
+      venue: venueVal,
       type: type,
       peopleCount: peopleCount,
       hostName: user?.name || 'أحمد محمد علي',
@@ -828,7 +929,8 @@ function setupCreateForm() {
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
       notes: notes,
       theme: eventType,
-      customDesign: currentUploadedCustomDesign || null // حفظ التصميم المرفوع
+      customDesign: currentUploadedCustomDesign || null, // حفظ التصميم المرفوع
+      customDesignTextColor: currentUploadedCustomDesign ? (currentUploadedCustomColor || '#1e1b2e') : null
     };
 
     saveInvitation(newInv);
@@ -859,47 +961,93 @@ window.viewInvitationDetails = function(invId) {
 
   currentSelectedInvitationId = inv.id;
 
-  // ملء البطاقة الفاخرة
-  const cardEvent = document.getElementById('details-card-event');
-  const cardGuest = document.getElementById('details-card-guest');
-  const cardType = document.getElementById('details-card-type-badge');
-  const cardCode = document.getElementById('details-card-code');
   const cardPreview = document.getElementById('details-card-preview');
+  const detailsDefaultLayout = document.getElementById('details-card-default-layout');
+  const detailsCustomLayout = document.getElementById('details-card-custom-layout');
+  const ticketUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
 
-  if (cardEvent) cardEvent.textContent = inv.event || 'حفل زفاف مبارك';
-  if (cardGuest) cardGuest.textContent = inv.guestName;
-  if (cardType) cardType.textContent = inv.type || 'عادية';
-  if (cardCode) cardCode.textContent = inv.code || inv.id;
-
-  // تطبيق التصميم المخصص على البطاقة إن وُجد
-  if (cardPreview) {
-    if (inv.customDesign) {
-      cardPreview.style.backgroundImage = `linear-gradient(rgba(16, 11, 30, 0.35), rgba(16, 11, 30, 0.75)), url('${inv.customDesign}')`;
+  if (inv.customDesign) {
+    if (cardPreview) {
+      cardPreview.classList.add('custom-card-active');
+      cardPreview.style.backgroundImage = `url('${inv.customDesign}')`;
       cardPreview.style.backgroundSize = 'cover';
       cardPreview.style.backgroundPosition = 'center';
-    } else {
+      cardPreview.style.backgroundColor = 'transparent';
+    }
+    if (detailsDefaultLayout) detailsDefaultLayout.classList.add('hidden');
+    if (detailsCustomLayout) detailsCustomLayout.classList.remove('hidden');
+
+    const textColor = inv.customDesignTextColor || '#1e1b2e';
+    const customGuest = document.getElementById('details-custom-guest');
+    const customPrefix = document.getElementById('details-custom-guest-prefix');
+    const customDivider = document.getElementById('details-custom-divider');
+    const customVenue = document.getElementById('details-custom-venue');
+    const customVenueText = document.getElementById('details-custom-venue-text');
+    const customDatetime = document.getElementById('details-custom-datetime');
+    const customDate = document.getElementById('details-custom-date');
+    const customTime = document.getElementById('details-custom-time');
+    const customCodeTag = document.getElementById('details-custom-code-tag');
+
+    if (customGuest) {
+      customGuest.textContent = inv.guestName;
+      customGuest.style.color = textColor;
+    }
+    if (customPrefix) customPrefix.style.color = textColor;
+    if (customDivider) customDivider.style.backgroundColor = textColor;
+    if (customVenue) customVenue.style.color = textColor;
+    if (customVenueText) customVenueText.textContent = inv.venue || 'قصر الأفراح الملكي';
+    if (customDatetime) customDatetime.style.color = textColor;
+    if (customDate) customDate.innerHTML = `<i class="fa-regular fa-calendar ml-1 opacity-80"></i>${inv.date || '2026-10-15'}`;
+    if (customTime) customTime.innerHTML = `<i class="fa-regular fa-clock ml-1 opacity-80"></i>${inv.time || '20:00'}`;
+    if (customCodeTag) customCodeTag.style.color = textColor;
+
+    const customQrBox = document.getElementById('details-custom-qrcode-slot');
+    if (customQrBox && typeof QRCode !== 'undefined') {
+      customQrBox.innerHTML = '';
+      new QRCode(customQrBox, {
+        text: ticketUrl,
+        width: 90,
+        height: 90,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+  } else {
+    if (cardPreview) {
+      cardPreview.classList.remove('custom-card-active');
       cardPreview.style.backgroundImage = 'linear-gradient(145deg, #171126 0%, #261942 50%, #171126 100%)';
       cardPreview.style.backgroundSize = 'auto';
     }
+    if (detailsDefaultLayout) detailsDefaultLayout.classList.remove('hidden');
+    if (detailsCustomLayout) detailsCustomLayout.classList.add('hidden');
+
+    const cardEvent = document.getElementById('details-card-event');
+    const cardGuest = document.getElementById('details-card-guest');
+    const cardType = document.getElementById('details-card-type-badge');
+    const cardCode = document.getElementById('details-card-code');
+
+    if (cardEvent) cardEvent.textContent = inv.event || 'حفل زفاف مبارك';
+    if (cardGuest) cardGuest.textContent = inv.guestName;
+    if (cardType) cardType.textContent = inv.type || 'عادية';
+    if (cardCode) cardCode.textContent = inv.code || inv.id;
+
+    const qrBox = document.getElementById('details-qrcode-render');
+    if (qrBox && typeof QRCode !== 'undefined') {
+      qrBox.innerHTML = '';
+      new QRCode(qrBox, {
+        text: ticketUrl,
+        width: 90,
+        height: 90,
+        colorDark: "#1a1230",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
   }
 
-  // توليد الباركود عالي الدقة
-  const qrBox = document.getElementById('details-qrcode-render');
-  if (qrBox && typeof QRCode !== 'undefined') {
-    qrBox.innerHTML = '';
-    const ticketUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
-    new QRCode(qrBox, {
-      text: ticketUrl,
-      width: 90,
-      height: 90,
-      colorDark: "#1a1230",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-
-    const openLink = document.getElementById('btn-open-ticket-link');
-    if (openLink) openLink.href = ticketUrl;
-  }
+  const openLink = document.getElementById('btn-open-ticket-link');
+  if (openLink) openLink.href = ticketUrl;
 
   // ملء جدول التفاصيل
   document.getElementById('details-field-event').textContent = inv.event || 'حفل زفاف';
@@ -911,13 +1059,12 @@ window.viewInvitationDetails = function(invId) {
   document.getElementById('details-field-host').textContent = inv.hostName || 'أحمد محمد علي';
 
   // رابط المشاركة وأزرار واتساب ومنصة X
-  const shareUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
   const shareField = document.getElementById('details-share-url-field');
   if (shareField) shareField.value = shareUrl;
 
   const waBtn = document.getElementById('btn-details-whatsapp');
   if (waBtn) {
-    const waText = encodeURIComponent(`يسرني دعوتكم لحضور ${inv.event || 'مناسبتنا'}. تفاصيل الدعوة وبطاقة الدخول الإلكترونية:\n${shareUrl}`);
+    const waText = encodeURIComponent(`يسرني دعوتكم لحضور ${inv.event || 'مناسبتنا'}. تفاصيل الدعوة وبطاقة الدخول الإلكترونية:\n${ticketUrl}`);
     const phoneClean = (inv.guestPhone || '').replace(/\D/g, '');
     waBtn.href = phoneClean ? `https://wa.me/${phoneClean}?text=${waText}` : `https://api.whatsapp.com/send?text=${waText}`;
   }
@@ -925,13 +1072,13 @@ window.viewInvitationDetails = function(invId) {
   const twBtn = document.getElementById('btn-details-twitter');
   if (twBtn) {
     const twText = encodeURIComponent(`نتشرف بدعوتكم الكريمة لحضور ${inv.event || 'مناسبتنا'}`);
-    twBtn.href = `https://twitter.com/intent/tweet?text=${twText}&url=${encodeURIComponent(shareUrl)}`;
+    twBtn.href = `https://twitter.com/intent/tweet?text=${twText}&url=${encodeURIComponent(ticketUrl)}`;
   }
 
   const copyBtn = document.getElementById('btn-details-copy-url');
   if (copyBtn) {
     copyBtn.onclick = () => {
-      navigator.clipboard.writeText(shareUrl).then(() => {
+      navigator.clipboard.writeText(ticketUrl).then(() => {
         alert('تم نسخ رابط الدعوة بنجاح!');
       });
     };
@@ -940,10 +1087,11 @@ window.viewInvitationDetails = function(invId) {
   const downloadQrBtn = document.getElementById('btn-download-qr-image');
   if (downloadQrBtn) {
     downloadQrBtn.onclick = () => {
-      const img = qrBox?.querySelector('img');
+      const activeQrBox = inv.customDesign ? document.getElementById('details-custom-qrcode-slot') : document.getElementById('details-qrcode-render');
+      const img = activeQrBox?.querySelector('img') || activeQrBox?.querySelector('canvas');
       if (img) {
         const a = document.createElement('a');
-        a.href = img.src;
+        a.href = img.src || img.toDataURL?.();
         a.download = `QR_${inv.code || inv.id}.png`;
         a.click();
       }
@@ -965,12 +1113,18 @@ window.editInvitation = function(invId) {
   document.getElementById('edit-field-guest').value = inv.guestName;
   document.getElementById('edit-field-phone').value = inv.guestPhone || '';
   document.getElementById('edit-field-event').value = inv.event || '';
+  const venueField = document.getElementById('edit-field-venue');
+  if (venueField) venueField.value = inv.venue || '';
   document.getElementById('edit-field-type').value = inv.type || 'عادية';
   document.getElementById('edit-field-people-count').value = inv.peopleCount || 1;
   document.getElementById('edit-field-notes').value = inv.notes || '';
 
-  // تعيين حالة التصميم المخصص للتعديل
+  // تعيين حالة ولون التصميم المخصص للتعديل
   editUploadedCustomDesign = inv.customDesign || null;
+  editUploadedCustomColor = inv.customDesignTextColor || '#1e1b2e';
+  const editColorPicker = document.getElementById('edit-custom-color-picker');
+  if (editColorPicker) editColorPicker.value = editUploadedCustomColor;
+
   const editThumb = document.getElementById('edit-custom-design-thumb');
   const editPreview = document.getElementById('edit-custom-design-preview');
   const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
@@ -1004,6 +1158,13 @@ function setupEditForm() {
   const deleteBtn = document.getElementById('btn-delete-from-edit');
   const editFileInput = document.getElementById('edit-field-custom-design-file');
   const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
+  const editColorPicker = document.getElementById('edit-custom-color-picker');
+
+  if (editColorPicker) {
+    editColorPicker.addEventListener('input', (e) => {
+      editUploadedCustomColor = e.target.value;
+    });
+  }
 
   if (editFileInput) {
     editFileInput.addEventListener('change', (e) => {
@@ -1060,10 +1221,12 @@ function setupEditForm() {
       inv.guestName = document.getElementById('edit-field-guest').value.trim();
       inv.guestPhone = document.getElementById('edit-field-phone').value.trim();
       inv.event = document.getElementById('edit-field-event').value.trim();
+      inv.venue = document.getElementById('edit-field-venue')?.value.trim() || inv.venue;
       inv.type = document.getElementById('edit-field-type').value;
       inv.peopleCount = parseInt(document.getElementById('edit-field-people-count').value || '1', 10);
       inv.notes = document.getElementById('edit-field-notes').value.trim();
       inv.customDesign = editUploadedCustomDesign; // حفظ التعديل على التصميم المخصص
+      inv.customDesignTextColor = editUploadedCustomDesign ? (editUploadedCustomColor || '#1e1b2e') : null;
 
       saveInvitation(inv);
       alert('تم حفظ التعديلات بنجاح!');

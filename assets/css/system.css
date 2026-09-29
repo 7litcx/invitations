@@ -487,6 +487,24 @@ body {
   pointer-events: none;
 }
 
+/* حالة البطاقة عند رفع تصميم مخصص */
+.live-invitation-preview-card.custom-card-active::before,
+.card-royal-wrapper.custom-card-active::before,
+.card-royal-wrapper.custom-card-active .card-wedding-inner-border {
+  display: none !important;
+}
+
+.live-invitation-preview-card.custom-card-active .card-floral-tl,
+.live-invitation-preview-card.custom-card-active .card-floral-br {
+  display: none !important;
+}
+
+.btn-color-preset.active {
+  border-color: #7047eb !important;
+  background-color: #f5f3ff !important;
+  box-shadow: 0 0 0 2px rgba(112, 71, 235, 0.25) !important;
+}
+
 /* ===================================================
    شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav)
    =================================================== */
