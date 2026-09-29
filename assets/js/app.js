@@ -728,9 +728,46 @@ function setupLivePreview() {
     });
   }
 
-  // معالجة رفع ملف صورة التصميم
+// دالة ضغط وتحجيم الصور المرفوعة برمجياً لتجنب تجاوز سعة التخزين المحلي (LocalStorage)
+function compressImage(file, maxWidth = 1000, maxHeight = 1400, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+  // معالجة رفع ملف صورة التصميم بذكاء وضغط فوري
   if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
@@ -739,9 +776,9 @@ function setupLivePreview() {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        currentUploadedCustomDesign = evt.target.result;
+      try {
+        const compressed = await compressImage(file, 1000, 1400, 0.78);
+        currentUploadedCustomDesign = compressed;
 
         const thumb = document.getElementById('custom-design-thumb');
         const filename = document.getElementById('custom-design-filename');
@@ -754,8 +791,15 @@ function setupLivePreview() {
         if (promptBox) promptBox.classList.add('hidden');
 
         updateLivePreview();
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.warn('Canvas compression fallback:', err);
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          currentUploadedCustomDesign = evt.target.result;
+          updateLivePreview();
+        };
+        reader.readAsDataURL(file);
+      }
     });
   }
 
@@ -892,79 +936,96 @@ function setupCreateForm() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const guestName = document.getElementById('field-create-guest')?.value.trim();
-    const guestPhone = document.getElementById('field-create-phone')?.value.trim();
-    const eventName = document.getElementById('field-create-event')?.value.trim();
-    const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
-    const dateVal = document.getElementById('field-create-date')?.value || '2026-10-15';
-    const timeVal = document.getElementById('field-create-time')?.value || '20:00';
-    const venueVal = document.getElementById('field-create-venue')?.value.trim() || 'قصر الأفراح الملكي';
-    const type = document.getElementById('field-create-type')?.value || 'عادية';
-    const peopleCount = parseInt(document.getElementById('field-create-people-count')?.value || '1', 10);
-    const notes = document.getElementById('field-create-notes')?.value.trim();
-    const user = getCurrentUser();
+    try {
+      const guestName = document.getElementById('field-create-guest')?.value.trim();
+      const guestPhone = document.getElementById('field-create-phone')?.value.trim();
+      const eventName = document.getElementById('field-create-event')?.value.trim() || 'حفل زفاف مبارك';
+      const eventType = document.getElementById('field-create-event-type')?.value || 'wedding';
+      const dateVal = document.getElementById('field-create-date')?.value || '2026-10-15';
+      const timeVal = document.getElementById('field-create-time')?.value || '20:00';
+      const venueVal = document.getElementById('field-create-venue')?.value.trim() || 'قصر الأفراح الملكي';
+      const type = document.getElementById('field-create-type')?.value || 'عادية';
+      const peopleCount = parseInt(document.getElementById('field-create-people-count')?.value || '1', 10);
+      const notes = document.getElementById('field-create-notes')?.value.trim();
+      const user = getCurrentUser();
 
-    if (!guestName || !guestPhone) {
-      alert('يرجى إدخال اسم المدعو ورقم الجوال');
-      return;
+      if (!guestName || !guestPhone) {
+        alert('يرجى إدخال اسم المدعو ورقم الجوال');
+        return;
+      }
+
+      const code = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+      const newInv = {
+        id: code,
+        code: code,
+        userId: user?.id || 'usr_ahmed',
+        guestName: guestName,
+        guestPhone: guestPhone,
+        event: eventName,
+        eventType: eventType,
+        date: dateVal,
+        time: timeVal,
+        venue: venueVal,
+        type: type,
+        peopleCount: peopleCount,
+        hostName: user?.name || 'أحمد محمد علي',
+        status: 'صالحة',
+        invitationState: 'مقبولة',
+        isUsed: false,
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        notes: notes,
+        theme: eventType,
+        customDesign: currentUploadedCustomDesign || null, // حفظ التصميم المرفوع المضغوط
+        customDesignTextColor: currentUploadedCustomDesign ? (currentUploadedCustomColor || '#1e1b2e') : null
+      };
+
+      saveInvitation(newInv);
+
+      // تصفير النموذج وحالة الرفع
+      form.reset();
+      currentUploadedCustomDesign = null;
+      document.getElementById('custom-design-preview-container')?.classList.add('hidden');
+      document.getElementById('custom-design-prompt')?.classList.remove('hidden');
+      document.getElementById('custom-design-upload-box')?.classList.add('hidden');
+      const defaultRadio = document.getElementById('design-choice-default');
+      if (defaultRadio) defaultRadio.checked = true;
+
+      // تحديث القوائم ولوحة التحكم
+      if (typeof renderDashboardData === 'function') renderDashboardData();
+      if (typeof renderInvitations === 'function') renderInvitations();
+
+      // الانتقال المباشر لشاشة تفاصيل الدعوة لعرضها ومشاركتها مع التمرير للأعلى فوراً
+      viewInvitationDetails(newInv);
+    } catch (err) {
+      console.error('Error submitting create invite form:', err);
+      alert('حدث خطأ أثناء إصدار الدعوة: ' + (err.message || err));
     }
-
-    const code = 'INV-' + Math.floor(1000 + Math.random() * 9000);
-    const newInv = {
-      id: code,
-      code: code,
-      guestName: guestName,
-      guestPhone: guestPhone,
-      event: eventName,
-      eventType: eventType,
-      date: dateVal,
-      time: timeVal,
-      venue: venueVal,
-      type: type,
-      peopleCount: peopleCount,
-      hostName: user?.name || 'أحمد محمد علي',
-      status: 'صالحة',
-      invitationState: 'مقبولة',
-      isUsed: false,
-      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      notes: notes,
-      theme: eventType,
-      customDesign: currentUploadedCustomDesign || null, // حفظ التصميم المرفوع
-      customDesignTextColor: currentUploadedCustomDesign ? (currentUploadedCustomColor || '#1e1b2e') : null
-    };
-
-    saveInvitation(newInv);
-
-    // تصفير النموذج وحالة الرفع
-    form.reset();
-    currentUploadedCustomDesign = null;
-    document.getElementById('custom-design-preview-container')?.classList.add('hidden');
-    document.getElementById('custom-design-prompt')?.classList.remove('hidden');
-    document.getElementById('custom-design-upload-box')?.classList.add('hidden');
-    const defaultRadio = document.getElementById('design-choice-default');
-    if (defaultRadio) defaultRadio.checked = true;
-
-    alert('تم إصدار ونشر الدعوة بنجاح باستخدام التصميم المعتمد!');
-    
-    // الانتقال المباشر لشاشة تفاصيل الدعوة لعرضها ومشاركتها
-    viewInvitationDetails(newInv.id);
   });
 }
 
 // ===================================================
 // 7. تفاصيل الدعوة والمشاركة (View Details)
 // ===================================================
-window.viewInvitationDetails = function(invId) {
-  const invitations = getInvitations();
-  const inv = invitations.find(i => i.id === invId || i.code === invId);
+window.viewInvitationDetails = function(invOrId) {
+  let inv;
+  if (typeof invOrId === 'object' && invOrId !== null) {
+    inv = invOrId;
+  } else {
+    const invitations = getInvitations();
+    inv = invitations.find(i => i.id === invOrId || i.code === invOrId);
+  }
   if (!inv) return;
 
   currentSelectedInvitationId = inv.id;
 
+  // تبديل الشاشة مباشرة للأعلى لضمان رؤية بطاقة الدعوة فوراً دون أي تأخير
+  switchView('details');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
   const cardPreview = document.getElementById('details-card-preview');
   const detailsDefaultLayout = document.getElementById('details-card-default-layout');
   const detailsCustomLayout = document.getElementById('details-card-custom-layout');
-  const ticketUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${inv.id}`;
+  const ticketUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}ticket.html?id=${encodeURIComponent(inv.id)}`;
 
   if (inv.customDesign) {
     if (cardPreview) {
@@ -1004,14 +1065,18 @@ window.viewInvitationDetails = function(invId) {
     const customQrBox = document.getElementById('details-custom-qrcode-slot');
     if (customQrBox && typeof QRCode !== 'undefined') {
       customQrBox.innerHTML = '';
-      new QRCode(customQrBox, {
-        text: ticketUrl,
-        width: 90,
-        height: 90,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
+      try {
+        new QRCode(customQrBox, {
+          text: ticketUrl,
+          width: 90,
+          height: 90,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch (qrErr) {
+        console.warn('QR Code generation error:', qrErr);
+      }
     }
   } else {
     if (cardPreview) {
@@ -1035,14 +1100,18 @@ window.viewInvitationDetails = function(invId) {
     const qrBox = document.getElementById('details-qrcode-render');
     if (qrBox && typeof QRCode !== 'undefined') {
       qrBox.innerHTML = '';
-      new QRCode(qrBox, {
-        text: ticketUrl,
-        width: 90,
-        height: 90,
-        colorDark: "#1a1230",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
+      try {
+        new QRCode(qrBox, {
+          text: ticketUrl,
+          width: 90,
+          height: 90,
+          colorDark: "#1a1230",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch (qrErr) {
+        console.warn('QR Code generation error:', qrErr);
+      }
     }
   }
 
@@ -1050,17 +1119,24 @@ window.viewInvitationDetails = function(invId) {
   if (openLink) openLink.href = ticketUrl;
 
   // ملء جدول التفاصيل
-  document.getElementById('details-field-event').textContent = inv.event || 'حفل زفاف';
-  document.getElementById('details-field-guest').textContent = inv.guestName;
-  document.getElementById('details-field-phone').textContent = inv.guestPhone || '-';
-  document.getElementById('details-field-type').textContent = `دعوة ${inv.type || 'عادية'}${inv.customDesign ? ' (بتصميم خاص)' : ''}`;
-  document.getElementById('details-field-seats').textContent = `${inv.peopleCount || 1} أشخاص`;
-  document.getElementById('details-field-created').textContent = inv.createdAt || '2026-09-20';
-  document.getElementById('details-field-host').textContent = inv.hostName || 'أحمد محمد علي';
+  const fEvent = document.getElementById('details-field-event');
+  if (fEvent) fEvent.textContent = inv.event || 'حفل زفاف';
+  const fGuest = document.getElementById('details-field-guest');
+  if (fGuest) fGuest.textContent = inv.guestName;
+  const fPhone = document.getElementById('details-field-phone');
+  if (fPhone) fPhone.textContent = inv.guestPhone || '-';
+  const fType = document.getElementById('details-field-type');
+  if (fType) fType.textContent = `دعوة ${inv.type || 'عادية'}${inv.customDesign ? ' (بتصميم خاص)' : ''}`;
+  const fSeats = document.getElementById('details-field-seats');
+  if (fSeats) fSeats.textContent = `${inv.peopleCount || 1} أشخاص`;
+  const fCreated = document.getElementById('details-field-created');
+  if (fCreated) fCreated.textContent = inv.createdAt || '2026-09-20';
+  const fHost = document.getElementById('details-field-host');
+  if (fHost) fHost.textContent = inv.hostName || 'أحمد محمد علي';
 
   // رابط المشاركة وأزرار واتساب ومنصة X
   const shareField = document.getElementById('details-share-url-field');
-  if (shareField) shareField.value = shareUrl;
+  if (shareField) shareField.value = ticketUrl;
 
   const waBtn = document.getElementById('btn-details-whatsapp');
   if (waBtn) {
@@ -1097,8 +1173,6 @@ window.viewInvitationDetails = function(invId) {
       }
     };
   }
-
-  switchView('details');
 };
 
 // ===================================================
@@ -1167,7 +1241,7 @@ function setupEditForm() {
   }
 
   if (editFileInput) {
-    editFileInput.addEventListener('change', (e) => {
+    editFileInput.addEventListener('change', async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
@@ -1176,9 +1250,9 @@ function setupEditForm() {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        editUploadedCustomDesign = evt.target.result;
+      try {
+        const compressedBase64 = await compressImage(file, 1000, 1400, 0.78);
+        editUploadedCustomDesign = compressedBase64;
         const editThumb = document.getElementById('edit-custom-design-thumb');
         const editPreview = document.getElementById('edit-custom-design-preview');
         const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
@@ -1191,8 +1265,26 @@ function setupEditForm() {
           editBadge.textContent = 'تصميم جديد جاهز للحفظ';
           editBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300';
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (compressErr) {
+        console.error('Error compressing edit image:', compressErr);
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          editUploadedCustomDesign = evt.target.result;
+          const editThumb = document.getElementById('edit-custom-design-thumb');
+          const editPreview = document.getElementById('edit-custom-design-preview');
+          const editRemoveBtn = document.getElementById('btn-edit-remove-custom-design');
+          const editBadge = document.getElementById('edit-design-badge');
+
+          if (editThumb) editThumb.src = editUploadedCustomDesign;
+          if (editPreview) editPreview.classList.remove('hidden');
+          if (editRemoveBtn) editRemoveBtn.classList.remove('hidden');
+          if (editBadge) {
+            editBadge.textContent = 'تصميم جديد جاهز للحفظ';
+            editBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     });
   }
 

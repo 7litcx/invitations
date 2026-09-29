@@ -1142,7 +1142,22 @@ function saveInvitation(inv) {
   } else {
     all.unshift(inv);
   }
-  localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
+  try {
+    localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(all));
+  } catch (e) {
+    console.warn('LocalStorage quota warning in saveInvitation, optimizing storage:', e);
+    try {
+      const optimized = all.slice(0, 30).map((item, index) => {
+        if (index > 2 && item.customDesign && item.customDesign.length > 50000) {
+          return { ...item, customDesign: null };
+        }
+        return item;
+      });
+      localStorage.setItem(STORAGE_KEYS.INVITATIONS, JSON.stringify(optimized));
+    } catch (err2) {
+      console.error('Critical quota error in saveInvitation:', err2);
+    }
+  }
   return { success: true, invitation: inv };
 }
 
